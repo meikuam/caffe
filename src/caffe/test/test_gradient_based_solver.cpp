@@ -343,8 +343,8 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
         const Mtype val_m = (1 - momentum) * grad + momentum * m;
         const Mtype val_v = (1 - momentum2) * grad * grad + momentum2 * v;
         Mtype alpha_t = learning_rate *
-            std::sqrt(Mtype(1) - pow(momentum2, num_iters)) /
-            (Mtype(1.) - pow(momentum, num_iters));
+            std::sqrt(Mtype(1) - pow(momentum2, Mtype(num_iters))) /
+            (Mtype(1.) - pow(momentum, Mtype(num_iters)));
         update_value = alpha_t * val_m / (std::sqrt(val_v) + Get<Mtype>(delta_));
         break;
       }

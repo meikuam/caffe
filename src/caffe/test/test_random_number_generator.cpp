@@ -303,8 +303,8 @@ TYPED_TEST(RandomNumberGeneratorTest, TestRngGaussianTimesGaussian) {
   }
 
   // Check that result has mean 0.
-  Mtype mu_product = pow(mu, 2);
-  Mtype sigma_product = sqrt(pow(sigma, 2) / 2);
+  Mtype mu_product = pow(mu, Mtype(2.));
+  Mtype sigma_product = sqrt(pow(sigma, Mtype(2.)) / 2);
   this->RngGaussianChecks(mu_product, sigma_product, gaussian_data_1);
 }
 
@@ -519,8 +519,8 @@ TYPED_TEST(RandomNumberGeneratorTest, TestRngGaussianTimesGaussianGPU) {
 
   // Check that result does not violate checked properties of Gaussian
   // (though it is not actually a Gaussian).
-  Mtype mu_product = pow(mu, 2);
-  Mtype sigma_product = sqrt(pow(sigma, 2) / 2);
+  Mtype mu_product = pow(mu, Mtype(2.));
+  Mtype sigma_product = sqrt(pow(sigma, Mtype(2.)) / 2);
   this->RngGaussianChecks(mu_product, sigma_product, gaussian_data_1);
 }
 

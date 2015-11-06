@@ -170,7 +170,7 @@ void GradientChecker<Dtype,Mtype>::CheckGradientSingle(Layer<Dtype,Mtype>* layer
         // We check relative accuracy, but for too small values, we threshold
         // the scale factor by 1.
         Dtype scale = std::max(
-            std::max(fabs(computed_gradient), fabs(estimated_gradient)), 1.);
+            Dtype(std::max(fabs(computed_gradient), fabs(estimated_gradient))), Dtype(1.));
         EXPECT_NEAR(computed_gradient, estimated_gradient,
                     tol<Dtype>(threshold_) * scale)
           << "debug: (top_id, top_data_id, blob_id, feat_id)="

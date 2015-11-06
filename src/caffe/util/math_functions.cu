@@ -74,9 +74,12 @@ void caffe_gpu_gemm<float16,float16>(const CBLAS_TRANSPOSE TransA,
       (TransA == CblasNoTrans) ? CUBLAS_OP_N : CUBLAS_OP_T;
   cublasOperation_t cuTransB =
       (TransB == CblasNoTrans) ? CUBLAS_OP_N : CUBLAS_OP_T;
+//  CUBLAS_CHECK(cublasHgemm(Caffe::cublas_handle(), cuTransB, cuTransA,
+//      N, M, K, &alpha.data, &B->data, ldb, &A->data,
+//      lda, &beta.data, &C->data, N));
   CUBLAS_CHECK(cublasHgemm(Caffe::cublas_handle(), cuTransB, cuTransA,
-      N, M, K, &alpha.data, &B->data, ldb, &A->data,
-      lda, &beta.data, &C->data, N));
+      N, M, K, alpha.gethp(), B->gethp(), ldb,
+      A->gethp(), lda, beta.gethp(), C->gethp(), N));
 }
 
 template <>
@@ -284,9 +287,9 @@ void gpu_dot_kernel(const int N, const Dtype *x, const Dtype *y, Mtype *out)
   __shared__ Mtype cache[256];
 
   const int tidx = threadIdx.x;
-  cache[tidx] = Get<Mtype>(0);
+  cache[tidx] = 0.;
   for (int i=tidx; i<N; i+=blockDim.x) {
-    cache[tidx] += Get<Mtype>(x[i]) * Get<Mtype>(y[i]);
+    cache[tidx] += x[i] * y[i];
   }
   __syncthreads();
   for (int s=128; s > 0; s >>= 1) {
@@ -352,9 +355,9 @@ void gpu_asum_kernel(const int N, const Dtype *x, Mtype *out)
   __shared__ Mtype cache[256];
 
   const int tidx = threadIdx.x;
-  cache[tidx] = Get<Mtype>(0);
+  cache[tidx] = 0.;
   for (int i=tidx; i<N; i+=blockDim.x) {
-    cache[tidx] += Get<Mtype>(fabs(x[i]));
+    cache[tidx] += fabs(x[i]);
   }
   __syncthreads();
   for (int s=128; s > 0; s >>= 1) {

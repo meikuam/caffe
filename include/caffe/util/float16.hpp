@@ -4,6 +4,7 @@
 // #include "get.hpp"
 #include <cfloat>
 #include <iosfwd>
+#include <algorithm>
 #include <glog/logging.h>
 #include "caffe/util/fp16_emu.h"
 #include "caffe/util/fp16_conversion.hpp"
@@ -16,12 +17,20 @@
   #define CAFFE_UTIL_IHD __inline__ __host__ __device__
 #endif
 
+#include "3rdparty/half_float/half.hpp"
+
+#define NEW_COOL_FP16 1
+
 namespace caffe 
 {
+#if NEW_COOL_FP16
 
+  typedef half_float::half float16;
+
+#else
   struct float16
   {
-    /* constexpr */ CAFFE_UTIL_IHD float16() { data.x = 0; }
+    /* constexpr */ CAFFE_UTIL_IHD float16() { }
     
     template <class T>
     CAFFE_UTIL_IHD /*explicit*/ float16(const T& rhs) {
@@ -50,6 +59,18 @@ namespace caffe
 
     CAFFE_UTIL_IHD unsigned short getx() const { return data.x; }
     CAFFE_UTIL_IHD float16& setx(unsigned short x) { data.x = x; return *this; }
+
+
+    CAFFE_UTIL_HD
+    const __half* gethp() const {
+      return &data;
+    }
+
+    CAFFE_UTIL_HD
+    __half* gethp() {
+      return &data;
+    }
+
 
     template <class T>
     CAFFE_UTIL_IHD float16& operator=(const T& rhs) { assign(rhs); return *this; }
@@ -158,6 +179,8 @@ namespace caffe
   CAFFE_UTIL_IHD int isinf(const float16& h) { return ishinf(h.data); }
 
   std::ostream& operator << (std::ostream& s, const float16&);
+
+#endif
 
 }   // namespace caffe
 
