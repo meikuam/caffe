@@ -32,7 +32,7 @@ layer {
     mean_file: "data/ilsvrc12/imagenet_mean.binaryproto"
   }
   data_param {
-    source: "examples/imagenet/ilsvrc12_val_lmdb"
+    source: "data/ilsvrc12/imagenet_mean.binaryproto"
     batch_size: 50
     backend: LMDB
   }
@@ -366,19 +366,33 @@ layer {
   }
 }
 layer {
-  name: "accuracy"
-  type: "Accuracy"
-  bottom: "fc8"
-  bottom: "label"
-  top: "accuracy"
-  include {
-    phase: TEST
-  }
-}
-layer {
   name: "loss"
   type: "SoftmaxWithLoss"
   bottom: "fc8"
   bottom: "label"
   top: "loss"
 }
+layer {
+  name: "top-1"
+  type: "Accuracy"
+  bottom: "fc8"
+  bottom: "label"
+  top: "top-1"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  name: "top-5"
+  type: "Accuracy"
+  bottom: "fc8"
+  bottom: "label"
+  top: "top-5"
+  include {
+    phase: TEST
+  }
+  accuracy_param {
+    top_k: 5
+  }
+}
+
