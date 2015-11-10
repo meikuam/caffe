@@ -27,6 +27,7 @@ caffe_option(BUILD_python_layer "Build the Caffe Python layer" ON)
 caffe_option(USE_LMDB "Build with lmdb" ON)
 caffe_option(USE_LEVELDB "Build with levelDB" ON)
 caffe_option(USE_OPENCV "Build with OpenCV support" ON)
+caffe_option(NATIVE_FP16 "Build caffe_fp16 in native mode" OFF)
 
 # ---[ Dependencies
 include(cmake/Dependencies.cmake)

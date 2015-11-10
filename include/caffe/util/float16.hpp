@@ -18,7 +18,6 @@
 #endif
 
 #include "3rdparty/half_float/half.hpp"
-
 #define NEW_COOL_FP16 1
 
 namespace caffe 

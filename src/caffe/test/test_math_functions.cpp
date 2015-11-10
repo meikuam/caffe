@@ -96,10 +96,15 @@ TYPED_TEST(CPUMathFunctionsTest, TestAsum) {
   typedef typename TypeParam::Mtype Mtype;
   int n = this->blob_bottom_->count();
   const Dtype* x = this->blob_bottom_->cpu_data();
-  Mtype std_asum = 0;
+  Mtype std_asum = 0, intermediate_asum = 0;
   for (int i = 0; i < n; ++i) {
-    std_asum += std::fabs(Get<Mtype>(x[i]));
+    intermediate_asum += std::fabs(x[i]);
+    if (i % 512 == 0) {
+      std_asum += intermediate_asum;
+      intermediate_asum = 0.;
+    }
   }
+  std_asum += intermediate_asum;
   Mtype cpu_asum = caffe_cpu_asum<Dtype,Mtype>(n, x);
   EXPECT_LT((cpu_asum - std_asum) / std_asum, 1e-2);
 }
@@ -193,10 +198,15 @@ TYPED_TEST(GPUMathFunctionsTest, TestAsum) {
   typedef typename TypeParam::Mtype Mtype;
   int n = this->blob_bottom_->count();
   const Dtype* x = this->blob_bottom_->cpu_data();
-  Mtype std_asum = 0;
+  Mtype std_asum = 0, intermediate_asum = 0;
   for (int i = 0; i < n; ++i) {
-    std_asum += std::fabs(Get<Mtype>(x[i]));
+    intermediate_asum += std::fabs(x[i]);
+    if (i % 512 == 0) {
+      std_asum += intermediate_asum;
+      intermediate_asum = 0.;
+    }
   }
+  std_asum += intermediate_asum;
   Mtype gpu_asum;
   caffe_gpu_asum<Dtype,Mtype>(n, this->blob_bottom_->gpu_data(), &gpu_asum);
   EXPECT_LT((gpu_asum - std_asum) / std_asum, 1e-2);

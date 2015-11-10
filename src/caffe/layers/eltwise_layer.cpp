@@ -52,9 +52,9 @@ void EltwiseLayer<Dtype,Mtype>::Forward_cpu(
   Dtype* top_data = top[0]->mutable_cpu_data();
   switch (op_) {
   case EltwiseParameter_EltwiseOp_PROD:
-    caffe_mul<Dtype,Mtype>(count, bottom[0]->cpu_data(), bottom[1]->cpu_data(), top_data);
+    caffe_mul(count, bottom[0]->cpu_data(), bottom[1]->cpu_data(), top_data);
     for (int i = 2; i < bottom.size(); ++i) {
-      caffe_mul<Dtype,Mtype>(count, top_data, bottom[i]->cpu_data(), top_data);
+      caffe_mul(count, top_data, bottom[i]->cpu_data(), top_data);
     }
     break;
   case EltwiseParameter_EltwiseOp_SUM:
@@ -118,14 +118,14 @@ void EltwiseLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& t
               caffe_copy<Dtype,Mtype>(count, bottom[j]->cpu_data(), bottom_diff);
               initialized = true;
             } else {
-              caffe_mul<Dtype,Mtype>(count, bottom[j]->cpu_data(), bottom_diff,
+              caffe_mul(count, bottom[j]->cpu_data(), bottom_diff,
                         bottom_diff);
             }
           }
         } else {
-          caffe_div<Dtype,Mtype>(count, top_data, bottom_data, bottom_diff);
+          caffe_div(count, top_data, bottom_data, bottom_diff);
         }
-        caffe_mul<Dtype,Mtype>(count, bottom_diff, top_diff, bottom_diff);
+        caffe_mul(count, bottom_diff, top_diff, bottom_diff);
         break;
       case EltwiseParameter_EltwiseOp_SUM:
         if (Get<Mtype>(coeffs_[i]) == Mtype(1)) {

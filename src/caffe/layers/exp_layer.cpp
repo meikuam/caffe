@@ -35,10 +35,10 @@ void ExpLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   if (inner_scale_ == Mtype(1)) {
-    caffe_exp<Dtype,Mtype>(count, bottom_data, top_data);
+    caffe_exp(count, bottom_data, top_data);
   } else {
     caffe_cpu_scale<Dtype,Mtype>(count, inner_scale_, bottom_data, top_data);
-    caffe_exp<Dtype,Mtype>(count, top_data, top_data);
+    caffe_exp(count, top_data, top_data);
   }
   if (outer_scale_ != Mtype(1)) {
     caffe_scal<Dtype,Mtype>(count, outer_scale_, top_data);
@@ -53,7 +53,7 @@ void ExpLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top,
   const Dtype* top_data = top[0]->cpu_data();
   const Dtype* top_diff = top[0]->cpu_diff();
   Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
-  caffe_mul<Dtype,Mtype>(count, top_data, top_diff, bottom_diff);
+  caffe_mul(count, top_data, top_diff, bottom_diff);
   if (inner_scale_ != Mtype(1)) {
     caffe_scal<Dtype,Mtype>(count, inner_scale_, bottom_diff);
   }

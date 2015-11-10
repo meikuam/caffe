@@ -201,7 +201,8 @@
 /// set to infinity) and is the fastest rounding mode possible. It can even be set to `std::numeric_limits<float>::round_style` 
 /// to synchronize the rounding mode with that of the underlying single-precision implementation.
 #ifndef HALF_ROUND_STYLE
-	#define HALF_ROUND_STYLE	-1			// = std::round_indeterminate
+//	#define HALF_ROUND_STYLE	-1			// = std::round_indeterminate
+  #define HALF_ROUND_STYLE  1      // = std::round_indeterminate
 #endif
 
 /// Tie-breaking behaviour for round to nearest.
@@ -946,10 +947,12 @@ namespace half_float
       return reinterpret_cast<__half*>(this);
     }
 
+    CAFFE_UTIL_HD
     unsigned short getx() const {
       return data_;
     }
 
+    CAFFE_UTIL_HD
     half& setx(unsigned short x) {
       data_ = x;
       return *this;
@@ -977,6 +980,10 @@ namespace half_float
     }
 
 //		explicit half(float rhs) : data_(detail::float2half<round_style>(rhs)) {}
+    CAFFE_UTIL_HD
+    explicit half(float rhs) {
+      assign(rhs);
+    }
 	
 		/// Conversion to single-precision.
 		/// \return single precision value representing expression value
@@ -995,7 +1002,7 @@ namespace half_float
 #ifdef __CUDA_ARCH__
       data_ = __float2half_rn(rhs);
 #else
-      data_ = detail::float2half<round_style>((float)rhs);
+      data_ = detail::float2half<round_style>(rhs);
 #endif
     }
 
@@ -1105,9 +1112,8 @@ namespace half_float
 
 		/// Constructor.
 		/// \param bits binary representation to set half to
+		CAFFE_UTIL_HD
 		HALF_CONSTEXPR half(detail::binary_t, detail::uint16 bits) : data_(bits) {}
-
-    HALF_CONSTEXPR half(detail::uint16 bits) : data_(bits) {}
 
 		/// Internal binary representation
 		detail::uint16 data_;
@@ -1324,17 +1330,17 @@ namespace half_float
 			/// Logarithm implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr log(float arg) { return expr(std::log(arg)); }
+			static CAFFE_UTIL_HD expr log(float arg) { return expr(std::log(arg)); }
 
 			/// Common logarithm implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr log10(float arg) { return expr(std::log10(arg)); }
+			static CAFFE_UTIL_HD expr log10(float arg) { return expr(std::log10(arg)); }
 
 			/// Logarithm implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr log1p(float arg)
+			static CAFFE_UTIL_HD expr log1p(float arg)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::log1p(arg));
@@ -1346,7 +1352,7 @@ namespace half_float
 			/// Binary logarithm implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr log2(float arg)
+			static CAFFE_UTIL_HD expr log2(float arg)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::log2(arg));
@@ -1358,12 +1364,12 @@ namespace half_float
 			/// Square root implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr sqrt(float arg) { return expr(std::sqrt(arg)); }
+			static CAFFE_UTIL_HD expr sqrt(float arg) { return expr(std::sqrt(arg)); }
 
 			/// Cubic root implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr cbrt(float arg)
+			static CAFFE_UTIL_HD expr cbrt(float arg)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::cbrt(arg));
@@ -1379,7 +1385,7 @@ namespace half_float
 			/// \param x first argument
 			/// \param y second argument
 			/// \return function value stored in single-preicision
-			static expr hypot(float x, float y)
+			static CAFFE_UTIL_HD expr hypot(float x, float y)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::hypot(x, y));
@@ -1393,63 +1399,63 @@ namespace half_float
 			/// \param base value to exponentiate
 			/// \param exp power to expontiate to
 			/// \return function value stored in single-preicision
-			static expr pow(float base, float exp) { return expr(std::pow(base, exp)); }
+			static CAFFE_UTIL_HD expr pow(float base, float exp) { return expr(std::pow(base, exp)); }
 
 			/// Sine implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr sin(float arg) { return expr(std::sin(arg)); }
+			static CAFFE_UTIL_HD expr sin(float arg) { return expr(std::sin(arg)); }
 
 			/// Cosine implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr cos(float arg) { return expr(std::cos(arg)); }
+			static CAFFE_UTIL_HD expr cos(float arg) { return expr(std::cos(arg)); }
 
 			/// Tan implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr tan(float arg) { return expr(std::tan(arg)); }
+			static CAFFE_UTIL_HD expr tan(float arg) { return expr(std::tan(arg)); }
 
 			/// Arc sine implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr asin(float arg) { return expr(std::asin(arg)); }
+			static CAFFE_UTIL_HD expr asin(float arg) { return expr(std::asin(arg)); }
 
 			/// Arc cosine implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr acos(float arg) { return expr(std::acos(arg)); }
+			static CAFFE_UTIL_HD expr acos(float arg) { return expr(std::acos(arg)); }
 
 			/// Arc tangent implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr atan(float arg) { return expr(std::atan(arg)); }
+			static CAFFE_UTIL_HD expr atan(float arg) { return expr(std::atan(arg)); }
 
 			/// Arc tangent implementation.
 			/// \param x first argument
 			/// \param y second argument
 			/// \return function value stored in single-preicision
-			static expr atan2(float x, float y) { return expr(std::atan2(x, y)); }
+			static CAFFE_UTIL_HD expr atan2(float x, float y) { return expr(std::atan2(x, y)); }
 
 			/// Hyperbolic sine implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr sinh(float arg) { return expr(std::sinh(arg)); }
+			static CAFFE_UTIL_HD expr sinh(float arg) { return expr(std::sinh(arg)); }
 
 			/// Hyperbolic cosine implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr cosh(float arg) { return expr(std::cosh(arg)); }
+			static CAFFE_UTIL_HD expr cosh(float arg) { return expr(std::cosh(arg)); }
 
 			/// Hyperbolic tangent implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr tanh(float arg) { return expr(std::tanh(arg)); }
+			static CAFFE_UTIL_HD expr tanh(float arg) { return expr(std::tanh(arg)); }
 
 			/// Hyperbolic area sine implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr asinh(float arg)
+			static CAFFE_UTIL_HD expr asinh(float arg)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::asinh(arg));
@@ -1461,7 +1467,7 @@ namespace half_float
 			/// Hyperbolic area cosine implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr acosh(float arg)
+			static CAFFE_UTIL_HD expr acosh(float arg)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::acosh(arg));
@@ -1473,7 +1479,7 @@ namespace half_float
 			/// Hyperbolic area tangent implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr atanh(float arg)
+			static CAFFE_UTIL_HD expr atanh(float arg)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::atanh(arg));
@@ -1485,7 +1491,7 @@ namespace half_float
 			/// Error function implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr erf(float arg)
+			static CAFFE_UTIL_HD expr erf(float arg)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::erf(arg));
@@ -1497,7 +1503,7 @@ namespace half_float
 			/// Complementary implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr erfc(float arg)
+			static CAFFE_UTIL_HD expr erfc(float arg)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::erfc(arg));
@@ -1509,7 +1515,7 @@ namespace half_float
 			/// Gamma logarithm implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr lgamma(float arg)
+			static CAFFE_UTIL_HD expr lgamma(float arg)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::lgamma(arg));
@@ -1533,7 +1539,7 @@ namespace half_float
 			/// Gamma implementation.
 			/// \param arg function argument
 			/// \return function value stored in single-preicision
-			static expr tgamma(float arg)
+			static CAFFE_UTIL_HD expr tgamma(float arg)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::tgamma(arg));
@@ -1560,55 +1566,55 @@ namespace half_float
 			/// Floor implementation.
 			/// \param arg value to round
 			/// \return rounded value
-			static half floor(half arg) { return half(binary, round_half<std::round_toward_neg_infinity>(arg.data_)); }
+			static CAFFE_UTIL_HD half floor(half arg) { return half(binary, round_half<std::round_toward_neg_infinity>(arg.data_)); }
 
 			/// Ceiling implementation.
 			/// \param arg value to round
 			/// \return rounded value
-			static half ceil(half arg) { return half(binary, round_half<std::round_toward_infinity>(arg.data_)); }
+			static CAFFE_UTIL_HD half ceil(half arg) { return half(binary, round_half<std::round_toward_infinity>(arg.data_)); }
 
 			/// Truncation implementation.
 			/// \param arg value to round
 			/// \return rounded value
-			static half trunc(half arg) { return half(binary, round_half<std::round_toward_zero>(arg.data_)); }
+			static CAFFE_UTIL_HD half trunc(half arg) { return half(binary, round_half<std::round_toward_zero>(arg.data_)); }
 
 			/// Nearest integer implementation.
 			/// \param arg value to round
 			/// \return rounded value
-			static half round(half arg) { return half(binary, round_half_up(arg.data_)); }
+			static CAFFE_UTIL_HD half round(half arg) { return half(binary, round_half_up(arg.data_)); }
 
 			/// Nearest integer implementation.
 			/// \param arg value to round
 			/// \return rounded value
-			static long lround(half arg) { return detail::half2int_up<long>(arg.data_); }
+			static CAFFE_UTIL_HD long lround(half arg) { return detail::half2int_up<long>(arg.data_); }
 
 			/// Nearest integer implementation.
 			/// \param arg value to round
 			/// \return rounded value
-			static half rint(half arg) { return half(binary, round_half<half::round_style>(arg.data_)); }
+			static CAFFE_UTIL_HD half rint(half arg) { return half(binary, round_half<half::round_style>(arg.data_)); }
 
 			/// Nearest integer implementation.
 			/// \param arg value to round
 			/// \return rounded value
-			static long lrint(half arg) { return detail::half2int<half::round_style,long>(arg.data_); }
+			static CAFFE_UTIL_HD long lrint(half arg) { return detail::half2int<half::round_style,long>(arg.data_); }
 
 		#if HALF_ENABLE_CPP11_LONG_LONG
 			/// Nearest integer implementation.
 			/// \param arg value to round
 			/// \return rounded value
-			static long long llround(half arg) { return detail::half2int_up<long long>(arg.data_); }
+			static CAFFE_UTIL_HD long long llround(half arg) { return detail::half2int_up<long long>(arg.data_); }
 
 			/// Nearest integer implementation.
 			/// \param arg value to round
 			/// \return rounded value
-			static long long llrint(half arg) { return detail::half2int<half::round_style,long long>(arg.data_); }
+			static CAFFE_UTIL_HD long long llrint(half arg) { return detail::half2int<half::round_style,long long>(arg.data_); }
 		#endif
 
 			/// Decompression implementation.
 			/// \param arg number to decompress
 			/// \param exp address to store exponent at
 			/// \return normalized significant
-			static half frexp(half arg, int *exp)
+			static CAFFE_UTIL_HD half frexp(half arg, int *exp)
 			{
 				unsigned int m = arg.data_ & 0x7FFF;
 				if(m >= 0x7C00 || !m)
@@ -1623,7 +1629,7 @@ namespace half_float
 			/// \param arg number to decompress
 			/// \param iptr address to store integer part at
 			/// \return fractional part
-			static half modf(half arg, half *iptr)
+			static CAFFE_UTIL_HD half modf(half arg, half *iptr)
 			{
 				unsigned int e = arg.data_ & 0x7C00;
 				if(e > 0x6000)
@@ -1643,7 +1649,7 @@ namespace half_float
 			/// \param arg number to scale
 			/// \param exp power of two to scale by
 			/// \return scaled number
-			static half scalbln(half arg, long exp)
+			static CAFFE_UTIL_HD half scalbln(half arg, long exp)
 			{
 				long e = arg.data_ & 0x7C00;
 				if(e == 0x7C00)
@@ -1697,7 +1703,7 @@ namespace half_float
 			/// Exponent implementation.
 			/// \param arg number to query
 			/// \return floating point exponent
-			static int ilogb(half arg)
+			static CAFFE_UTIL_HD int ilogb(half arg)
 			{
 				int exp = arg.data_ & 0x7FFF;
 				if(!exp)
@@ -1716,7 +1722,7 @@ namespace half_float
 			/// Exponent implementation.
 			/// \param arg number to query
 			/// \return floating point exponent
-			static half logb(half arg)
+			static CAFFE_UTIL_HD half logb(half arg)
 			{
 				int exp = arg.data_ & 0x7FFF;
 				if(!exp)
@@ -1736,7 +1742,7 @@ namespace half_float
 			/// \param from number to increase/decrease
 			/// \param to direction to enumerate into
 			/// \return next representable number
-			static half nextafter(half from, half to)
+			static CAFFE_UTIL_HD half nextafter(half from, half to)
 			{
 				uint16 fabs = from.data_ & 0x7FFF, tabs = to.data_ & 0x7FFF;
 				if(fabs > 0x7C00)
@@ -1754,7 +1760,7 @@ namespace half_float
 			/// \param from number to increase/decrease
 			/// \param to direction to enumerate into
 			/// \return next representable number
-			static half nexttoward(half from, long double to)
+			static CAFFE_UTIL_HD half nexttoward(half from, long double to)
 			{
 				if(isnan(from))
 					return from;
@@ -1770,13 +1776,13 @@ namespace half_float
 			/// \param x first operand
 			/// \param y second operand
 			/// \return composed value
-			static half copysign(half x, half y) { return half(binary, x.data_^((x.data_^y.data_)&0x8000)); }
+			static CAFFE_UTIL_HD half copysign(half x, half y) { return half(binary, x.data_^((x.data_^y.data_)&0x8000)); }
 
 			/// Classification implementation.
 			/// \param arg value to classify
 			/// \retval true if infinite number
 			/// \retval false else
-			static int fpclassify(half arg)
+			static CAFFE_UTIL_HD int fpclassify(half arg)
 			{
 				unsigned int abs = arg.data_ & 0x7FFF;
 				if(abs > 0x7C00)
@@ -1792,52 +1798,52 @@ namespace half_float
 			/// \param arg value to classify
 			/// \retval true if finite number
 			/// \retval false else
-			static bool isfinite(half arg) { return (arg.data_&0x7C00) != 0x7C00; }
+			static CAFFE_UTIL_HD bool isfinite(half arg) { return (arg.data_&0x7C00) != 0x7C00; }
 
 			/// Classification implementation.
 			/// \param arg value to classify
 			/// \retval true if infinite number
 			/// \retval false else
-			static bool isinf(half arg) { return (arg.data_&0x7FFF) == 0x7C00; }
+			static CAFFE_UTIL_HD bool isinf(half arg) { return (arg.data_&0x7FFF) == 0x7C00; }
 
 			/// Classification implementation.
 			/// \param arg value to classify
 			/// \retval true if not a number
 			/// \retval false else
-			static bool isnan(half arg) { return (arg.data_&0x7FFF) > 0x7C00; }
+			static CAFFE_UTIL_HD bool isnan(half arg) { return (arg.data_&0x7FFF) > 0x7C00; }
 
 			/// Classification implementation.
 			/// \param arg value to classify
 			/// \retval true if normal number
 			/// \retval false else
-			static bool isnormal(half arg) { return ((arg.data_&0x7C00)!=0) & ((arg.data_&0x7C00)!=0x7C00); }
+			static CAFFE_UTIL_HD bool isnormal(half arg) { return ((arg.data_&0x7C00)!=0) & ((arg.data_&0x7C00)!=0x7C00); }
 
 			/// Sign bit implementation.
 			/// \param arg value to check
 			/// \retval true if signed
 			/// \retval false if unsigned
-			static bool signbit(half arg) { return (arg.data_&0x8000) != 0; }
+			static CAFFE_UTIL_HD bool signbit(half arg) { return (arg.data_&0x8000) != 0; }
 
 			/// Comparison implementation.
 			/// \param x first operand
 			/// \param y second operand
 			/// \retval true if operands equal
 			/// \retval false else
-			static bool isequal(half x, half y) { return (x.data_==y.data_ || !((x.data_|y.data_)&0x7FFF)) && !isnan(x); }
+			static CAFFE_UTIL_HD bool isequal(half x, half y) { return (x.data_==y.data_ || !((x.data_|y.data_)&0x7FFF)) && !isnan(x); }
 
 			/// Comparison implementation.
 			/// \param x first operand
 			/// \param y second operand
 			/// \retval true if operands not equal
 			/// \retval false else
-			static bool isnotequal(half x, half y) { return (x.data_!=y.data_ && ((x.data_|y.data_)&0x7FFF)) || isnan(x); }
+			static CAFFE_UTIL_HD bool isnotequal(half x, half y) { return (x.data_!=y.data_ && ((x.data_|y.data_)&0x7FFF)) || isnan(x); }
 
 			/// Comparison implementation.
 			/// \param x first operand
 			/// \param y second operand
 			/// \retval true if \a x > \a y
 			/// \retval false else
-			static bool isgreater(half x, half y) { return !isnan(x) && !isnan(y) && ((signbit(x) ? (static_cast<int17>(0x8000)-x.data_) : 
+			static CAFFE_UTIL_HD bool isgreater(half x, half y) { return !isnan(x) && !isnan(y) && ((signbit(x) ? (static_cast<int17>(0x8000)-x.data_) :
 				static_cast<int17>(x.data_)) > (signbit(y) ? (static_cast<int17>(0x8000)-y.data_) : static_cast<int17>(y.data_))); }
 
 			/// Comparison implementation.
@@ -1845,7 +1851,7 @@ namespace half_float
 			/// \param y second operand
 			/// \retval true if \a x >= \a y
 			/// \retval false else
-			static bool isgreaterequal(half x, half y) { return !isnan(x) && !isnan(y) && ((signbit(x) ? (static_cast<int17>(0x8000)-x.data_) : 
+			static CAFFE_UTIL_HD bool isgreaterequal(half x, half y) { return !isnan(x) && !isnan(y) && ((signbit(x) ? (static_cast<int17>(0x8000)-x.data_) :
 				static_cast<int17>(x.data_)) >= (signbit(y) ? (static_cast<int17>(0x8000)-y.data_) : static_cast<int17>(y.data_))); }
 
 			/// Comparison implementation.
@@ -1853,7 +1859,7 @@ namespace half_float
 			/// \param y second operand
 			/// \retval true if \a x < \a y
 			/// \retval false else
-			static bool isless(half x, half y) { return !isnan(x) && !isnan(y) && ((signbit(x) ? (static_cast<int17>(0x8000)-x.data_) : 
+			static CAFFE_UTIL_HD bool isless(half x, half y) { return !isnan(x) && !isnan(y) && ((signbit(x) ? (static_cast<int17>(0x8000)-x.data_) :
 				static_cast<int17>(x.data_)) < (signbit(y) ? (static_cast<int17>(0x8000)-y.data_) : static_cast<int17>(y.data_))); }
 
 			/// Comparison implementation.
@@ -1861,7 +1867,7 @@ namespace half_float
 			/// \param y second operand
 			/// \retval true if \a x <= \a y
 			/// \retval false else
-			static bool islessequal(half x, half y) { return !isnan(x) && !isnan(y) && ((signbit(x) ? (static_cast<int17>(0x8000)-x.data_) : 
+			static CAFFE_UTIL_HD bool islessequal(half x, half y) { return !isnan(x) && !isnan(y) && ((signbit(x) ? (static_cast<int17>(0x8000)-x.data_) :
 				static_cast<int17>(x.data_)) <= (signbit(y) ? (static_cast<int17>(0x8000)-y.data_) : static_cast<int17>(y.data_))); }
 
 			/// Comparison implementation.
@@ -1869,7 +1875,7 @@ namespace half_float
 			/// \param y second operand
 			/// \retval true neither \a x > \a y nor \a x < \a y
 			/// \retval false else
-			static bool islessgreater(half x, half y)
+			static CAFFE_UTIL_HD bool islessgreater(half x, half y)
 			{
 				if(isnan(x) || isnan(y))
 					return false;
@@ -1883,10 +1889,10 @@ namespace half_float
 			/// \param y second operand
 			/// \retval true if operand unordered
 			/// \retval false else
-			static bool isunordered(half x, half y) { return isnan(x) || isnan(y); }
+			static CAFFE_UTIL_HD bool isunordered(half x, half y) { return isnan(x) || isnan(y); }
 
 		private:
-			static double erf(double arg)
+			static CAFFE_UTIL_HD double erf(double arg)
 			{
 				if(builtin_isinf(arg))
 					return (arg<0.0) ? -1.0 : 1.0;
@@ -1895,7 +1901,7 @@ namespace half_float
 				return builtin_signbit(arg) ? -value : value;
 			}
 
-			static double lgamma(double arg)
+			static CAFFE_UTIL_HD double lgamma(double arg)
 			{
 				double v = 1.0;
 				for(; arg<8.0; ++arg) v *= arg;
@@ -1915,19 +1921,27 @@ namespace half_float
 			/// Negation implementation.
 			/// \param arg value to negate
 			/// \return negated value
-			static HALF_CONSTEXPR half negate(half arg) { return half(binary, arg.data_^0x8000); }
+//			static HALF_CONSTEXPR half negate(half arg) { return half(binary, arg.data_^0x8000); }
+      static CAFFE_UTIL_HD HALF_CONSTEXPR half negate(half arg) {
+        half h;
+        h.setx(arg.data_ ^ 0x8000);
+        return h;
+      }
 
 			/// Absolute value implementation.
 			/// \param arg function argument
 			/// \return absolute value
 //			static half fabs(half arg) { return half(binary, arg.data_&0x7FFF); }
-      static CAFFE_UTIL_HD half fabs(half arg) { return half(arg.data_&0x7FFF); }
-
+      static CAFFE_UTIL_HD half fabs(half arg) {
+        half h;
+        h.setx(arg.data_ & 0x7FFF);
+        return h;
+      }
 		};
 		template<> struct unary_specialized<expr>
 		{
-			static HALF_CONSTEXPR expr negate(float arg) { return expr(-arg); }
-			static expr fabs(float arg) { return expr(std::fabs(arg)); }
+			static CAFFE_UTIL_HD HALF_CONSTEXPR expr negate(float arg) { return expr(-arg); }
+			static CAFFE_UTIL_HD expr fabs(float arg) { return expr(std::fabs(arg)); }
 		};
 
 		/// Wrapper for binary half-precision functions needing specialization for individual argument types.
@@ -1939,7 +1953,7 @@ namespace half_float
 			/// \param x first operand
 			/// \param y second operand
 			/// \return minimum value
-			static expr fmin(float x, float y)
+			static CAFFE_UTIL_HD expr fmin(float x, float y)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::fmin(x, y));
@@ -1956,7 +1970,7 @@ namespace half_float
 			/// \param x first operand
 			/// \param y second operand
 			/// \return maximum value
-			static expr fmax(float x, float y)
+			static CAFFE_UTIL_HD expr fmax(float x, float y)
 			{
 			#if HALF_ENABLE_CPP11_CMATH
 				return expr(std::fmax(x, y));
@@ -1971,7 +1985,7 @@ namespace half_float
 		};
 		template<> struct binary_specialized<half,half>
 		{
-			static half fmin(half x, half y)
+			static CAFFE_UTIL_HD half fmin(half x, half y)
 			{
 				if(functions::isnan(x))
 					return y;
@@ -1980,7 +1994,7 @@ namespace half_float
 				return ((functions::signbit(x) ? (static_cast<int17>(0x8000)-x.data_) : static_cast<int17>(x.data_)) >
 						(functions::signbit(y) ? (static_cast<int17>(0x8000)-y.data_) : static_cast<int17>(y.data_))) ? y : x;
 			}
-			static half fmax(half x, half y)
+			static CAFFE_UTIL_HD half fmax(half x, half y)
 			{
 				if(functions::isnan(x))
 					return y;
@@ -2005,7 +2019,7 @@ namespace half_float
 		#endif
 
 			typedef half type;
-			static half cast(U arg) { return cast_impl(arg, is_float<U>()); };
+			static CAFFE_UTIL_HD half cast(U arg) { return cast_impl(arg, is_float<U>()); };
 
 		private:
 //			static half cast_impl(U arg, true_type) { return half(binary, float2half<R>(static_cast<float>(arg))); }
@@ -2038,17 +2052,17 @@ namespace half_float
 		#endif
 
 			typedef T type;
-			template<typename U> static T cast(U arg) { return cast_impl(arg, is_float<T>()); }
+			template<typename U> static CAFFE_UTIL_HD T cast(U arg) { return cast_impl(arg, is_float<T>()); }
 
 		private:
-			static T cast_impl(float arg, true_type) { return static_cast<T>(arg); }
-			static T cast_impl(half arg, false_type) { return half2int<R,T>(arg.data_); }
+			static CAFFE_UTIL_HD T cast_impl(float arg, true_type) { return static_cast<T>(arg); }
+			static CAFFE_UTIL_HD T cast_impl(half arg, false_type) { return half2int<R,T>(arg.data_); }
 		};
 		template<typename T,std::float_round_style R> struct half_caster<T,expr,R> : public half_caster<T,half,R> {};
 		template<std::float_round_style R> struct half_caster<half,half,R>
 		{
 			typedef half type;
-			static half cast(half arg) { return arg; }
+			static CAFFE_UTIL_HD half cast(half arg) { return arg; }
 		};
 		template<std::float_round_style R> struct half_caster<half,expr,R> : public half_caster<half,half,R> {};
 

@@ -364,6 +364,10 @@ ifeq ($(CPU_ONLY), 1)
 	COMMON_FLAGS += -DCPU_ONLY
 endif
 
+ifeq ($(NATIVE_FP16), 1)
+	COMMON_FLAGS += -DNATIVE_FP16=1
+endif
+
 # Benchmarks
 ifeq ($(BENCHMARK_DATA), 1)
 	COMMON_FLAGS += -DBENCHMARK_DATA

@@ -55,7 +55,7 @@ void MVNLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom
         variance_.mutable_cpu_data());  // E(X^2)
     caffe_powx<Dtype,Mtype>(mean_.count(), mean_.cpu_data(), Mtype(2),
         temp_.mutable_cpu_data());  // (EX)^2
-    caffe_sub<Dtype,Mtype>(mean_.count(), variance_.cpu_data(), temp_.cpu_data(),
+    caffe_sub(mean_.count(), variance_.cpu_data(), temp_.cpu_data(),
         variance_.mutable_cpu_data());  // variance
 
     // do mean and variance normalization
@@ -64,7 +64,7 @@ void MVNLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom
 				mean_.cpu_data(), sum_multiplier_.cpu_data(), Mtype(0.f),
 				temp_.mutable_cpu_data());
 
-    caffe_add<Dtype,Mtype>(temp_.count(), bottom_data, temp_.cpu_data(), top_data);
+    caffe_add(temp_.count(), bottom_data, temp_.cpu_data(), top_data);
 
     // normalize variance
     caffe_powx<Dtype,Mtype>(variance_.count(), variance_.cpu_data(), Mtype(0.5),
@@ -76,7 +76,7 @@ void MVNLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom
 				variance_.cpu_data(), sum_multiplier_.cpu_data(), Mtype(0.),
           temp_.mutable_cpu_data());
 
-    caffe_div<Dtype,Mtype>(temp_.count(), top_data, temp_.cpu_data(), top_data);
+    caffe_div(temp_.count(), top_data, temp_.cpu_data(), top_data);
   } else {
     caffe_cpu_gemv<Dtype,Mtype>(CblasNoTrans, num, dim, Mtype(1. / dim), bottom_data,
 				sum_multiplier_.cpu_data(), Mtype(0.), mean_.mutable_cpu_data());  // EX
@@ -86,7 +86,7 @@ void MVNLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom
 				mean_.cpu_data(), sum_multiplier_.cpu_data(), Mtype(0.),
             temp_.mutable_cpu_data());
 
-    caffe_add<Dtype,Mtype>(temp_.count(), bottom_data, temp_.cpu_data(), top_data);
+    caffe_add(temp_.count(), bottom_data, temp_.cpu_data(), top_data);
   }
 }
 
@@ -108,13 +108,13 @@ void MVNLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top,
   int dim = bottom[0]->count() / num;
 
   if (this->layer_param_.mvn_param().normalize_variance()) {
-    caffe_mul<Dtype,Mtype>(temp_.count(), top_data, top_diff, bottom_diff);
+    caffe_mul(temp_.count(), top_data, top_diff, bottom_diff);
     caffe_cpu_gemv<Dtype,Mtype>(CblasNoTrans, num, dim, Mtype(1.), bottom_diff,
 				sum_multiplier_.cpu_data(), Mtype(0.), mean_.mutable_cpu_data());
     caffe_cpu_gemm<Dtype,Mtype>(CblasNoTrans, CblasNoTrans, num, dim, 1, Mtype(1.),
           mean_.cpu_data(), sum_multiplier_.cpu_data(), Mtype(0.f),
           bottom_diff);
-    caffe_mul<Dtype,Mtype>(temp_.count(), top_data, bottom_diff, bottom_diff);
+    caffe_mul(temp_.count(), top_data, bottom_diff, bottom_diff);
 
     caffe_cpu_gemv<Dtype,Mtype>(CblasNoTrans, num, dim, Mtype(1.), top_diff,
             sum_multiplier_.cpu_data(), Mtype(0.f), mean_.mutable_cpu_data());
@@ -132,14 +132,14 @@ void MVNLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top,
         variance_.cpu_data(), sum_multiplier_.cpu_data(), Mtype(0.f),
         temp_.mutable_cpu_data());
 
-    caffe_div<Dtype,Mtype>(temp_.count(), bottom_diff, temp_.cpu_data(), bottom_diff);
+    caffe_div(temp_.count(), bottom_diff, temp_.cpu_data(), bottom_diff);
   } else {
     caffe_cpu_gemv<Dtype,Mtype>(CblasNoTrans, num, dim, Mtype(1. / dim), top_diff,
       sum_multiplier_.cpu_data(), Mtype(0.f), mean_.mutable_cpu_data());
     caffe_cpu_gemm<Dtype,Mtype>(CblasNoTrans, CblasNoTrans, num, dim, 1, Mtype(-1.f),
       mean_.cpu_data(), sum_multiplier_.cpu_data(), Mtype(0.f),
       temp_.mutable_cpu_data());
-    caffe_add<Dtype,Mtype>(temp_.count(), top_diff, temp_.cpu_data(), bottom_diff);
+    caffe_add(temp_.count(), top_diff, temp_.cpu_data(), bottom_diff);
   }
 }
 

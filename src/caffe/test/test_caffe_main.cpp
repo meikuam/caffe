@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
   if (argc > 1) {
     // Use the given device
     devices.push_back(atoi(argv[1]));
-    cudaSetDevice(devices[0]);
+    CUDA_CHECK(cudaSetDevice(devices[0]));
     cout << "Setting to use device " << devices[0] << endl;
   } else if (CUDA_TEST_DEVICE >= 0) {
     // Use the device assigned in build configuration; but with a lower priority
@@ -44,16 +44,16 @@ int main(int argc, char** argv) {
 
   if (devices.size() == 1) {
     cout << "Setting to use device " << devices[0] << endl;
-    cudaSetDevice(devices[0]);
+    CUDA_CHECK(cudaSetDevice(devices[0]));
   } else {
     for (int i = 0; i < device_count; ++i)
       devices.push_back(i);
   }
 
   int device;
-  cudaGetDevice(&device);
+  CUDA_CHECK(cudaGetDevice(&device));
   cout << "Current device id: " << device << endl;
-  cudaGetDeviceProperties(&CAFFE_TEST_CUDA_PROP, device);
+  CUDA_CHECK(cudaGetDeviceProperties(&CAFFE_TEST_CUDA_PROP, device));
 
   cout << "Current device name: " << CAFFE_TEST_CUDA_PROP.name << endl;
 

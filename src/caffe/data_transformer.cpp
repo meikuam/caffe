@@ -387,7 +387,7 @@ void DataTransformer<Dtype,Mtype>::Transform(Blob<Dtype,Mtype>* input_blob,
     CHECK_EQ(input_width, data_mean_.width());
     for (int n = 0; n < input_num; ++n) {
       int offset = input_blob->offset(n);
-      caffe_sub<Dtype,Mtype>(data_mean_.count(), input_data + offset,
+      caffe_sub(data_mean_.count(), input_data + offset,
             data_mean_.cpu_data(), input_data + offset);
     }
   }

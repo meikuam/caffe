@@ -126,7 +126,7 @@ class NeuronLayerTest : public MultiDeviceTest<TypeParam> {
     GaussianFiller<Dtype,Mtype> filler(filler_param);
     filler.Fill(this->blob_bottom_);
     Dtype* bottom_data = this->blob_bottom_->mutable_cpu_data();
-    caffe_exp<Dtype,Mtype>(this->blob_bottom_->count(), bottom_data, bottom_data);
+    caffe_exp(this->blob_bottom_->count(), bottom_data, bottom_data);
   }
 
   void TestLogForward(const float base, const float scale, const float shift) {

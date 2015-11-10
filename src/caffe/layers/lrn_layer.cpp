@@ -122,7 +122,7 @@ void LRNLayer<Dtype,Mtype>::CrossChannelForward_cpu(
   // go through the images
   for (int n = 0; n < num_; ++n) {
     // compute the padded square
-    caffe_sqr<Dtype,Mtype>(channels_ * height_ * width_,
+    caffe_sqr(channels_ * height_ * width_,
         bottom_data + bottom[0]->offset(n),
         padded_square_data + padded_square.offset(0, pre_pad_));
     // Create the first channel scale
@@ -149,7 +149,7 @@ void LRNLayer<Dtype,Mtype>::CrossChannelForward_cpu(
 
   // In the end, compute output
   caffe_powx<Dtype,Mtype>(scale_.count(), scale_data, -beta_, top_data);
-  caffe_mul<Dtype,Mtype>(scale_.count(), top_data, bottom_data, top_data);
+  caffe_mul(scale_.count(), top_data, bottom_data, top_data);
 }
 
 template <typename Dtype, typename Mtype>
@@ -196,17 +196,17 @@ void LRNLayer<Dtype,Mtype>::CrossChannelBackward_cpu(
   Mtype cache_ratio_value(2. * alpha_ * beta_ / size_);
 
   caffe_powx<Dtype,Mtype>(scale_.count(), scale_data, -beta_, bottom_diff);
-  caffe_mul<Dtype,Mtype>(scale_.count(), top_diff, bottom_diff, bottom_diff);
+  caffe_mul(scale_.count(), top_diff, bottom_diff, bottom_diff);
 
   // go through individual data
   int inverse_pre_pad = size_ - (size_ + 1) / 2;
   for (int n = 0; n < num_; ++n) {
     int block_offset = scale_.offset(n);
     // first, compute diff_i * y_i / s_i
-    caffe_mul<Dtype,Mtype>(channels_ * height_ * width_,
+    caffe_mul(channels_ * height_ * width_,
         top_diff + block_offset, top_data + block_offset,
         padded_ratio_data + padded_ratio.offset(0, inverse_pre_pad));
-    caffe_div<Dtype,Mtype>(channels_ * height_ * width_,
+    caffe_div(channels_ * height_ * width_,
         padded_ratio_data + padded_ratio.offset(0, inverse_pre_pad),
         scale_data + block_offset,
         padded_ratio_data + padded_ratio.offset(0, inverse_pre_pad));
@@ -221,7 +221,7 @@ void LRNLayer<Dtype,Mtype>::CrossChannelBackward_cpu(
           padded_ratio_data + padded_ratio.offset(0, c + size_ - 1),
           accum_ratio_data);
       // compute bottom diff
-      caffe_mul<Dtype,Mtype>(height_ * width_,
+      caffe_mul(height_ * width_,
           bottom_data + top[0]->offset(n, c),
           accum_ratio_data, accum_ratio_times_bottom);
       caffe_axpy<Dtype,Mtype>(height_ * width_, -cache_ratio_value,

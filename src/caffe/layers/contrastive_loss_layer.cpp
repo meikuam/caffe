@@ -34,7 +34,7 @@ void ContrastiveLossLayer<Dtype,Mtype>::Forward_cpu(
     const vector<Blob<Dtype,Mtype>*>& bottom,
     const vector<Blob<Dtype,Mtype>*>& top) {
   int count = bottom[0]->count();
-  caffe_sub<Dtype,Mtype>(
+  caffe_sub(
       count,
       bottom[0]->cpu_data(),  // a
       bottom[1]->cpu_data(),  // b

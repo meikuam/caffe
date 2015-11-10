@@ -48,13 +48,13 @@ void SoftmaxLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bo
     caffe_cpu_gemm<Dtype,Mtype>(CblasNoTrans, CblasNoTrans, channels, inner_num_,
 				1, Mtype(-1.), sum_multiplier_.cpu_data(), scale_data, Mtype(1.), top_data);
     // exponentiation
-    caffe_exp<Dtype,Mtype>(dim, top_data, top_data);
+    caffe_exp(dim, top_data, top_data);
     // sum after exp
     caffe_cpu_gemv<Dtype,Mtype>(CblasTrans, channels, inner_num_, Mtype(1.),
 				top_data, sum_multiplier_.cpu_data(), Mtype(0.), scale_data);
     // division
     for (int j = 0; j < channels; j++) {
-      caffe_div<Dtype,Mtype>(inner_num_, top_data, scale_data, top_data);
+      caffe_div(inner_num_, top_data, scale_data, top_data);
       top_data += inner_num_;
     }
   }
@@ -74,16 +74,16 @@ void SoftmaxLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& t
   for (int i = 0; i < outer_num_; ++i) {
     // compute dot(top_diff, top_data) and subtract them from the bottom diff
     for (int k = 0; k < inner_num_; ++k) {
-      scale_data[k] = Get<Dtype>( caffe_cpu_strided_dot<Dtype,Mtype>(channels,
+      scale_data[k] = caffe_cpu_strided_dot<Dtype,Mtype>(channels,
           bottom_diff + i * dim + k, inner_num_,
-          top_data + i * dim + k, inner_num_) );
+          top_data + i * dim + k, inner_num_);
     }
     // subtraction
     caffe_cpu_gemm<Dtype,Mtype>(CblasNoTrans, CblasNoTrans, channels, inner_num_, 1,
 				Mtype(-1.), sum_multiplier_.cpu_data(), scale_data, Mtype(1.), bottom_diff + i * dim);
   }
   // elementwise multiplication
-  caffe_mul<Dtype,Mtype>(top[0]->count(), bottom_diff, top_data, bottom_diff);
+  caffe_mul(top[0]->count(), bottom_diff, top_data, bottom_diff);
 }
 
 

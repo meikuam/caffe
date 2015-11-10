@@ -3,6 +3,7 @@
 #include <thrust/functional.h>  // thrust::plus
 #include <thrust/reduce.h>
 #include <thrust/inner_product.h>
+#include <thrust/detail/raw_pointer_cast.h>
 
 #include <cmath>
 #include <cstdlib>
@@ -126,8 +127,8 @@ void caffe_gpu_gemv<float16, float16>(const CBLAS_TRANSPOSE TransA, const int M,
     const int N, const float16 alpha, const float16* A, const float16* x,
     const float16 beta, float16* y) {
 
-    float alpha_fp32 = cpu_half2float(alpha);
-    float beta_fp32 = cpu_half2float(beta);
+    float alpha_fp32 = static_cast<float>(alpha);
+    float beta_fp32 = static_cast<float>(beta);
     cublasOperation_t cuTransA =
         (TransA == CblasNoTrans) ? CUBLAS_OP_T : CUBLAS_OP_N;
     int m = (cuTransA == CUBLAS_OP_N) ? N : M;
@@ -378,8 +379,8 @@ void caffe_gpu_asum<float16,float>(const int n, const float16* x, float* y)
   cudaMalloc(&res, sizeof(float));
   gpu_asum_kernel<float16,float><<<1,256>>>(n,x,res);
   CUDA_POST_KERNEL_CHECK;
-  cudaMemcpy(y,res,sizeof(float),cudaMemcpyDeviceToHost);
-  CUDA_POST_KERNEL_CHECK;
+  CUDA_CHECK(cudaMemcpy(y,res,sizeof(float),cudaMemcpyDeviceToHost));
+  CUDA_CHECK(cudaFree(res));
 }
 
 template <>
@@ -389,8 +390,8 @@ void caffe_gpu_asum<float16,float16>(const int n, const float16* x, float16* y)
   cudaMalloc(&res, sizeof(float16));
   gpu_asum_kernel<float16,float16><<<1,256>>>(n,x,res);
   CUDA_POST_KERNEL_CHECK;
-  cudaMemcpy(y,res,sizeof(float16),cudaMemcpyDeviceToHost);
-  CUDA_POST_KERNEL_CHECK;
+  CUDA_CHECK(cudaMemcpy(y,res,sizeof(float16),cudaMemcpyDeviceToHost));
+  CUDA_CHECK(cudaFree(res));
 }
 
 template <>
@@ -435,7 +436,7 @@ void caffe_gpu_scale<float16,float16>(const int n, const float16 alpha, const fl
 template <typename Dtype, typename Mtype>
 __global__ void set_kernel(const int n, const Mtype alpha, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
-    y[index] = Get<Dtype>(alpha);
+    y[index] = alpha;
   }
 }
 
@@ -460,7 +461,7 @@ template void caffe_gpu_set<float16,CAFFE_FP16_MTYPE>(const int N,
 template <typename Dtype, typename Mtype>
 __global__ void add_scalar_kernel(const int n, const Mtype alpha, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
-    y[index] = Get<Dtype>(alpha + Get<Mtype>(y[index]));
+    y[index] = alpha + y[index];
   }
 }
 
@@ -493,7 +494,7 @@ template <typename Dtype, typename Mtype>
 __global__ void add_kernel(const int n, const Dtype* a,
     const Dtype* b, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
-    y[index] = Get<Dtype>( Get<Mtype>(a[index]) + Get<Mtype>(b[index]) );
+    y[index] = a[index] + b[index] ;
   }
 }
 
@@ -528,7 +529,7 @@ template <typename Dtype, typename Mtype>
 __global__ void sub_kernel(const int n, const Dtype* a,
     const Dtype* b, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
-    y[index] = Get<Dtype>( Get<Mtype>(a[index]) - Get<Mtype>(b[index]) );
+    y[index] = a[index] - b[index] ;
   }
 }
 
@@ -563,7 +564,7 @@ template <typename Dtype, typename Mtype>
 __global__ void mul_kernel(const int n, const Dtype* a,
     const Dtype* b, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
-    y[index] = Get<Dtype>( Get<Mtype>(a[index]) * Get<Mtype>(b[index]) );
+    y[index] = a[index] * b[index] ;
   }
 }
 
@@ -607,7 +608,7 @@ template <typename Dtype, typename Mtype>
 __global__ void div_kernel(const int n, const Dtype* a,
     const Dtype* b, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
-    y[index] = Get<Dtype>( Get<Mtype>(a[index]) / Get<Mtype>(b[index]) );
+    y[index] = a[index] / b[index] ;
   }
 }
 
@@ -651,7 +652,7 @@ void caffe_gpu_div<float16,float16>(const int N, const float16* a,
 template <typename Dtype, typename Mtype>
 __global__ void abs_kernel(const int n, const Dtype* a, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
-    y[index] = Get<Dtype>( abs(Get<Mtype>(a[index])) );
+    y[index] = abs(a[index]);
   }
 }
 
@@ -691,7 +692,7 @@ void caffe_gpu_abs<float16,float16>(const int N, const float16* a, float16* y) {
 template <typename Dtype, typename Mtype>
 __global__ void exp_kernel(const int n, const Dtype* a, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
-    y[index] = Get<Dtype>( exp(Get<Mtype>(a[index])) );
+    y[index] = exp(a[index]);
   }
 }
 
@@ -759,7 +760,7 @@ template <typename Dtype, typename Mtype>
 __global__ void powx_kernel(const int n, const Dtype* a,
     const Mtype alpha, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
-    y[index] = Get<Dtype>( pow(Get<Mtype>(a[index]), alpha) );
+    y[index] = pow(Mtype(a[index]), alpha);
   }
 }
 
@@ -800,9 +801,8 @@ void caffe_gpu_powx<float16,float>(const int N, const float16* a,
   CUDA_POST_KERNEL_CHECK;
 }
 
-DEFINE_AND_INSTANTIATE_GPU_UNARY_FUNC(sign, y[index] = Get<Dtype>( (Mtype(0) < Get<Mtype>(x[index]))
-                                      - (Get<Mtype>(x[index]) < Mtype(0))) );
-DEFINE_AND_INSTANTIATE_GPU_UNARY_FUNC(sgnbit, y[index] = Get<Dtype>( signbit(Get<Mtype>(x[index]))) );
+DEFINE_AND_INSTANTIATE_GPU_UNARY_FUNC(sign, y[index] = (0 < x[index]) - (x[index] < 0.))
+DEFINE_AND_INSTANTIATE_GPU_UNARY_FUNC(sgnbit, y[index] = signbit(x[index]))
 
 __global__ void popc_kernel(const int n, const float* a,
     const float* b, uint8_t* y) {

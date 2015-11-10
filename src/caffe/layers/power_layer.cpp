@@ -71,7 +71,7 @@ void PowerLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top
         //              = scale * power * (scale * x)^power * (scale * x)^(-1)
         //              = power * y / x
         const Dtype* top_data = top[0]->cpu_data();
-        caffe_div<Dtype,Mtype>(count, top_data, bottom_data, bottom_diff);
+        caffe_div(count, top_data, bottom_data, bottom_diff);
         caffe_scal<Dtype,Mtype>(count, power_, bottom_diff);
       } else {
         caffe_copy<Dtype,Mtype>(count, bottom_data, bottom_diff);
@@ -82,14 +82,14 @@ void PowerLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top
           caffe_add_scalar<Dtype,Mtype>(count, shift_, bottom_diff);
         }
         const Dtype* top_data = top[0]->cpu_data();
-        caffe_div<Dtype,Mtype>(count, top_data, bottom_diff, bottom_diff);
+        caffe_div(count, top_data, bottom_diff, bottom_diff);
         if (diff_scale_ != Mtype(1)) {
           caffe_scal<Dtype,Mtype>(count, diff_scale_, bottom_diff);
         }
       }
     }
     if (diff_scale_ != Mtype(0)) {
-      caffe_mul<Dtype,Mtype>(count, top_diff, bottom_diff, bottom_diff);
+      caffe_mul(count, top_diff, bottom_diff, bottom_diff);
     }
   }
 }

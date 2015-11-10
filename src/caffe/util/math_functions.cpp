@@ -34,12 +34,6 @@ void caffe_cpu_gemm<double,double>(const CBLAS_TRANSPOSE TransA,
 
 #ifndef CPU_ONLY
 template<>
-void caffe_cpu_gemm<float16,float16>(const CBLAS_TRANSPOSE TransA,
-    const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
-    const float16 alpha, const float16* A, const float16* B, const float16 beta,
-    float16* C) {
-}
-template<>
 void caffe_cpu_gemm<float16,float>(const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
     const float alpha, const float16* A, const float16* B, const float beta,
@@ -56,6 +50,13 @@ void caffe_cpu_gemm<float16,float>(const CBLAS_TRANSPOSE TransA,
   cblas_sgemm(CblasRowMajor, TransA, TransB, M, N, K, alpha, &a.front(), lda, &b.front(),
       ldb, beta, &c.front(), N);
   caffe_cpu_convert(c.size(), &c.front(), C);
+}
+template<>
+void caffe_cpu_gemm<float16,float16>(const CBLAS_TRANSPOSE TransA,
+    const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
+    const float16 alpha, const float16* A, const float16* B, const float16 beta,
+    float16* C) {
+  caffe_cpu_gemm(TransA, TransB, M, N, K, (float) alpha, A, B, (float) beta, C);
 }
 #endif
 
@@ -90,14 +91,13 @@ void caffe_cpu_gemv<float16,float>(const CBLAS_TRANSPOSE TransA, const int M,
   cblas_sgemv(CblasRowMajor, TransA, M, N, alpha, &a.front(), N, &xv.front(), 1, beta, &yv.front(), 1);
   caffe_cpu_convert(yv.size(), &yv.front(), y);
 }
-
 template <>
 void caffe_cpu_gemv<float16,float16>(const CBLAS_TRANSPOSE TransA, const int M,
-    const int N, const float16 alpha, const float16* A, const float16* xv,
+    const int N, const float16 alpha, const float16* A, const float16* x,
     const float16 beta, float16* y) {
   //  cblas_hgemv(CblasRowMajor, TransA, M, N, alpha, A, N, x, 1, beta, y, 1);
+  caffe_cpu_gemv(TransA, M, N, (float) alpha, A, x, (float) beta, y);
 }
-
 #endif
 
 template <>
@@ -113,14 +113,12 @@ void caffe_axpy<double,double>(const int N, const double alpha, const double* X,
 template<>
 void caffe_axpy<float16,float>(const int N, const float alpha, const float16* X, float16* Y) {
   for (int i = 0; i < N; ++i) {
-    Y[i] = Get<float16>(alpha * Get<float>(X[i]) + Get<float>(Y[i]));
+    Y[i] = alpha * X[i] + Y[i];
   }
 }
 template<>
 void caffe_axpy<float16,float16>(const int N, const float16 alpha, const float16* X, float16* Y) {
-  for (int i = 0; i < N; ++i) {
-    Y[i] = Get<float16>(Get<float>(alpha) * Get<float>(X[i]) + Get<float>(Y[i]));
-  }
+  caffe_axpy(N, (float) alpha, X, Y);
 }
 #endif
 
@@ -220,6 +218,7 @@ void caffe_scal<float16,float>(const int N, const float alpha, float16 *X) {
 template <>
 void caffe_scal<float16,float16>(const int N, const float16 alpha, float16 *X) {
   // cblas_hscal(N, alpha, X, 1);
+  caffe_scal(N, (float) alpha, X);
 }
 #endif
 
@@ -237,126 +236,106 @@ void caffe_cpu_axpby<double,double>(const int N, const double alpha, const doubl
 
 #ifndef CPU_ONLY
 template <>
-void caffe_cpu_axpby<float16,float16>(const int N, const float16 alpha, const float16* X,
-				    const float16 beta, float16* Y) {}
-template <>
 void caffe_cpu_axpby<float16,float>(const int N, const float alpha, const float16* X,
                              const float beta, float16* Y) {
   for (int i=0; i<N; i++) {
     Y[i] = Get<float16>( alpha * Get<float>(X[i]) + beta * Get<float>(Y[i]) );
   }
 }
+template <>
+void caffe_cpu_axpby<float16,float16>(const int N, const float16 alpha, const float16* X,
+            const float16 beta, float16* Y) {
+  caffe_cpu_axpby(N, (float) alpha, X, (float) beta, Y);
+}
 #endif
 
 template <>
-void caffe_add<float,float>(const int n, const float* a, const float* b,
+void caffe_add<float>(const int n, const float* a, const float* b,
     float* y) {
   vsAdd(n, a, b, y);
 }
 
 template <>
-void caffe_add<double,double>(const int n, const double* a, const double* b,
+void caffe_add<double>(const int n, const double* a, const double* b,
     double* y) {
   vdAdd(n, a, b, y);
 }
 
 #ifndef CPU_ONLY
 template <>
-void caffe_add<float16,float>(const int n, const float16* a, const float16* b,
+void caffe_add<float16>(const int n, const float16* a, const float16* b,
     float16* y) {
-  for (int i=0; i<n; i++) {
-    y[i] = Get<float16>( Get<float>(a[i]) + Get<float>(b[i]) );
-  }
-}
-template <>
-void caffe_add<float16,float16>(const int n, const float16* a, const float16* b,
-    float16* y) {
-  for (int i=0; i<n; i++) {
-    y[i] = Get<float16>( Get<float16>(a[i]) + Get<float16>(b[i]) );
+  for (int i=0; i<n; ++i) {
+    y[i] = a[i] + b[i];
   }
 }
 #endif
 
 template <>
-void caffe_sub<float,float>(const int n, const float* a, const float* b,
+void caffe_sub<float>(const int n, const float* a, const float* b,
     float* y) {
   vsSub(n, a, b, y);
 }
 
 template <>
-void caffe_sub<double,double>(const int n, const double* a, const double* b,
+void caffe_sub<double>(const int n, const double* a, const double* b,
     double* y) {
   vdSub(n, a, b, y);
 }
 
 #ifndef CPU_ONLY
 template <>
-void caffe_sub<float16,float>(const int n, const float16* a, const float16* b,
+void caffe_sub<float16>(const int n, const float16* a, const float16* b,
     float16* y) {
-  for (int i=0; i<n; i++) {
-    y[i] = Get<float16>( Get<float>(a[i]) - Get<float>(b[i]) );
+  for (int i=0; i<n; ++i) {
+    y[i] = a[i] - b[i];
   }
-}
-template <>
-void caffe_sub<float16,float16>(const int n, const float16* a, const float16* b,
-    float16* y) {
-  //  vhSub(n, a, b, y);
 }
 #endif
 
 template <>
-void caffe_mul<float,float>(const int n, const float* a, const float* b,
+void caffe_mul<float>(const int n, const float* a, const float* b,
     float* y) {
   vsMul(n, a, b, y);
 }
 
 template <>
-void caffe_mul<double,double>(const int n, const double* a, const double* b,
+void caffe_mul<double>(const int n, const double* a, const double* b,
     double* y) {
   vdMul(n, a, b, y);
 }
 
 #ifndef CPU_ONLY
 template <>
-void caffe_mul<float16,float>(const int n, const float16* a, const float16* b,
+void caffe_mul<float16>(const int n, const float16* a, const float16* b,
     float16* y) {
-  for (int i=0; i<n; i++) {
+  for (int i=0; i<n; ++i) {
+    //  vhMul(n, a, b, y);
     y[i] = Get<float16>( Get<float>(a[i]) * Get<float>(b[i]) );
   }
-}
-template <>
-void caffe_mul<float16,float16>(const int n, const float16* a, const float16* b,
-    float16* y) {
-  //  vhMul(n, a, b, y);
 }
 #endif
 
 template <>
-void caffe_div<float,float>(const int n, const float* a, const float* b,
+void caffe_div<float>(const int n, const float* a, const float* b,
     float* y) {
   vsDiv(n, a, b, y);
 }
 
 template <>
-void caffe_div<double,double>(const int n, const double* a, const double* b,
+void caffe_div<double>(const int n, const double* a, const double* b,
     double* y) {
   vdDiv(n, a, b, y);
 }
 
 #ifndef CPU_ONLY
 template <>
-void caffe_div<float16,float>(const int n, const float16* a, const float16* b,
-    float16* y)
+void caffe_div<float16>(const int n, const float16* a, const float16* b, float16* y)
 {
-  for (int i=0; i<n; i++) {
-    y[i] = Get<float16>( Get<float>(a[i]) / Get<float>(b[i]) );
-  }
-}
-
-template <>
-void caffe_div<float16,float16>(const int n, const float16* a, const float16* b,
-    float16* y) {
   //  vhDiv(n, a, b, y);
+  for (int i=0; i<n; ++i) {
+    y[i] = a[i] / b[i];
+  }
 }
 #endif
 
@@ -374,50 +353,43 @@ void caffe_powx<double,double>(const int n, const double* a, const double b,
 
 #ifndef CPU_ONLY
 template <>
+void caffe_powx<float16,float>(const int n, const float16* a, const float b, float16* y) {
+  for (int i=0; i<n; i++) {
+    y[i] = pow(static_cast<float>(a[i]), b);
+  }
+}
+template <>
 void caffe_powx<float16,float16>(const int n, const float16* a, const float16 b,
     float16* y) {
   //  vhPowx(n, a, b, y);
-}
-template <>
-void caffe_powx<float16,float>(const int n, const float16* a, const float b, float16* y) {
-  for (int i=0; i<n; i++) {
-    y[i] = Get<float16>( pow(Get<float>(a[i]), b) );
-  }
+  caffe_powx(n, a, (float) b, y);
 }
 #endif
 
 template <>
-void caffe_sqr<float,float>(const int n, const float* a, float* y) {
+void caffe_sqr<float>(const int n, const float* a, float* y) {
   vsSqr(n, a, y);
 }
 
 template <>
-void caffe_sqr<double,double>(const int n, const double* a, double* y) {
+void caffe_sqr<double>(const int n, const double* a, double* y) {
   vdSqr(n, a, y);
 }
 
 #ifndef CPU_ONLY
 template <>
-void caffe_sqr<float16,float16>(const int n, const float16* a, float16* y) {
+void caffe_sqr<float16>(const int n, const float16* a, float16* y) {
   vhSqr(n, a, y);
-}
-template <>
-void caffe_sqr<float16,float>(const int n, const float16* a, float16* y) {
-  float f;
-  for (int i = 0; i < n; ++i) {
-    f = Get<float>(a[i]);
-    y[i] = Get<float16>(f * f);
-  }
 }
 #endif
 
 template <>
-void caffe_exp<float,float>(const int n, const float* a, float* y) {
+void caffe_exp<float>(const int n, const float* a, float* y) {
   vsExp(n, a, y);
 }
 
 template <>
-void caffe_exp<double,double>(const int n, const double* a, double* y) {
+void caffe_exp<double>(const int n, const double* a, double* y) {
   vdExp(n, a, y);
 }
 
@@ -433,8 +405,8 @@ void caffe_log<double>(const int n, const double* a, double* y) {
 
 #ifndef CPU_ONLY
 template <>
-void caffe_exp<float16, float16>(const int n, const float16* a, float16* y) {
-  // vhLn(n, a, y);
+void caffe_exp<float16>(const int n, const float16* a, float16* y) {
+  vhExp(n, a, y);
 }
 template <>
 void caffe_log<float16>(const int n, const float16* a, float16* y) {
@@ -454,18 +426,9 @@ void caffe_abs<double>(const int n, const double* a, double* y) {
 
 #ifndef CPU_ONLY
 template <>
-void caffe_exp<float16,float>(const int n, const float16* a, float16* y) {
-  for (int i=0; i<n; i++) {
-    y[i] = Get<float16>( exp(Get<float>(a[i])) );
-  }
-}
-#endif
-
-#ifndef CPU_ONLY
-template <>
 void caffe_abs<float16>(const int n, const float16* a, float16* y) {
   for (int i=0; i<n; i++) {
-    y[i] = Get<float16>( fabs(Get<float>(a[i])) );
+    y[i] = fabs(a[i]);
   }
 }
 #endif
@@ -495,7 +458,7 @@ void caffe_rng_uniform(const int n, const Mtype a, const Mtype b, Dtype* r) {
   boost::variate_generator<caffe::rng_t*, boost::uniform_real<Mtype> >
       variate_generator(caffe_rng(), random_distribution);
   for (int i = 0; i < n; ++i) {
-    r[i] = Get<Dtype>(variate_generator());
+    r[i] = variate_generator();
   }
 }
 
@@ -511,9 +474,12 @@ void caffe_rng_uniform<double,double>(const int n, const double a, const double 
 template
 void caffe_rng_uniform<float16,float>(const int n, const float a, const float b,
                                float16* r);
-  template<>
+template<>
 void caffe_rng_uniform<float16,float16>(const int n, const float16 a, const float16 b,
-					float16* r) {}
+					float16* r) {
+  caffe_rng_uniform<float16,float>(n, static_cast<const float>(a),
+      static_cast<const float>(b), r);
+}
 #endif
 
 template <typename Dtype, typename Mtype>
@@ -526,7 +492,7 @@ void caffe_rng_gaussian(const int n, const Mtype a,
   boost::variate_generator<caffe::rng_t*, boost::normal_distribution<Mtype> >
       variate_generator(caffe_rng(), random_distribution);
   for (int i = 0; i < n; ++i) {
-    r[i] = Get<Dtype>(variate_generator());
+    r[i] = variate_generator();
   }
 }
 
@@ -542,9 +508,12 @@ void caffe_rng_gaussian<double,double>(const int n, const double mu,
 template
 void caffe_rng_gaussian<float16,float>(const int n, const float mu,
                                 const float sigma, float16* r);
-  template <>
+template <>
 void caffe_rng_gaussian<float16,float16>(const int n, const float16 mu,
-					 const float16 sigma, float16* r) {}
+					                      const float16 sigma, float16* r) {
+  caffe_rng_gaussian<float16,float>(n, static_cast<const float>(mu),
+      static_cast<const float>(sigma), r);
+}
 #endif
 
 template <typename Dtype, typename Mtype>
@@ -557,7 +526,7 @@ void caffe_rng_bernoulli(const int n, const Mtype p, int* r) {
   boost::variate_generator<caffe::rng_t*, boost::bernoulli_distribution<Mtype> >
       variate_generator(caffe_rng(), random_distribution);
   for (int i = 0; i < n; ++i) {
-    r[i] = Get<int>(variate_generator());
+    r[i] = static_cast<int>(variate_generator());
   }
 }
 
@@ -622,7 +591,7 @@ float caffe_cpu_strided_dot<float16,float>(const int n, const float16* x,
   for (int i = 0; i < n; ++i) {
     idx_x = i*incx;
     idx_y = i*incy;
-    sum += Get<float>(x[idx_x]) * Get<float>(y[idx_y]);
+    sum += x[idx_x] * y[idx_y];
   }
   return sum;
 }
@@ -630,14 +599,7 @@ float caffe_cpu_strided_dot<float16,float>(const int n, const float16* x,
 template <>
 float16 caffe_cpu_strided_dot<float16,float16>(const int n, const float16* x,
     const int incx, const float16 *y, const int incy) {
-  float sum = 0.0f;
-  int idx_x, idx_y;
-  for (int i = 0; i < n; ++i) {
-    idx_x = i*incx;
-    idx_y = i*incy;
-    sum += Get<float>(x[idx_x]) * Get<float>(y[idx_y]);
-  }
-  return Get<float16>(sum);
+  return float16(caffe_cpu_strided_dot<float16,float>(n, x, incx, y, incy));
 }
 #endif
 
@@ -708,18 +670,14 @@ template <>
 float caffe_cpu_asum<float16,float>(const int n, const float16 *x) {
   float sum = 0.0f;
   for (int i = 0; i < n; ++i) {
-    sum += fabs(Get<float>(x[i]));
+    sum += fabs(x[i]);
   }
   return sum;
 }
 
 template <>
 float16 caffe_cpu_asum<float16,float16>(const int n, const float16 *x) {
-  float sum = 0.0f;
-  for (int i = 0; i < n; ++i) {
-    sum += fabs(Get<float>(x[i]));
-  }
-  return Get<float16>(sum);
+  return float16(caffe_cpu_asum<float16,float>(n, x));
 }
 #endif
 
@@ -739,16 +697,16 @@ void caffe_cpu_scale<double,double>(const int n, const double alpha, const doubl
 
 #ifndef CPU_ONLY
 template <>
-void caffe_cpu_scale<float16,float16>(const int n, const float16 alpha, const float16 *x,
-    float16 *y) {
-}
-
-template <>
 void caffe_cpu_scale<float16,float>(const int n, const float alpha, const float16 *x,
     float16 *y) {
   for (int i=0; i<n; i++) {
-    y[i] = Get<float16>( alpha * Get<float>(x[i]) );
+    y[i] = alpha * x[i];
   }
+}
+template <>
+void caffe_cpu_scale<float16,float16>(const int n, const float16 alpha, const float16 *x,
+    float16 *y) {
+  caffe_cpu_scale(n, (float) alpha, x, y);
 }
 #endif
 
