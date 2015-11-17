@@ -49,7 +49,7 @@ class ReductionLayerTest : public MultiDeviceTest<TypeParam> {
     const int num = this->blob_bottom_->count(0, axis);
     const int dim = this->blob_bottom_->count(axis);
     for (int n = 0; n < num; ++n) {
-      Dtype expected_result = Get<Dtype>(0);
+      Dtype expected_result = 0;
       for (int d = 0; d < dim; ++d) {
         switch (op) {
           case ReductionParameter_ReductionOp_SUM:
@@ -72,7 +72,7 @@ class ReductionLayerTest : public MultiDeviceTest<TypeParam> {
       }
       expected_result *= coeff;
       const Dtype computed_result = this->blob_top_->cpu_data()[n];
-      EXPECT_FLOAT_EQ(Get<float>(expected_result), Get<float>(computed_result))
+      EXPECT_NEAR(expected_result, computed_result, expected_result * choose<Dtype>(1.e-6, 5.e-3))
           << "Incorrect result computed with op "
           << ReductionParameter_ReductionOp_Name(op) << ", coeff " << coeff;
     }
@@ -87,7 +87,7 @@ class ReductionLayerTest : public MultiDeviceTest<TypeParam> {
     reduction_param->set_coeff(coeff);
     reduction_param->set_axis(axis);
     ReductionLayer<Dtype,Mtype> layer(layer_param);
-    GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(2e-3));
+    GradientChecker<Dtype,Mtype> checker(choose<Dtype>(1e-2, 2e-2), choose<Dtype>(2e-3, 2e-2));
     checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
         this->blob_top_vec_);
   }

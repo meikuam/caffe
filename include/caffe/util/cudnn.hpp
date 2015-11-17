@@ -63,9 +63,15 @@ template<> class dataType<double> {
 template<> class dataType<float16> {
  public:
   static const cudnnDataType_t type = CUDNN_DATA_HALF;
-  static float oneval, zeroval;
+  static float16 oneval, zeroval;
   static const void *one, *zero;
 };
+
+template <typename Dtype, typename Utype>
+inline cudnnDataType_t dataTypeEx() {
+  return sizeof(Dtype) < sizeof(Utype) ? dataType<Utype>::type : dataType<Dtype>::type;
+}
+
 
 template <typename Dtype>
 inline void createTensor4dDesc(cudnnTensorDescriptor_t* desc) {
@@ -112,7 +118,7 @@ inline void setConvolutionDesc(cudnnConvolutionDescriptor_t* conv,
   int strideA[2] = {stride_h,stride_w};
   int upscaleA[2] = {1, 1};
   CUDNN_CHECK(cudnnSetConvolutionNdDescriptor_v3(*conv,
-      2, padA, strideA, upscaleA, CUDNN_CROSS_CORRELATION, dataType<Dtype>::type));
+      2, padA, strideA, upscaleA, CUDNN_CROSS_CORRELATION, dataTypeEx<Dtype,float>()));
   int array_length;
   cudnnConvolutionMode_t mode;
   cudnnDataType_t dataType;

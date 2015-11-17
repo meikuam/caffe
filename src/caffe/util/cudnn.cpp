@@ -4,8 +4,8 @@
 namespace caffe {
 namespace cudnn {
 
-float dataType<float>::oneval = 1.0;
-float dataType<float>::zeroval = 0.0;
+float dataType<float>::oneval = 1.0f;
+float dataType<float>::zeroval = 0.0f;
 const void* dataType<float>::one =
     static_cast<void *>(&dataType<float>::oneval);
 const void* dataType<float>::zero =
@@ -18,9 +18,8 @@ const void* dataType<double>::one =
 const void* dataType<double>::zero =
     static_cast<void *>(&dataType<double>::zeroval);
 
-float dataType<float16>::oneval = 1.0f;
-float dataType<float16>::zeroval = 0.0f;
-
+float16 dataType<float16>::oneval = 1.0f;
+float16 dataType<float16>::zeroval = 0.0f;
 const void* dataType<float16>::one =
     static_cast<void *>(&dataType<float16>::oneval);
 const void* dataType<float16>::zero =

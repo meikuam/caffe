@@ -7,7 +7,8 @@ namespace caffe {
 
 // Verifies format of data stored in HDF5 file and reshapes blob accordingly.
 std::vector<int> 
-hdf5_load_nd_dataset_helper(hid_t file_id, const char* dataset_name, int min_dim, int max_dim) {
+hdf5_load_nd_dataset_helper(hid_t file_id, const char* dataset_name, int min_dim, int max_dim,
+    H5T_class_t& class_) {
   // Verify that the dataset exists.
   CHECK(H5LTfind_dataset(file_id, dataset_name))
       << "Failed to find HDF5 dataset " << dataset_name;
@@ -21,7 +22,6 @@ hdf5_load_nd_dataset_helper(hid_t file_id, const char* dataset_name, int min_dim
 
   // Verify that the data format is what we expect: float or double.
   std::vector<hsize_t> dims(ndims);
-  H5T_class_t class_;
   status = H5LTget_dataset_info(
       file_id, dataset_name, dims.data(), &class_, NULL);
   CHECK_GE(status, 0) << "Failed to get dataset info for " << dataset_name;
@@ -86,7 +86,7 @@ herr_t hdf5_save(hid_t file_id,
 template<>
 herr_t hdf5_load(hid_t file_id, const string& dataset_name, float16* data) {
   return H5LTread_dataset_short(file_id, dataset_name.c_str(), 
-				reinterpret_cast<short*>(data));
+        reinterpret_cast<short*>(data));
 }
 template<>
 herr_t hdf5_save(hid_t file_id, 

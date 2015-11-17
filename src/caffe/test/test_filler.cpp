@@ -30,12 +30,11 @@ TYPED_TEST_CASE(ConstantFillerTest, TestDtypes);
 
 TYPED_TEST(ConstantFillerTest, TestFill) {
   typedef typename TypeParam::Dtype Dtype;
-  typedef typename TypeParam::Mtype Mtype;
   EXPECT_TRUE(this->blob_);
   const int count = this->blob_->count();
   const Dtype* data = this->blob_->cpu_data();
   for (int i = 0; i < count; ++i) {
-    EXPECT_GE(Get<Mtype>(data[i]), Get<Mtype>(this->filler_param_.value()));
+    EXPECT_GE(data[i], this->filler_param_.value());
   }
 }
 
@@ -63,13 +62,12 @@ TYPED_TEST_CASE(UniformFillerTest, TestDtypes);
 
 TYPED_TEST(UniformFillerTest, TestFill) {
   typedef typename TypeParam::Dtype Dtype;
-  typedef typename TypeParam::Mtype Mtype;
   EXPECT_TRUE(this->blob_);
   const int count = this->blob_->count();
   const Dtype* data = this->blob_->cpu_data();
   for (int i = 0; i < count; ++i) {
-    EXPECT_GE(Get<Mtype>(data[i]), Get<Mtype>(this->filler_param_.min()));
-    EXPECT_LE(Get<Mtype>(data[i]), Get<Mtype>(this->filler_param_.max()));
+    EXPECT_GE(data[i], this->filler_param_.min());
+    EXPECT_LE(data[i], this->filler_param_.max());
   }
 }
 
@@ -101,13 +99,13 @@ TYPED_TEST(PositiveUnitballFillerTest, TestFill) {
   const int dim = count / num;
   const Dtype* data = this->blob_->cpu_data();
   for (int i = 0; i < count; ++i) {
-    EXPECT_GE(Get<Mtype>(data[i]), 0);
-    EXPECT_LE(Get<Mtype>(data[i]), 1);
+    EXPECT_GE(data[i], 0);
+    EXPECT_LE(data[i], 1);
   }
   for (int i = 0; i < num; ++i) {
     Mtype sum = 0;
     for (int j = 0; j < dim; ++j) {
-      sum += Get<Mtype>(data[i * dim + j]);
+      sum += data[i * dim + j];
     }
     EXPECT_GE(sum, 0.999);
     EXPECT_LE(sum, 1.001);
@@ -144,9 +142,9 @@ TYPED_TEST(GaussianFillerTest, TestFill) {
   Mtype mean = 0.;
   Mtype var = 0.;
   for (int i = 0; i < count; ++i) {
-    mean += Get<Mtype>(data[i]);
-    var += (Get<Mtype>(data[i]) - this->filler_param_.mean()) *
-        (Get<Mtype>(data[i]) - this->filler_param_.mean());
+    mean += data[i];
+    var += (data[i] - this->filler_param_.mean()) *
+        (data[i] - this->filler_param_.mean());
   }
   mean /= count;
   var /= count;
@@ -175,18 +173,18 @@ class XavierFillerTest : public ::testing::Test {
     EXPECT_TRUE(this->blob_);
     const int count = this->blob_->count();
     const Dtype* data = this->blob_->cpu_data();
-    Dtype mean = Get<Dtype>(0.);
-    Dtype ex2 = Get<Dtype>(0.);
+    Dtype mean = 0.;
+    Dtype ex2 = 0.;
     for (int i = 0; i < count; ++i) {
       mean += data[i];
       ex2 += data[i] * data[i];
     }
     mean /= count;
     ex2 /= count;
-    Dtype std = Get<Dtype>(sqrt(Get<float>(ex2 - mean*mean)));
-    Dtype target_std = Get<Dtype>(sqrt(2.0 / Get<float>(n)));
-    EXPECT_NEAR(Get<float>(mean), 0.0, 0.1);
-    EXPECT_NEAR(Get<float>(std), Get<float>(target_std), 0.1);
+    Dtype std = sqrt(ex2 - mean*mean);
+    Dtype target_std = sqrt(2.0 / n);
+    EXPECT_NEAR(mean, 0.0, 0.1);
+    EXPECT_NEAR(std, target_std, choose<Dtype>(0.1, 0.15));
   }
   virtual ~XavierFillerTest() { delete blob_; }
   Blob<Dtype,Mtype>* const blob_;
@@ -198,17 +196,17 @@ TYPED_TEST_CASE(XavierFillerTest, TestDtypes);
 
 TYPED_TEST(XavierFillerTest, TestFillFanIn) {
   typedef typename TypeParam::Dtype Dtype;
-  Dtype n = Get<Dtype>(2*4*5);
+  Dtype n = 2*4*5;
   this->test_params(FillerParameter_VarianceNorm_FAN_IN, n);
 }
 TYPED_TEST(XavierFillerTest, TestFillFanOut) {
   typedef typename TypeParam::Dtype Dtype;
-  Dtype n = Get<Dtype>(1000*4*5);
+  Dtype n = 1000*4*5;
   this->test_params(FillerParameter_VarianceNorm_FAN_OUT, n);
 }
 TYPED_TEST(XavierFillerTest, TestFillAverage) {
   typedef typename TypeParam::Dtype Dtype;
-  Dtype n = Get<Dtype>((2*4*5 + 1000*4*5) / 2.0);
+  Dtype n = (2*4*5 + 1000*4*5) / 2.0;
   this->test_params(FillerParameter_VarianceNorm_AVERAGE, n);
 }
 
@@ -229,18 +227,18 @@ class MSRAFillerTest : public ::testing::Test {
     EXPECT_TRUE(this->blob_);
     const int count = this->blob_->count();
     const Dtype* data = this->blob_->cpu_data();
-    Dtype mean = Get<Dtype>(0.);
-    Dtype ex2 = Get<Dtype>(0.);
+    Dtype mean = 0.;
+    Dtype ex2 = 0.;
     for (int i = 0; i < count; ++i) {
       mean += data[i];
       ex2 += data[i] * data[i];
     }
     mean /= count;
     ex2 /= count;
-    Dtype std = Get<Dtype>(sqrt(Get<float>(ex2 - mean*mean)));
-    Dtype target_std = Get<Dtype>(sqrt(2.0F / Get<float>(n)));
-    EXPECT_NEAR(Get<float>(mean), 0.0, 0.1);
-    EXPECT_NEAR(Get<float>(std), Get<float>(target_std), 0.1);
+    Dtype std = sqrt(ex2 - mean*mean);
+    Dtype target_std = sqrt(2.0F / n);
+    EXPECT_NEAR(mean, 0.0, 0.1);
+    EXPECT_NEAR(std, target_std, 0.1);
   }
   virtual ~MSRAFillerTest() { delete blob_; }
   Blob<Dtype,Mtype>* const blob_;
@@ -252,17 +250,17 @@ TYPED_TEST_CASE(MSRAFillerTest, TestDtypes);
 
 TYPED_TEST(MSRAFillerTest, TestFillFanIn) {
   typedef typename TypeParam::Dtype Dtype;
-  Dtype n = Get<Dtype>(2*4*5);
+  Dtype n = 2*4*5;
   this->test_params(FillerParameter_VarianceNorm_FAN_IN, n);
 }
 TYPED_TEST(MSRAFillerTest, TestFillFanOut) {
   typedef typename TypeParam::Dtype Dtype;
-  Dtype n = Get<Dtype>(1000*4*5);
+  Dtype n = 1000*4*5;
   this->test_params(FillerParameter_VarianceNorm_FAN_OUT, n);
 }
 TYPED_TEST(MSRAFillerTest, TestFillAverage) {
   typedef typename TypeParam::Dtype Dtype;
-  Dtype n = Get<Dtype>((2*4*5 + 1000*4*5) / 2.0);
+  Dtype n = (2*4*5 + 1000*4*5) / 2.0;
   this->test_params(FillerParameter_VarianceNorm_AVERAGE, n);
 }
 

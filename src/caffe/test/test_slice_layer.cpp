@@ -122,16 +122,16 @@ TYPED_TEST(SliceLayerTest, TestSliceAcrossNum) {
     for (int c = 0; c < this->blob_top_0_->channels(); ++c) {
       for (int h = 0; h < this->blob_bottom_->height(); ++h) {
         for (int w = 0; w < this->blob_bottom_->width(); ++w) {
-          EXPECT_EQ(Get<Mtype>(this->blob_bottom_->data_at(n, c, h, w)),
-                    Get<Mtype>(this->blob_top_0_->data_at(n, c, h, w)));
+          EXPECT_EQ(this->blob_bottom_->data_at(n, c, h, w),
+                    this->blob_top_0_->data_at(n, c, h, w));
         }
       }
     }
     for (int c = 0; c < this->blob_top_1_->channels(); ++c) {
       for (int h = 0; h < this->blob_bottom_->height(); ++h) {
         for (int w = 0; w < this->blob_bottom_->width(); ++w) {
-          EXPECT_EQ(Get<Mtype>(this->blob_bottom_->data_at(n + 3, c, h, w)),
-                    Get<Mtype>(this->blob_top_1_->data_at(n, c, h, w)));
+          EXPECT_EQ(this->blob_bottom_->data_at(n + 3, c, h, w),
+                    this->blob_top_1_->data_at(n, c, h, w));
         }
       }
     }
@@ -158,24 +158,24 @@ TYPED_TEST(SliceLayerTest, TestSliceAcrossChannels) {
     for (int c = 0; c < this->blob_top_0_->channels(); ++c) {
       for (int h = 0; h < this->blob_bottom_->height(); ++h) {
         for (int w = 0; w < this->blob_bottom_->width(); ++w) {
-          EXPECT_EQ(Get<Mtype>(this->blob_bottom_->data_at(n, c, h, w)),
-              Get<Mtype>(this->blob_top_0_->data_at(n, c, h, w)));
+          EXPECT_EQ(this->blob_bottom_->data_at(n, c, h, w),
+              this->blob_top_0_->data_at(n, c, h, w));
         }
       }
     }
     for (int c = 0; c < this->blob_top_1_->channels(); ++c) {
       for (int h = 0; h < this->blob_bottom_->height(); ++h) {
         for (int w = 0; w < this->blob_bottom_->width(); ++w) {
-          EXPECT_EQ(Get<Mtype>(this->blob_bottom_->data_at(n, c + kSlicePoint0, h, w)),
-              Get<Mtype>(this->blob_top_1_->data_at(n, c, h, w)));
+          EXPECT_EQ(this->blob_bottom_->data_at(n, c + kSlicePoint0, h, w),
+              this->blob_top_1_->data_at(n, c, h, w));
         }
       }
     }
     for (int c = 0; c < this->blob_top_2_->channels(); ++c) {
       for (int h = 0; h < this->blob_bottom_->height(); ++h) {
         for (int w = 0; w < this->blob_bottom_->width(); ++w) {
-          EXPECT_EQ(Get<Mtype>(this->blob_bottom_->data_at(n, c + kSlicePoint1, h, w)),
-              Get<Mtype>(this->blob_top_2_->data_at(n, c, h, w)));
+          EXPECT_EQ(this->blob_bottom_->data_at(n, c + kSlicePoint1, h, w),
+              this->blob_top_2_->data_at(n, c, h, w));
         }
       }
     }
@@ -189,7 +189,7 @@ TYPED_TEST(SliceLayerTest, TestGradientTrivial) {
   typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   SliceLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-3));
+  GradientChecker<Dtype,Mtype> checker(5e-2, 1e-2);
   this->blob_top_vec_0_.resize(1);
   checker.CheckGradientEltwise(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_0_);
@@ -203,7 +203,7 @@ TYPED_TEST(SliceLayerTest, TestGradientAcrossNum) {
   LayerParameter layer_param;
   layer_param.mutable_slice_param()->set_axis(0);
   SliceLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-3));
+  GradientChecker<Dtype,Mtype> checker(5e-2, 1e-2);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
     this->blob_top_vec_0_);
 }
@@ -217,7 +217,7 @@ TYPED_TEST(SliceLayerTest, TestGradientAcrossChannels) {
   const int kSlicePoint = 4;
   layer_param.mutable_slice_param()->add_slice_point(kSlicePoint);
   SliceLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-3);
+  GradientChecker<Dtype,Mtype> checker(5e-2, 1e-2);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
     this->blob_top_vec_0_);
 }

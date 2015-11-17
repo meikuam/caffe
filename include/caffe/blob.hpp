@@ -74,6 +74,7 @@ class Blob {
   }
   inline int num_axes() const { return shape_.size(); }
   inline int count() const { return count_; }
+  inline int dtsize() const { return sizeof(Dtype); }
 
   /**
    * @brief Compute the volume of a slice; i.e., the product of dimensions

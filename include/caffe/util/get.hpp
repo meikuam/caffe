@@ -16,11 +16,6 @@ namespace caffe
   }
   
   template <typename T>
-  CAFFE_UTIL_IHD float tol(float t) {
-    return t;
-  }
-  
-  template <typename T>
   CAFFE_UTIL_IHD float maxDtype() {
     return FLT_MAX;
   }
@@ -50,12 +45,26 @@ namespace caffe
     return HLF_MIN;
   }
 
+  template <typename T>
+  CAFFE_UTIL_IHD float tol(float t) {
+    return t;
+  }
+
   template <>
   CAFFE_UTIL_IHD float tol<half>(float t) {
     return t < 1.e-4 ? 2.5e-2 : t * 2.5e2;
   }
 
-}
+  template <>
+  CAFFE_UTIL_IHD float tol<float16>(float t) {
+    return t < 1.e-4 ? 2.5e-2 : t * 2.5e2;
+  }
 
+  template <typename T>
+  CAFFE_UTIL_IHD float choose(float fine, float coarse) {
+    return sizeof(T) > 2 ? fine : coarse;
+  }
+
+}
 
 #endif

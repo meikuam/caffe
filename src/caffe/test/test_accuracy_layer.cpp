@@ -53,7 +53,7 @@ class AccuracyLayerTest : public CPUDeviceTest<TypeParam> {
           static_cast<caffe::rng_t*>(rng->generator());
     Dtype* label_data = blob_bottom_label_->mutable_cpu_data();
     for (int i = 0; i < blob_bottom_label_->count(); ++i) {
-      label_data[i] = Get<Dtype>((*prefetch_rng)() % 10);
+      label_data[i] = (*prefetch_rng)() % 10;
     }
   }
 
@@ -130,19 +130,19 @@ TYPED_TEST(AccuracyLayerTest, TestForwardCPU) {
   int max_id;
   int num_correct_labels = 0;
   for (int i = 0; i < 100; ++i) {
-    max_value = Get<Mtype>(-FLT_MAX);
+    max_value = - maxDtype<Mtype>();
     max_id = 0;
     for (int j = 0; j < 10; ++j) {
-      if (Get<Mtype>(this->blob_bottom_data_->data_at(i, j, 0, 0)) > max_value) {
-        max_value = Get<Mtype>(this->blob_bottom_data_->data_at(i, j, 0, 0));
+      if (this->blob_bottom_data_->data_at(i, j, 0, 0) > max_value) {
+        max_value = this->blob_bottom_data_->data_at(i, j, 0, 0);
         max_id = j;
       }
     }
-    if (max_id == Get<int>(this->blob_bottom_label_->data_at(i, 0, 0, 0))) {
+    if (max_id == static_cast<int>(this->blob_bottom_label_->data_at(i, 0, 0, 0))) {
       ++num_correct_labels;
     }
   }
-  EXPECT_NEAR(Get<Mtype>(this->blob_top_->data_at(0, 0, 0, 0)),
+  EXPECT_NEAR(this->blob_top_->data_at(0, 0, 0, 0),
               num_correct_labels / 100.0, 1e-4);
 }
 
@@ -168,11 +168,11 @@ TYPED_TEST(AccuracyLayerTest, TestForwardWithSpatialAxes) {
   for (int n = 0; n < this->blob_bottom_data_->num(); ++n) {
     for (int h = 0; h < this->blob_bottom_data_->height(); ++h) {
       for (int w = 0; w < this->blob_bottom_data_->width(); ++w) {
-        max_value = Get<Mtype>(-FLT_MAX);
+        max_value = - maxDtype<Mtype>();
         max_id = 0;
         for (int c = 0; c < this->blob_bottom_data_->channels(); ++c) {
           const Mtype pred_value =
-              Get<Mtype>(this->blob_bottom_data_->data_at(n, c, h, w));
+              this->blob_bottom_data_->data_at(n, c, h, w);
           if (pred_value > max_value) {
             max_value = pred_value;
             max_id = c;
@@ -180,15 +180,15 @@ TYPED_TEST(AccuracyLayerTest, TestForwardWithSpatialAxes) {
         }
         label_offset[0] = n; label_offset[1] = h; label_offset[2] = w;
         const int correct_label =
-            Get<int>(this->blob_bottom_label_->data_at(label_offset));
+            static_cast<int>(this->blob_bottom_label_->data_at(label_offset));
         if (max_id == correct_label) {
           ++num_correct_labels;
         }
       }
     }
   }
-  EXPECT_NEAR(Get<Mtype>(this->blob_top_->data_at(0, 0, 0, 0)),
-              num_correct_labels / Get<Mtype>(num_labels), 1e-4);
+  EXPECT_NEAR(this->blob_top_->data_at(0, 0, 0, 0),
+      static_cast<float>(num_correct_labels) / num_labels, 1e-4);
 }
 
 TYPED_TEST(AccuracyLayerTest, TestForwardIgnoreLabel) {
@@ -199,9 +199,9 @@ TYPED_TEST(AccuracyLayerTest, TestForwardIgnoreLabel) {
   layer_param.mutable_accuracy_param()->set_ignore_label(kIgnoreLabelValue);
   AccuracyLayer<Dtype,Mtype> layer(layer_param);
   // Manually set some labels to the ignore label value (-1).
-  this->blob_bottom_label_->mutable_cpu_data()[2] = Get<Dtype>(kIgnoreLabelValue);
-  this->blob_bottom_label_->mutable_cpu_data()[5] = Get<Dtype>(kIgnoreLabelValue);
-  this->blob_bottom_label_->mutable_cpu_data()[32] = Get<Dtype>(kIgnoreLabelValue);
+  this->blob_bottom_label_->mutable_cpu_data()[2] = kIgnoreLabelValue;
+  this->blob_bottom_label_->mutable_cpu_data()[5] = kIgnoreLabelValue;
+  this->blob_bottom_label_->mutable_cpu_data()[32] = kIgnoreLabelValue;
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
 
@@ -210,25 +210,25 @@ TYPED_TEST(AccuracyLayerTest, TestForwardIgnoreLabel) {
   int num_correct_labels = 0;
   int count = 0;
   for (int i = 0; i < 100; ++i) {
-    if (kIgnoreLabelValue == Get<Mtype>(this->blob_bottom_label_->data_at(i, 0, 0, 0))) {
+    if (kIgnoreLabelValue == this->blob_bottom_label_->data_at(i, 0, 0, 0)) {
       continue;
     }
     ++count;
-    max_value = Get<Mtype>(-FLT_MAX);
+    max_value = - maxDtype<Mtype>();
     max_id = 0;
     for (int j = 0; j < 10; ++j) {
-      if (Get<Mtype>(this->blob_bottom_data_->data_at(i, j, 0, 0)) > max_value) {
-        max_value = Get<Mtype>(this->blob_bottom_data_->data_at(i, j, 0, 0));
+      if (this->blob_bottom_data_->data_at(i, j, 0, 0) > max_value) {
+        max_value = this->blob_bottom_data_->data_at(i, j, 0, 0);
         max_id = j;
       }
     }
-    if (max_id == Get<Mtype>(this->blob_bottom_label_->data_at(i, 0, 0, 0))) {
+    if (max_id == this->blob_bottom_label_->data_at(i, 0, 0, 0)) {
       ++num_correct_labels;
     }
   }
   EXPECT_EQ(count, 97);  // We set 3 out of 100 labels to kIgnoreLabelValue.
-  EXPECT_NEAR(Get<Mtype>(this->blob_top_->data_at(0, 0, 0, 0)),
-              num_correct_labels / Get<Mtype>(count), 1e-4);
+  EXPECT_NEAR(this->blob_top_->data_at(0, 0, 0, 0),
+      static_cast<float>(num_correct_labels) / count, 1e-4);
 }
 
 TYPED_TEST(AccuracyLayerTest, TestForwardCPUTopK) {
@@ -246,21 +246,21 @@ TYPED_TEST(AccuracyLayerTest, TestForwardCPUTopK) {
   int num_correct_labels = 0;
   for (int i = 0; i < 100; ++i) {
     for (int j = 0; j < 10; ++j) {
-      current_value = Get<Mtype>(this->blob_bottom_data_->data_at(i, j, 0, 0));
+      current_value = this->blob_bottom_data_->data_at(i, j, 0, 0);
       current_rank = 0;
       for (int k = 0; k < 10; ++k) {
-        if (Get<Mtype>(this->blob_bottom_data_->data_at(i, k, 0, 0)) > current_value) {
+        if (this->blob_bottom_data_->data_at(i, k, 0, 0) > current_value) {
           ++current_rank;
         }
       }
       if (current_rank < this->top_k_ &&
-          j == Get<int>(this->blob_bottom_label_->data_at(i, 0, 0, 0))) {
+          j == static_cast<int>(this->blob_bottom_label_->data_at(i, 0, 0, 0))) {
         ++num_correct_labels;
       }
     }
   }
 
-  EXPECT_NEAR(Get<Mtype>(this->blob_top_->data_at(0, 0, 0, 0)),
+  EXPECT_NEAR(this->blob_top_->data_at(0, 0, 0, 0),
               num_correct_labels / 100.0, 1e-4);
 }
 
@@ -272,14 +272,14 @@ TYPED_TEST(AccuracyLayerTest, TestForwardCPUPerClass) {
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_per_class_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_per_class_vec_);
 
-  Dtype max_value;
+  Mtype max_value;
   int max_id;
   int num_correct_labels = 0;
   const int num_class = this->blob_top_per_class_->num();
   vector<int> correct_per_class(num_class, 0);
   vector<int> num_per_class(num_class, 0);
   for (int i = 0; i < 100; ++i) {
-    max_value = Get<Dtype>(- maxDtype<Dtype>());
+    max_value = - maxDtype<Mtype>();
     max_id = 0;
     for (int j = 0; j < 10; ++j) {
       if (this->blob_bottom_data_->data_at(i, j, 0, 0) > max_value) {
@@ -287,20 +287,20 @@ TYPED_TEST(AccuracyLayerTest, TestForwardCPUPerClass) {
         max_id = j;
       }
     }
-    const int id = Get<int>(this->blob_bottom_label_->data_at(i, 0, 0, 0));
+    const int id = static_cast<int>(this->blob_bottom_label_->data_at(i, 0, 0, 0));
     ++num_per_class[id];
     if (max_id == id) {
       ++num_correct_labels;
       ++correct_per_class[max_id];
     }
   }
-  EXPECT_NEAR(Get<Mtype>(this->blob_top_->data_at(0, 0, 0, 0)),
-              num_correct_labels / 100.0, 1e-4);
+  EXPECT_NEAR(this->blob_top_->data_at(0, 0, 0, 0),
+      static_cast<float>(num_correct_labels) / 100.0, 1e-4);
   for (int i = 0; i < num_class; ++i) {
     float accuracy_per_class = num_per_class[i] > 0 ?
-    		correct_per_class[i] / num_per_class[i] : 0.;
-    EXPECT_NEAR(Get<Mtype>(this->blob_top_per_class_->data_at(i, 0, 0, 0)),
-    		Get<Mtype>(accuracy_per_class), 1e-4);
+        static_cast<float>(correct_per_class[i]) / num_per_class[i] : 0.;
+    EXPECT_NEAR(this->blob_top_per_class_->data_at(i, 0, 0, 0),
+    		accuracy_per_class, 1e-4);
   }
 }
 
@@ -313,13 +313,13 @@ TYPED_TEST(AccuracyLayerTest, TestForwardCPUPerClassWithIgnoreLabel) {
   layer_param.mutable_accuracy_param()->set_ignore_label(kIgnoreLabelValue);
   AccuracyLayer<Dtype,Mtype> layer(layer_param);
   // Manually set some labels to the ignore label value (-1).
-  this->blob_bottom_label_->mutable_cpu_data()[2] = Get<Dtype>(kIgnoreLabelValue);
-  this->blob_bottom_label_->mutable_cpu_data()[5] = Get<Dtype>(kIgnoreLabelValue);
-  this->blob_bottom_label_->mutable_cpu_data()[32] = Get<Dtype>(kIgnoreLabelValue);
+  this->blob_bottom_label_->mutable_cpu_data()[2] = kIgnoreLabelValue;
+  this->blob_bottom_label_->mutable_cpu_data()[5] = kIgnoreLabelValue;
+  this->blob_bottom_label_->mutable_cpu_data()[32] = kIgnoreLabelValue;
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_per_class_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_per_class_vec_);
 
-  Dtype max_value;
+  Mtype max_value;
   int max_id;
   int num_correct_labels = 0;
   const int num_class = this->blob_top_per_class_->num();
@@ -327,11 +327,11 @@ TYPED_TEST(AccuracyLayerTest, TestForwardCPUPerClassWithIgnoreLabel) {
   vector<int> num_per_class(num_class, 0);
   int count = 0;
   for (int i = 0; i < 100; ++i) {
-    if (Get<Dtype>(kIgnoreLabelValue) == this->blob_bottom_label_->data_at(i, 0, 0, 0)) {
+    if (kIgnoreLabelValue == this->blob_bottom_label_->data_at(i, 0, 0, 0)) {
       continue;
     }
     ++count;
-    max_value = Get<Dtype>(- maxDtype<Dtype>());
+    max_value = - maxDtype<Mtype>();
     max_id = 0;
     for (int j = 0; j < 10; ++j) {
       if (this->blob_bottom_data_->data_at(i, j, 0, 0) > max_value) {
@@ -339,7 +339,7 @@ TYPED_TEST(AccuracyLayerTest, TestForwardCPUPerClassWithIgnoreLabel) {
         max_id = j;
       }
     }
-    const int id = Get<int>(this->blob_bottom_label_->data_at(i, 0, 0, 0));
+    const int id = static_cast<int>(this->blob_bottom_label_->data_at(i, 0, 0, 0));
     ++num_per_class[id];
     if (max_id == id) {
       ++num_correct_labels;
@@ -347,13 +347,13 @@ TYPED_TEST(AccuracyLayerTest, TestForwardCPUPerClassWithIgnoreLabel) {
     }
   }
   EXPECT_EQ(count, 97);
-  EXPECT_NEAR(Get<Mtype>(this->blob_top_->data_at(0, 0, 0, 0)),
-              num_correct_labels / Get<Mtype>(count), 1e-4);
+  EXPECT_NEAR(this->blob_top_->data_at(0, 0, 0, 0),
+      static_cast<float>(num_correct_labels) / count, 1e-4);
   for (int i = 0; i < 10; ++i) {
     float accuracy_per_class = num_per_class[i] > 0 ?
-    		correct_per_class[i] / num_per_class[i] : 0.;
-    EXPECT_NEAR(Get<Mtype>(this->blob_top_per_class_->data_at(i, 0, 0, 0)),
-    		Get<Mtype>(accuracy_per_class), 1e-4);
+        static_cast<float>(correct_per_class[i]) / num_per_class[i] : 0.;
+    EXPECT_NEAR(this->blob_top_per_class_->data_at(i, 0, 0, 0),
+    		accuracy_per_class, 1e-4);
   }
 }
 

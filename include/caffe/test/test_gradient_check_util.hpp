@@ -139,9 +139,9 @@ void GradientChecker<Dtype,Mtype>::CheckGradientSingle(Layer<Dtype,Mtype>* layer
       // bottom[blob_id][i] only for i == top_data_id.  For any other
       // i != top_data_id, we know the derivative is 0 by definition, and simply
       // check that that's true.
-      Dtype estimated_gradient = 0.;
-      Dtype positive_objective = 0.;
-      Dtype negative_objective = 0.;
+      Mtype estimated_gradient = 0.;
+      Mtype positive_objective = 0.;
+      Mtype negative_objective = 0.;
       if (!element_wise || (feat_id == top_data_id)) {
         // Do finite differencing.
         // Compute loss with stepsize_ added to input.
@@ -161,16 +161,16 @@ void GradientChecker<Dtype,Mtype>::CheckGradientSingle(Layer<Dtype,Mtype>* layer
         estimated_gradient = (positive_objective - negative_objective) /
             stepsize_ / 2.;
       }
-      Dtype computed_gradient = computed_gradients[feat_id];
-      Dtype feature = current_blob->cpu_data()[feat_id];
+      Mtype computed_gradient = computed_gradients[feat_id];
+      Mtype feature = current_blob->cpu_data()[feat_id];
       // LOG(ERROR) << "debug: " << current_blob->cpu_data()[feat_id] << " "
       //     << current_blob->cpu_diff()[feat_id];
       if (kink_ - kink_range_ > fabs(feature)
           || fabs(feature) > kink_ + kink_range_) {
         // We check relative accuracy, but for too small values, we threshold
         // the scale factor by 1.
-        Dtype scale = std::max(
-            Dtype(std::max(fabs(computed_gradient), fabs(estimated_gradient))), Dtype(1.));
+        Mtype scale = std::max(
+            Mtype(std::max(fabs(computed_gradient), fabs(estimated_gradient))), Mtype(1.));
         EXPECT_NEAR(computed_gradient, estimated_gradient,
                     tol<Dtype>(threshold_) * scale)
           << "debug: (top_id, top_data_id, blob_id, feat_id)="

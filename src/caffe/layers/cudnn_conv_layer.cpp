@@ -145,7 +145,7 @@ void CuDNNConvolutionLayer<Dtype,Mtype>::Reshape(
       fwd_algo_[i],
       &(workspace_fwd_sizes_[i])));
     
-    cudnn::setConvolutionDesc<float>(&bwd_conv_descs_[i], bottom_descs_[i],
+    cudnn::setConvolutionDesc<Dtype>(&bwd_conv_descs_[i], bottom_descs_[i],
         bwd_filter_desc_, pad_h, pad_w, stride_h, stride_w);
 
     //

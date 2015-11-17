@@ -34,15 +34,15 @@ __global__ void MaxPoolForward(const int nthreads,
       for (int w = wstart; w < wend; ++w) {
         if (bottom_slice[h * width + w] > maxval) {
           maxidx = h * width + w;
-          maxval = Get<Mtype>(bottom_slice[maxidx]);
+          maxval = bottom_slice[maxidx];
         }
       }
     }
-    top_data[index] = Get<Dtype>(maxval);
+    top_data[index] = maxval;
     if (mask) {
       mask[index] = maxidx;
     } else {
-      top_mask[index] = Get<Dtype>(maxidx);
+      top_mask[index] = maxidx;
     }
   }
 }
@@ -73,10 +73,10 @@ __global__ void AvePoolForward(const int nthreads,
         bottom_data + (n * channels + c) * height * width;
     for (int h = hstart; h < hend; ++h) {
       for (int w = wstart; w < wend; ++w) {
-        aveval += Get<Mtype>(bottom_slice[h * width + w]);
+        aveval += bottom_slice[h * width + w];
       }
     }
-    top_data[index] = Get<Dtype>( aveval / pool_size );
+    top_data[index] = aveval / pool_size ;
   }
 }
 
@@ -102,17 +102,17 @@ __global__ void StoPoolForwardTrain(const int nthreads,
     // First pass: get sum
     for (int h = hstart; h < hend; ++h) {
       for (int w = wstart; w < wend; ++w) {
-        cumsum += Get<Mtype>(bottom_slice[h * width + w]);
+        cumsum += bottom_slice[h * width + w];
       }
     }
-    const Mtype thres = Get<Mtype>(rand_idx[index] * cumsum);
+    const Mtype thres = rand_idx[index] * cumsum;
     // Second pass: get value, and set index.
     cumsum = 0;
     for (int h = hstart; h < hend; ++h) {
       for (int w = wstart; w < wend; ++w) {
-        cumsum += Get<Mtype>(bottom_slice[h * width + w]);
+        cumsum += bottom_slice[h * width + w];
         if (cumsum >= thres) {
-          rand_idx[index] = Get<Dtype>(((n * channels + c) * height + h) * width + w);
+          rand_idx[index] = ((n * channels + c) * height + h) * width + w;
           top_data[index] = bottom_slice[h * width + w];
           return;
         }
@@ -146,11 +146,11 @@ __global__ void StoPoolForwardTest(const int nthreads,
     // First pass: get sum
     for (int h = hstart; h < hend; ++h) {
       for (int w = wstart; w < wend; ++w) {
-        cumsum += Get<Mtype>(bottom_slice[h * width + w]);
-        cumvalues += Get<Mtype>(bottom_slice[h * width + w] * bottom_slice[h * width + w]);
+        cumsum += bottom_slice[h * width + w];
+        cumvalues += bottom_slice[h * width + w] * bottom_slice[h * width + w];
       }
     }
-    top_data[index] = Get<Dtype>( cumvalues / cumsum );
+    top_data[index] = cumvalues / cumsum;
   }
 }
 
@@ -242,7 +242,7 @@ __global__ void MaxPoolBackward(const int nthreads, const Dtype* const top_diff,
       for (int ph = phstart; ph < phend; ++ph) {
         for (int pw = pwstart; pw < pwend; ++pw) {
           if (mask_slice[ph * pooled_width + pw] == h * width + w) {
-            gradient += Get<Mtype>(top_diff_slice[ph * pooled_width + pw]);
+            gradient += top_diff_slice[ph * pooled_width + pw];
           }
         }
       }
@@ -250,13 +250,13 @@ __global__ void MaxPoolBackward(const int nthreads, const Dtype* const top_diff,
       const Dtype* const top_mask_slice = top_mask + offset;
       for (int ph = phstart; ph < phend; ++ph) {
         for (int pw = pwstart; pw < pwend; ++pw) {
-          if (top_mask_slice[ph * pooled_width + pw] == Get<Dtype>(h * width + w)) {
-            gradient += Get<Mtype>(top_diff_slice[ph * pooled_width + pw]);
+          if (top_mask_slice[ph * pooled_width + pw] == h * width + w) {
+            gradient += top_diff_slice[ph * pooled_width + pw];
           }
         }
       }
     }
-    bottom_diff[index] = Get<Dtype>(gradient);
+    bottom_diff[index] = gradient;
   }
 }
 
@@ -289,10 +289,10 @@ __global__ void AvePoolBackward(const int nthreads, const Dtype* const top_diff,
         int hend = min(hstart + kernel_h, height + pad_h);
         int wend = min(wstart + kernel_w, width + pad_w);
         int pool_size = (hend - hstart) * (wend - wstart);
-        gradient += Get<Mtype>(top_diff_slice[ph * pooled_width + pw]) / pool_size;
+        gradient += top_diff_slice[ph * pooled_width + pw] / pool_size;
       }
     }
-    bottom_diff[index] = Get<Dtype>(gradient);
+    bottom_diff[index] = gradient;
   }
 }
 
@@ -322,11 +322,11 @@ __global__ void StoPoolBackward(const int nthreads,
         top_diff + (n * channels + c) * pooled_height * pooled_width;
     for (int ph = phstart; ph < phend; ++ph) {
       for (int pw = pwstart; pw < pwend; ++pw) {
-        gradient += Get<Mtype>(top_diff_slice[ph * pooled_width + pw]) *
-            (index == Get<int>(rand_idx_slice[ph * pooled_width + pw]));
+        gradient += top_diff_slice[ph * pooled_width + pw] *
+            (index == static_cast<int>(rand_idx_slice[ph * pooled_width + pw]));
       }
     }
-    bottom_diff[index] = Get<Dtype>(gradient);
+    bottom_diff[index] = gradient;
   }
 }
 

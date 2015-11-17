@@ -66,8 +66,8 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
         LOG(FATAL) << "Unknown Caffe mode: " << Caffe::mode();
     }
     InitSolver(param);
-    delta_ = Get<Dtype>((solver_type() == SolverParameter_SolverType_ADAGRAD) ?
-         param.delta() : 0.F);
+    delta_ = (solver_type() == SolverParameter_SolverType_ADAGRAD) ?
+         param.delta() : 0.F;
   }
 
   string RunLeastSquaresSolver(const Mtype learning_rate,
@@ -271,25 +271,25 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
         Mtype element = 0;
         for (int k = 0; k < N; ++k) {
           // (i, k) in X^T (== (k, i) in X) times (k, j) in X.
-          const Mtype element_i = Get<Mtype>((i == D) ? Mtype(1.) : Get<Mtype>(data.cpu_data()[k * D + i]));
-          const Mtype element_j = Get<Mtype>((j == D) ? Mtype(1.) : Get<Mtype>(data.cpu_data()[k * D + j]));
+          const Mtype element_i = (i == D) ? cudnn::dataType<Dtype>::oneval : data.cpu_data()[k * D + i];
+          const Mtype element_j = (j == D) ? cudnn::dataType<Dtype>::oneval : data.cpu_data()[k * D + j];
           element += element_i * element_j;
         }
         if (j == D) {
-          grad += element * Get<Mtype>(bias.cpu_data()[0]);
+          grad += element * bias.cpu_data()[0];
         } else {
-          grad += element * Get<Mtype>(weights.cpu_data()[j]);
+          grad += element * weights.cpu_data()[j];
         }
       }
       for (int k = 0; k < N; ++k) {
-        const Mtype element_i = Get<Mtype>((i == D) ? Mtype(1.) : Get<Mtype>(data.cpu_data()[k * D + i]));
-        grad -= element_i * Get<Mtype>(targets.cpu_data()[k]);
+        const Mtype element_i = (i == D) ? cudnn::dataType<Dtype>::oneval : data.cpu_data()[k * D + i];
+        grad -= element_i * targets.cpu_data()[k];
       }
       // Scale the gradient over the N samples.
       grad /= N;
       // Add the weight decay to the gradient.
       grad += weight_decay *
-          Get<Mtype>(((i == D) ? Get<Mtype>(bias.cpu_data()[0]) : Get<Mtype>(weights.cpu_data()[i])));
+          ((i == D) ? bias.cpu_data()[0] : weights.cpu_data()[i]);
       // Finally, compute update.
       const vector<shared_ptr<Blob<Dtype,Mtype> > >& history = solver_->history();
       if (solver_type() != SolverParameter_SolverType_ADADELTA
@@ -300,7 +300,7 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
       }
       Mtype update_value = learning_rate * grad;
       const Mtype history_value = (i == D) ?
-    		  Get<Mtype>(history[1]->cpu_data()[0]) : Get<Mtype>(history[0]->cpu_data()[i]);
+    		  history[1]->cpu_data()[0] : history[0]->cpu_data()[i];
       const Mtype temp = momentum * history_value;
       switch (solver_type()) {
       case SolverParameter_SolverType_SGD:
@@ -312,23 +312,23 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
         update_value = (1 + momentum) * update_value - temp;
         break;
       case SolverParameter_SolverType_ADAGRAD:
-        update_value /= std::sqrt(history_value + grad * grad) + Get<Mtype>(delta_);
+        update_value /= std::sqrt(history_value + grad * grad) + delta_;
         break;
       case SolverParameter_SolverType_RMSPROP: {
         const Mtype rms_decay = 0.95;
         update_value /= std::sqrt(rms_decay*history_value
-            + grad * grad * (1 - rms_decay)) + Get<Mtype>(delta_);
+            + grad * grad * (1 - rms_decay)) + delta_;
         }
         break;
       case SolverParameter_SolverType_ADADELTA:
       {
         const Mtype update_history_value = (i == D) ?
-        	Get<Mtype>(history[1 + num_param_blobs]->cpu_data()[0]) :
-			Get<Mtype>(history[0 + num_param_blobs]->cpu_data()[i]);
+        	history[1 + num_param_blobs]->cpu_data()[0] :
+        	history[0 + num_param_blobs]->cpu_data()[i];
         const Mtype weighted_gradient_average =
             momentum * history_value + (1 - momentum) * (grad * grad);
-        update_value = grad * std::sqrt((update_history_value + Get<Mtype>(delta_)) /
-            (weighted_gradient_average + Get<Mtype>(delta_))) * learning_rate;
+        update_value = grad * std::sqrt((update_history_value + delta_) /
+            (weighted_gradient_average + delta_)) * learning_rate;
         // not actually needed, just here for illustrative purposes
         // const Dtype weighted_update_average =
         //   momentum * update_history_value + (1 - momentum) * (update_value);
@@ -338,24 +338,24 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
         const Mtype momentum2 = 0.999;
         const Mtype m = history_value;
         const Mtype v = (i == D) ?
-        	Get<Mtype>(history[1 + num_param_blobs]->cpu_data()[0]) :
-			Get<Mtype>(history[0 + num_param_blobs]->cpu_data()[i]);
+        	history[1 + num_param_blobs]->cpu_data()[0] :
+        	history[0 + num_param_blobs]->cpu_data()[i];
         const Mtype val_m = (1 - momentum) * grad + momentum * m;
         const Mtype val_v = (1 - momentum2) * grad * grad + momentum2 * v;
         Mtype alpha_t = learning_rate *
             std::sqrt(Mtype(1) - pow(momentum2, Mtype(num_iters))) /
             (Mtype(1.) - pow(momentum, Mtype(num_iters)));
-        update_value = alpha_t * val_m / (std::sqrt(val_v) + Get<Mtype>(delta_));
+        update_value = alpha_t * val_m / (std::sqrt(val_v) + delta_);
         break;
       }
       default:
         LOG(FATAL) << "Unknown solver type: " << solver_type();
       }
       if (i == D) {
-        updated_bias.mutable_cpu_diff()[0] = Get<Dtype>(update_value);
+        updated_bias.mutable_cpu_diff()[0] = update_value;
         updated_bias.mutable_cpu_data()[0] = bias.cpu_data()[0] - update_value;
       } else {
-        updated_weights.mutable_cpu_diff()[i] = Get<Dtype>(update_value);
+        updated_weights.mutable_cpu_diff()[i] = update_value;
         updated_weights.mutable_cpu_data()[i] = weights.cpu_data()[i] - update_value;
       }
     }
@@ -378,16 +378,16 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
     const double kPrecision = 5.e-1;
     const double kMinPrecision = 1e-7;
     for (int i = 0; i < D; ++i) {
-      const Mtype expected_updated_weight = Get<Mtype>(updated_weights.cpu_data()[i]);
-      const Mtype solver_updated_weight = Get<Mtype>(solver_updated_weights.cpu_data()[i]);
+      const Mtype expected_updated_weight = updated_weights.cpu_data()[i];
+      const Mtype solver_updated_weight = solver_updated_weights.cpu_data()[i];
       const Mtype error_margin = std::max(kMinPrecision, kPrecision *
           std::min(fabs(expected_updated_weight), fabs(solver_updated_weight)));
       EXPECT_NEAR(expected_updated_weight, solver_updated_weight, tol<Dtype>(error_margin));
     }
     const Blob<Dtype,Mtype>& solver_updated_bias_blob = *param_blobs[1];
     ASSERT_EQ(1, solver_updated_bias_blob.count());
-    const Mtype expected_updated_bias = Get<Mtype>(updated_bias.cpu_data()[0]);
-    const Mtype solver_updated_bias = Get<Mtype>(solver_updated_bias_blob.cpu_data()[0]);
+    const Mtype expected_updated_bias = updated_bias.cpu_data()[0];
+    const Mtype solver_updated_bias = solver_updated_bias_blob.cpu_data()[0];
     const Mtype error_margin = std::max(kMinPrecision, kPrecision *
           std::min(fabs(expected_updated_bias), fabs(solver_updated_bias)));
     EXPECT_NEAR(expected_updated_bias, solver_updated_bias, tol<Dtype>(error_margin));
@@ -397,14 +397,14 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
       const vector<shared_ptr<Blob<Dtype,Mtype> > >& history = solver_->history();
       ASSERT_EQ(2, history.size());
       for (int i = 0; i < D; ++i) {
-        const Mtype expected_history = Get<Mtype>(updated_weights.cpu_diff()[i]);
-        const Mtype solver_history = Get<Mtype>(history[0]->cpu_data()[i]);
+        const Mtype expected_history = updated_weights.cpu_diff()[i];
+        const Mtype solver_history = history[0]->cpu_data()[i];
         const Mtype error_margin_hist = std::max(kMinPrecision, kPrecision *
             std::min(fabs(expected_history), fabs(solver_history)));
         EXPECT_NEAR(expected_history, solver_history, tol<Dtype>(error_margin_hist));
       }
-      const Mtype expected_history = Get<Mtype>(updated_bias.cpu_diff()[0]);
-      const Mtype solver_history = Get<Mtype>(history[1]->cpu_data()[0]);
+      const Mtype expected_history = updated_bias.cpu_diff()[0];
+      const Mtype solver_history = history[1]->cpu_data()[0];
       const Mtype error_margin_hist = std::max(kMinPrecision, kPrecision *
           std::min(fabs(expected_history), fabs(solver_history)));
       EXPECT_NEAR(expected_history, solver_history, error_margin_hist);
@@ -436,15 +436,15 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
     // Compare accumulated parameters against no accumulation standard.
     const int D = this->channels_ * this->height_ * this->width_;
     for (int i = 0; i < D; ++i) {
-      const float expected_param = Get<float>(noaccum_params[0]->cpu_data()[i]);
-      const float accum_param = Get<float>(accum_params[0]->cpu_data()[i]);
+      const float expected_param = noaccum_params[0]->cpu_data()[i];
+      const float accum_param = accum_params[0]->cpu_data()[i];
       const float error_margin = std::max(kMinPrecision, kPrecision *
           std::min(fabs(expected_param), fabs(accum_param)));
       EXPECT_NEAR(expected_param, accum_param, tol<Dtype>(error_margin));
     }
     ASSERT_EQ(1, accum_params[1]->count());
-    const float expected_bias = Get<float>(noaccum_params[1]->cpu_data()[0]);
-    const float accum_bias = Get<float>(accum_params[1]->cpu_data()[0]);
+    const float expected_bias = noaccum_params[1]->cpu_data()[0];
+    const float accum_bias = accum_params[1]->cpu_data()[0];
     const float error_margin = std::max(kMinPrecision, kPrecision *
         std::min(fabs(expected_bias), fabs(accum_bias)));
     EXPECT_NEAR(expected_bias, accum_bias, error_margin);
@@ -670,9 +670,9 @@ TYPED_TEST(SGDSolverTest, TestLeastSquaresUpdateWithEverythingShare) {
 
 TYPED_TEST(SGDSolverTest, TestLeastSquaresUpdateWithEverythingAccum) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.9);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.9;
   const int kNumIters = 4;
   const int kIterSize = 2;
   this->CheckAccumulation(kLearningRate, kWeightDecay, kMomentum, kNumIters,
@@ -681,9 +681,9 @@ TYPED_TEST(SGDSolverTest, TestLeastSquaresUpdateWithEverythingAccum) {
 
 TYPED_TEST(SGDSolverTest, TestLeastSquaresUpdateWithEverythingAccumShare) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.9);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.9;
   const int kNumIters = 4;
   const int kIterSize = 2;
   this->share_ = true;
@@ -693,9 +693,9 @@ TYPED_TEST(SGDSolverTest, TestLeastSquaresUpdateWithEverythingAccumShare) {
 
 TYPED_TEST(SGDSolverTest, TestSnapshot) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.9);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.9;
   const int kNumIters = 4;
   for (int i = 1; i <= kNumIters; ++i) {
     this->TestSnapshot(kLearningRate, kWeightDecay, kMomentum, i);
@@ -704,9 +704,9 @@ TYPED_TEST(SGDSolverTest, TestSnapshot) {
 
 TYPED_TEST(SGDSolverTest, TestSnapshotShare) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.9);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.9;
   const int kNumIters = 4;
   this->share_ = true;
   for (int i = 1; i <= kNumIters; ++i) {
@@ -774,9 +774,9 @@ TYPED_TEST(AdaGradSolverTest,
 
 TYPED_TEST(AdaGradSolverTest, TestLeastSquaresUpdateWithEverythingAccum) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0;
   const int kNumIters = 4;
   const int kIterSize = 2;
   this->CheckAccumulation(kLearningRate, kWeightDecay, kMomentum, kNumIters,
@@ -785,9 +785,9 @@ TYPED_TEST(AdaGradSolverTest, TestLeastSquaresUpdateWithEverythingAccum) {
 
 TYPED_TEST(AdaGradSolverTest, TestLeastSquaresUpdateWithEverythingAccumShare) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0;
   const int kNumIters = 4;
   const int kIterSize = 2;
   this->share_ = true;
@@ -797,9 +797,9 @@ TYPED_TEST(AdaGradSolverTest, TestLeastSquaresUpdateWithEverythingAccumShare) {
 
 TYPED_TEST(AdaGradSolverTest, TestSnapshot) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0;
   const int kNumIters = 4;
   for (int i = 1; i <= kNumIters; ++i) {
     this->TestSnapshot(kLearningRate, kWeightDecay, kMomentum, i);
@@ -808,9 +808,9 @@ TYPED_TEST(AdaGradSolverTest, TestSnapshot) {
 
 TYPED_TEST(AdaGradSolverTest, TestSnapshotShare) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0;
   const int kNumIters = 4;
   this->share_ = true;
   for (int i = 1; i <= kNumIters; ++i) {
@@ -913,9 +913,9 @@ TYPED_TEST(NesterovSolverTest,
 
 TYPED_TEST(NesterovSolverTest, TestLeastSquaresUpdateWithEverythingAccum) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.9);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.9;
   const int kNumIters = 4;
   const int kIterSize = 2;
   this->CheckAccumulation(kLearningRate, kWeightDecay, kMomentum, kNumIters,
@@ -924,9 +924,9 @@ TYPED_TEST(NesterovSolverTest, TestLeastSquaresUpdateWithEverythingAccum) {
 
 TYPED_TEST(NesterovSolverTest, TestLeastSquaresUpdateWithEverythingAccumShare) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.9);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.9;
   const int kNumIters = 4;
   const int kIterSize = 2;
   this->share_ = true;
@@ -936,9 +936,9 @@ TYPED_TEST(NesterovSolverTest, TestLeastSquaresUpdateWithEverythingAccumShare) {
 
 TYPED_TEST(NesterovSolverTest, TestSnapshot) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.9);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.9;
   const int kNumIters = 4;
   for (int i = 1; i <= kNumIters; ++i) {
     this->TestSnapshot(kLearningRate, kWeightDecay, kMomentum, i);
@@ -947,9 +947,9 @@ TYPED_TEST(NesterovSolverTest, TestSnapshot) {
 
 TYPED_TEST(NesterovSolverTest, TestSnapshotShare) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.9);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.9;
   const int kNumIters = 4;
   this->share_ = true;
   for (int i = 1; i <= kNumIters; ++i) {
@@ -1047,9 +1047,9 @@ TYPED_TEST(AdaDeltaSolverTest,
 
 TYPED_TEST(AdaDeltaSolverTest, TestLeastSquaresUpdateWithEverythingAccum) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.1);
-  const Mtype kWeightDecay = Get<Mtype>(0.1);
-  const Mtype kMomentum = Get<Mtype>(0.95);
+  const Mtype kLearningRate = 0.1;
+  const Mtype kWeightDecay = 0.1;
+  const Mtype kMomentum = 0.95;
   const int kNumIters = 4;
   const int kIterSize = 2;
   this->CheckAccumulation(kLearningRate, kWeightDecay, kMomentum, kNumIters,
@@ -1058,9 +1058,9 @@ TYPED_TEST(AdaDeltaSolverTest, TestLeastSquaresUpdateWithEverythingAccum) {
 
 TYPED_TEST(AdaDeltaSolverTest, TestLeastSquaresUpdateWithEverythingAccumShare) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.1);
-  const Mtype kWeightDecay = Get<Mtype>(0.1);
-  const Mtype kMomentum = Get<Mtype>(0.95);
+  const Mtype kLearningRate = 0.1;
+  const Mtype kWeightDecay = 0.1;
+  const Mtype kMomentum = 0.95;
   const int kNumIters = 4;
   const int kIterSize = 2;
   this->share_ = true;
@@ -1070,9 +1070,9 @@ TYPED_TEST(AdaDeltaSolverTest, TestLeastSquaresUpdateWithEverythingAccumShare) {
 
 TYPED_TEST(AdaDeltaSolverTest, TestSnapshot) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.1);
-  const Mtype kWeightDecay = Get<Mtype>(0.1);
-  const Mtype kMomentum = Get<Mtype>(0.95);
+  const Mtype kLearningRate = 0.1;
+  const Mtype kWeightDecay = 0.1;
+  const Mtype kMomentum = 0.95;
   const int kNumIters = 4;
   for (int i = 1; i <= kNumIters; ++i) {
     this->TestSnapshot(kLearningRate, kWeightDecay, kMomentum, i);
@@ -1081,9 +1081,9 @@ TYPED_TEST(AdaDeltaSolverTest, TestSnapshot) {
 
 TYPED_TEST(AdaDeltaSolverTest, TestSnapshotShare) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.1);
-  const Mtype kWeightDecay = Get<Mtype>(0.1);
-  const Mtype kMomentum = Get<Mtype>(0.95);
+  const Mtype kLearningRate = 0.1;
+  const Mtype kWeightDecay = 0.1;
+  const Mtype kMomentum = 0.95;
   const int kNumIters = 4;
   this->share_ = true;
   for (int i = 1; i <= kNumIters; ++i) {
@@ -1153,9 +1153,9 @@ TYPED_TEST(AdamSolverTest, TestAdamLeastSquaresUpdateWithEverythingShare) {
 
 TYPED_TEST(AdamSolverTest, TestLeastSquaresUpdateWithEverythingAccum) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.9);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.9;
   const int kNumIters = 4;
   const int kIterSize = 2;
   this->CheckAccumulation(kLearningRate, kWeightDecay, kMomentum, kNumIters,
@@ -1164,9 +1164,9 @@ TYPED_TEST(AdamSolverTest, TestLeastSquaresUpdateWithEverythingAccum) {
 
 TYPED_TEST(AdamSolverTest, TestLeastSquaresUpdateWithEverythingAccumShare) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.9);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.9;
   const int kNumIters = 4;
   const int kIterSize = 2;
   this->share_ = true;
@@ -1176,9 +1176,9 @@ TYPED_TEST(AdamSolverTest, TestLeastSquaresUpdateWithEverythingAccumShare) {
 
 TYPED_TEST(AdamSolverTest, TestSnapshot) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.9);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.9;
   const int kNumIters = 4;
   for (int i = 1; i <= kNumIters; ++i) {
     this->TestSnapshot(kLearningRate, kWeightDecay, kMomentum, i);
@@ -1187,9 +1187,9 @@ TYPED_TEST(AdamSolverTest, TestSnapshot) {
 
 TYPED_TEST(AdamSolverTest, TestSnapshotShare) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.9);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.9;
   const int kNumIters = 4;
   this->share_ = true;
   for (int i = 1; i <= kNumIters; ++i) {
@@ -1260,9 +1260,9 @@ TYPED_TEST(RMSPropSolverTest,
 
 TYPED_TEST(RMSPropSolverTest, TestLeastSquaresUpdateWithEverythingAccum) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.0);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.0;
   const int kNumIters = 4;
   const int kIterSize = 2;
   this->CheckAccumulation(kLearningRate, kWeightDecay, kMomentum, kNumIters,
@@ -1271,9 +1271,9 @@ TYPED_TEST(RMSPropSolverTest, TestLeastSquaresUpdateWithEverythingAccum) {
 
 TYPED_TEST(RMSPropSolverTest, TestLeastSquaresUpdateWithEverythingAccumShare) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0.0);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0.0;
   const int kNumIters = 4;
   const int kIterSize = 2;
   this->share_ = true;
@@ -1283,9 +1283,9 @@ TYPED_TEST(RMSPropSolverTest, TestLeastSquaresUpdateWithEverythingAccumShare) {
 
 TYPED_TEST(RMSPropSolverTest, TestSnapshot) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0;
   const int kNumIters = 4;
   for (int i = 1; i <= kNumIters; ++i) {
     this->TestSnapshot(kLearningRate, kWeightDecay, kMomentum, i);
@@ -1294,9 +1294,9 @@ TYPED_TEST(RMSPropSolverTest, TestSnapshot) {
 
 TYPED_TEST(RMSPropSolverTest, TestSnapshotShare) {
   typedef typename TypeParam::Mtype Mtype;
-  const Mtype kLearningRate = Get<Mtype>(0.01);
-  const Mtype kWeightDecay = Get<Mtype>(0.5);
-  const Mtype kMomentum = Get<Mtype>(0);
+  const Mtype kLearningRate = 0.01;
+  const Mtype kWeightDecay = 0.5;
+  const Mtype kMomentum = 0;
   const int kNumIters = 4;
   this->share_ = true;
   for (int i = 1; i <= kNumIters; ++i) {

@@ -17,7 +17,7 @@
   #define CAFFE_UTIL_IHD __inline__ __host__ __device__
 #endif
 
-#include "3rdparty/half_float/half.hpp"
+#include "half_float/half.hpp"
 #define NEW_COOL_FP16 1
 
 namespace caffe 

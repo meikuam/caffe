@@ -976,6 +976,9 @@ void RMSPropSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Mtype rate) {
 
   // get the learning rate
   Mtype delta(this->param_.delta());
+  if (delta < minDtype<Dtype>()) {
+    delta = minDtype<Dtype>();
+  }
   Mtype rms_decay(this->param_.rms_decay());
   Mtype local_rate = rate * net_params_lr[param_id];
 

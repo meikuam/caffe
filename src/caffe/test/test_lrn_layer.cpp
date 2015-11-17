@@ -24,7 +24,7 @@ class LRNLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   LRNLayerTest()
-      : epsilon_(Get<Dtype>(1e-5)),
+      : epsilon_(choose<Dtype>(1.e-5,1.e-3)),
         blob_bottom_(new Blob<Dtype,Mtype>()),
         blob_top_(new Blob<Dtype,Mtype>()) {}
   virtual void SetUp() {
@@ -72,11 +72,11 @@ void LRNLayerTest<TypeParam>::ReferenceLRNForward(
             c_start = max(c_start, 0);
             Mtype scale = 1.;
             for (int i = c_start; i < c_end; ++i) {
-              Mtype value = Get<Mtype>(blob_bottom.data_at(n, i, h, w));
+              Mtype value = blob_bottom.data_at(n, i, h, w);
               scale += value * value * alpha / size;
             }
             *(top_data + blob_top->offset(n, c, h, w)) =
-              Get<Dtype>( Get<Mtype>(blob_bottom.data_at(n, c, h, w)) / pow(scale, beta));
+               blob_bottom.data_at(n, c, h, w) / pow(scale, beta);
           }
         }
       }
@@ -96,12 +96,12 @@ void LRNLayerTest<TypeParam>::ReferenceLRNForward(
             w_start = max(w_start, 0);
             for (int nh = h_start; nh < h_end; ++nh) {
               for (int nw = w_start; nw < w_end; ++nw) {
-                Mtype value = Get<Mtype>(blob_bottom.data_at(n, c, nh, nw));
+                Mtype value = blob_bottom.data_at(n, c, nh, nw);
                 scale += value * value * alpha / (size * size);
               }
             }
             *(top_data + blob_top->offset(n, c, h, w)) =
-              Get<Dtype>(Get<Mtype>(blob_bottom.data_at(n, c, h, w)) / pow(scale, beta));
+              blob_bottom.data_at(n, c, h, w) / pow(scale, beta);
           }
         }
       }
@@ -137,8 +137,8 @@ TYPED_TEST(LRNLayerTest, TestForwardAcrossChannels) {
   this->ReferenceLRNForward(*(this->blob_bottom_), layer_param,
       &top_reference);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(this->blob_top_->cpu_data()[i]), Get<Mtype>(top_reference.cpu_data()[i]),
-                tol<Dtype>(Get<Mtype>(this->epsilon_)));
+    EXPECT_NEAR(this->blob_top_->cpu_data()[i], top_reference.cpu_data()[i],
+                tol<Dtype>(this->epsilon_));
   }
 }
 
@@ -154,8 +154,8 @@ TYPED_TEST(LRNLayerTest, TestForwardAcrossChannelsLargeRegion) {
   this->ReferenceLRNForward(*(this->blob_bottom_), layer_param,
       &top_reference);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(this->blob_top_->cpu_data()[i]), Get<Mtype>(top_reference.cpu_data()[i]),
-        tol<Dtype>(Get<Mtype>(this->epsilon_)));
+    EXPECT_NEAR(this->blob_top_->cpu_data()[i], top_reference.cpu_data()[i],
+        tol<Dtype>(this->epsilon_));
   }
 }
 
@@ -164,11 +164,11 @@ TYPED_TEST(LRNLayerTest, TestGradientAcrossChannels) {
   typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   LRNLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    this->blob_top_->mutable_cpu_diff()[i] = Get<Dtype>(1.);
+    this->blob_top_->mutable_cpu_diff()[i] = 1.;
   }
   vector<bool> propagate_down(this->blob_bottom_vec_.size(), true);
   layer.Backward(this->blob_top_vec_, propagate_down,
@@ -187,11 +187,11 @@ TYPED_TEST(LRNLayerTest, TestGradientAcrossChannelsLargeRegion) {
   LayerParameter layer_param;
   layer_param.mutable_lrn_param()->set_local_size(15);
   LRNLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    this->blob_top_->mutable_cpu_diff()[i] = Get<Dtype>(1.);
+    this->blob_top_->mutable_cpu_diff()[i] = 1.;
   }
   vector<bool> propagate_down(this->blob_bottom_vec_.size(), true);
   layer.Backward(this->blob_top_vec_, propagate_down,
@@ -233,8 +233,8 @@ TYPED_TEST(LRNLayerTest, TestForwardWithinChannel) {
   this->ReferenceLRNForward(*(this->blob_bottom_), layer_param,
       &top_reference);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(this->blob_top_->cpu_data()[i]), Get<Mtype>(top_reference.cpu_data()[i]),
-                tol<Dtype>(Get<Mtype>(this->epsilon_)));
+    EXPECT_NEAR(this->blob_top_->cpu_data()[i], top_reference.cpu_data()[i],
+                tol<Dtype>(this->epsilon_));
   }
 }
 
@@ -246,11 +246,11 @@ TYPED_TEST(LRNLayerTest, TestGradientWithinChannel) {
       LRNParameter_NormRegion_WITHIN_CHANNEL);
   layer_param.mutable_lrn_param()->set_local_size(3);
   LRNLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    this->blob_top_->mutable_cpu_diff()[i] = Get<Dtype>(1.);
+    this->blob_top_->mutable_cpu_diff()[i] = 1.;
   }
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
@@ -263,7 +263,7 @@ class CuDNNLRNLayerTest : public GPUDeviceTest<TypeParam> {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   CuDNNLRNLayerTest()
-      : epsilon_(Get<Dtype>(1e-5)),
+      : epsilon_(choose<Dtype>(1.e-5,1.e-3)),
         blob_bottom_(new Blob<Dtype,Mtype>()),
         blob_top_(new Blob<Dtype,Mtype>()) {}
   virtual void SetUp() {
@@ -295,8 +295,8 @@ void CuDNNLRNLayerTest<TypeParam>::ReferenceLRNForward(
       blob_bottom.height(), blob_bottom.width());
   Dtype* top_data = blob_top->mutable_cpu_data();
   LRNParameter lrn_param = layer_param.lrn_param();
-  Dtype alpha = Get<Dtype>(lrn_param.alpha());
-  Dtype beta = Get<Dtype>(lrn_param.beta());
+  Dtype alpha = lrn_param.alpha();
+  Dtype beta = lrn_param.beta();
   int size = lrn_param.local_size();
   switch (lrn_param.norm_region()) {
   case LRNParameter_NormRegion_ACROSS_CHANNELS:
@@ -307,7 +307,7 @@ void CuDNNLRNLayerTest<TypeParam>::ReferenceLRNForward(
             int c_start = c - (size - 1) / 2;
             int c_end = min(c_start + size, blob_bottom.channels());
             c_start = max(c_start, 0);
-            Dtype scale = Get<Dtype>(1.);
+            Dtype scale = 1.;
             for (int i = c_start; i < c_end; ++i) {
               Dtype value = blob_bottom.data_at(n, i, h, w);
               scale += value * value * alpha / size;
@@ -327,7 +327,7 @@ void CuDNNLRNLayerTest<TypeParam>::ReferenceLRNForward(
           int h_end = min(h_start + size, blob_bottom.height());
           h_start = max(h_start, 0);
           for (int w = 0; w < blob_bottom.width(); ++w) {
-            Dtype scale = Get<Dtype>(1.);
+            Dtype scale = 1.;
             int w_start = w - (size - 1) / 2;
             int w_end = min(w_start + size, blob_bottom.width());
             w_start = max(w_start, 0);
@@ -362,8 +362,8 @@ TYPED_TEST(CuDNNLRNLayerTest, TestForwardAcrossChannelsCuDNN) {
   this->ReferenceLRNForward(*(this->blob_bottom_), layer_param,
       &top_reference);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(this->blob_top_->cpu_data()[i]), Get<Mtype>(top_reference.cpu_data()[i]),
-    		Get<Mtype>(this->epsilon_));
+    EXPECT_NEAR(this->blob_top_->cpu_data()[i], top_reference.cpu_data()[i],
+    		this->epsilon_);
   }
 }
 
@@ -379,8 +379,8 @@ TYPED_TEST(CuDNNLRNLayerTest, TestForwardAcrossChannelsLargeRegionCuDNN) {
   this->ReferenceLRNForward(*(this->blob_bottom_), layer_param,
       &top_reference);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(this->blob_top_->cpu_data()[i]), Get<Mtype>(top_reference.cpu_data()[i]),
-    		Get<Mtype>(this->epsilon_));
+    EXPECT_NEAR(this->blob_top_->cpu_data()[i], top_reference.cpu_data()[i],
+    		this->epsilon_);
   }
 }
 
@@ -389,11 +389,11 @@ TYPED_TEST(CuDNNLRNLayerTest, TestGradientAcrossChannelsCuDNN) {
   typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   CuDNNLRNLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    this->blob_top_->mutable_cpu_diff()[i] = Get<Dtype>(1.);
+    this->blob_top_->mutable_cpu_diff()[i] = 1.;
   }
   vector<bool> propagate_down(this->blob_bottom_vec_.size(), true);
   layer.Backward(this->blob_top_vec_, propagate_down,
@@ -445,11 +445,11 @@ TYPED_TEST(CuDNNLRNLayerTest, TestGradientAcrossChannelsLargeRegionCuDNN) {
   LayerParameter layer_param;
   layer_param.mutable_lrn_param()->set_local_size(15);
   CuDNNLRNLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    this->blob_top_->mutable_cpu_diff()[i] = Get<Dtype>(1.);
+    this->blob_top_->mutable_cpu_diff()[i] = 1.;
   }
   vector<bool> propagate_down(this->blob_bottom_vec_.size(), true);
   layer.Backward(this->blob_top_vec_, propagate_down,

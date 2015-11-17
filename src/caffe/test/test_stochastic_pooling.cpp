@@ -101,7 +101,7 @@ TYPED_TEST(GPUStochasticPoolingLayerTest, TestStochastic) {
     for (int c = 0; c < this->blob_top_->channels(); ++c) {
       for (int ph = 0; ph < this->blob_top_->height(); ++ph) {
         for (int pw = 0; pw < this->blob_top_->width(); ++pw) {
-          Mtype pooled = Get<Mtype>(top_data[this->blob_top_->offset(n, c, ph, pw)]);
+          Mtype pooled = top_data[this->blob_top_->offset(n, c, ph, pw)];
           total += pooled;
           int hstart = ph * 2;
           int hend = min(hstart + 3, this->blob_bottom_->height());
@@ -110,8 +110,8 @@ TYPED_TEST(GPUStochasticPoolingLayerTest, TestStochastic) {
           bool has_equal = false;
           for (int h = hstart; h < hend; ++h) {
             for (int w = wstart; w < wend; ++w) {
-              has_equal |= (pooled == Get<Mtype>(bottom_data[this->blob_bottom_->
-                  offset(n, c, h, w)]));
+              has_equal |= (pooled == bottom_data[this->blob_bottom_->
+                  offset(n, c, h, w)]);
             }
           }
           EXPECT_TRUE(has_equal);
@@ -145,7 +145,7 @@ TYPED_TEST(GPUStochasticPoolingLayerTest, TestStochasticTestPhase) {
     for (int c = 0; c < this->blob_top_->channels(); ++c) {
       for (int ph = 0; ph < this->blob_top_->height(); ++ph) {
         for (int pw = 0; pw < this->blob_top_->width(); ++pw) {
-          Mtype pooled = Get<Mtype>(top_data[this->blob_top_->offset(n, c, ph, pw)]);
+          Mtype pooled = top_data[this->blob_top_->offset(n, c, ph, pw)];
           int hstart = ph * 2;
           int hend = min(hstart + 3, this->blob_bottom_->height());
           int wstart = pw * 2;
@@ -153,8 +153,8 @@ TYPED_TEST(GPUStochasticPoolingLayerTest, TestStochasticTestPhase) {
           bool smaller_than_max = false;
           for (int h = hstart; h < hend; ++h) {
             for (int w = wstart; w < wend; ++w) {
-              smaller_than_max |= (pooled <= Get<Mtype>(bottom_data[this->blob_bottom_->
-                  offset(n, c, h, w)]));
+              smaller_than_max |= (pooled <= bottom_data[this->blob_bottom_->
+                  offset(n, c, h, w)]);
             }
           }
           EXPECT_TRUE(smaller_than_max);
@@ -166,6 +166,7 @@ TYPED_TEST(GPUStochasticPoolingLayerTest, TestStochasticTestPhase) {
 
 TYPED_TEST(GPUStochasticPoolingLayerTest, TestGradient) {
   typedef typename TypeParam::Dtype Dtype;
+FP16_DISABLE_BLOCK_BEGIN
   typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   layer_param.set_phase(TRAIN);
@@ -174,11 +175,12 @@ TYPED_TEST(GPUStochasticPoolingLayerTest, TestGradient) {
   pooling_param->set_stride(2);
   pooling_param->set_pool(PoolingParameter_PoolMethod_STOCHASTIC);
   PoolingLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-4), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-4, 1e-2);
   // it is too expensive to call curand multiple times, so we don't do an
   // exhaustive gradient check.
   checker.CheckGradient(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
+FP16_DISABLE_BLOCK_END
 }
 
 #endif

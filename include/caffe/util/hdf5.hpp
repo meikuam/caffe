@@ -12,7 +12,7 @@ namespace caffe {
 
 std::vector<int> 
 hdf5_load_nd_dataset_helper(hid_t file_id, 
-			    const char* dataset_name, int min_dim, int max_dim);
+			    const char* dataset_name, int min_dim, int max_dim, H5T_class_t& class_);
 
 template<class Data>
 herr_t hdf5_load(hid_t file_id, const string& dataset_name, Data* data);
@@ -20,8 +20,30 @@ herr_t hdf5_load(hid_t file_id, const string& dataset_name, Data* data);
 template<class Blob>
 void hdf5_load_nd_dataset(hid_t file_id, const char* dataset_name,
 			  int min_dim, int max_dim, Blob* blob) {
-  blob->Reshape(hdf5_load_nd_dataset_helper(file_id, dataset_name, min_dim, max_dim));
-  herr_t status = hdf5_load(file_id, dataset_name, blob->mutable_cpu_data());
+  H5T_class_t class_;
+  blob->Reshape(hdf5_load_nd_dataset_helper(file_id, dataset_name, min_dim, max_dim, class_));
+  herr_t status = 0;
+  if (class_ == H5T_FLOAT) {
+    if (blob->dtsize() > 2) {
+      status = hdf5_load(file_id, dataset_name, blob->mutable_cpu_data());
+    } else {
+      const int count = blob->count();
+      LOG(INFO) << "Converting " << count << " float values to float16 ones";
+      std::vector<float> buf(count);
+      status = hdf5_load(file_id, dataset_name, &buf.front());
+      caffe_cpu_convert(count, &buf.front(), blob->mutable_cpu_data());
+    }
+  } else {
+    if (blob->dtsize() > 2) {
+      const int count = blob->count();
+      LOG(INFO) << "Converting " << count << " float16 values to float ones";
+      std::vector<float16> buf(count);
+      status = hdf5_load(file_id, dataset_name, &buf.front());
+      caffe_cpu_convert(count, &buf.front(), blob->mutable_cpu_data());
+    } else {
+      status = hdf5_load(file_id, dataset_name, blob->mutable_cpu_data());
+    }
+  }
   CHECK_GE(status, 0) << "Failed to read dataset " << dataset_name;
 }
   

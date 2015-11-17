@@ -17,7 +17,7 @@ template <typename T_IN, typename T_OUT>
 void caffe_cpu_convert(const size_t N, const T_IN *in, T_OUT *out)
 {
   for (size_t i = 0; i < N; ++i) {
-    out[i] = Get<T_OUT>(in[i]);
+    out[i] = in[i];
   }
 }
 

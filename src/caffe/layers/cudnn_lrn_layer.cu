@@ -21,6 +21,21 @@ void CuDNNLRNLayer<Dtype,Mtype>::Forward_gpu(const vector<Blob<Dtype,Mtype>*>& b
         bottom_desc_, bottom_data,
         cudnn::dataType<Dtype>::zero,
         top_desc_, top_data) );
+
+
+
+  const Dtype* b_data = bottom[0]->cpu_data();
+  const Dtype* t_data = top[0]->cpu_data();
+  for (int i = 0; i < bottom[0]->count(); ++i) {
+    printf("%g ", (float) b_data[i]);
+  }
+  printf("\n===================================\n");
+  for (int i = 0; i < top[0]->count(); ++i) {
+    printf("%g ", (float) t_data[i]);
+  }
+  printf("\n===================================\n");
+
+
 }
 
 template <typename Dtype, typename Mtype>
