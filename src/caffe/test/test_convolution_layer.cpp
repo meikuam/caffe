@@ -249,14 +249,14 @@ TYPED_TEST(ConvolutionLayerTest, TestSimpleConvolution) {
   top_data = this->blob_top_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(top_data[i]), Get<Mtype>(ref_top_data[i]), tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
   }
   caffe_conv<Dtype,Mtype>(this->blob_bottom_2_, convolution_param, layer->blobs(),
       this->MakeReferenceTop(this->blob_top_2_));
   top_data = this->blob_top_2_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(top_data[i]), Get<Mtype>(ref_top_data[i]), tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
   }
 }
 
@@ -294,8 +294,8 @@ TYPED_TEST(ConvolutionLayerTest, Test0DConvolution) {
         value += weight->data_at(weight_offset) *
                  this->blob_bottom_->cpu_data()[n * bottom_dim + bottom_d];
       }
-      EXPECT_NEAR(Get<float>(value),
-          Get<float>(this->blob_top_->cpu_data()[n * dim + d]),tol<Dtype>(1e-4));
+      EXPECT_NEAR(value,
+          this->blob_top_->cpu_data()[n * dim + d],tol<Dtype>(1e-4));
     }
   }
 }
@@ -337,14 +337,14 @@ TYPED_TEST(ConvolutionLayerTest, TestSimple3DConvolution) {
   top_data = this->blob_top_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(Get<float>(top_data[i]), Get<float>(ref_top_data[i]), tol<Dtype>(1e-3));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-3));
   }
   caffe_conv(this->blob_bottom_2_, convolution_param, layer->blobs(),
       this->MakeReferenceTop(this->blob_top_2_));
   top_data = this->blob_top_2_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(Get<float>(top_data[i]), Get<float>(ref_top_data[i]), tol<Dtype>(1e-3));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-3));
   }
 }
 
@@ -372,7 +372,7 @@ TYPED_TEST(ConvolutionLayerTest, Test1x1Convolution) {
   top_data = this->blob_top_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(top_data[i]), Get<Mtype>(ref_top_data[i]), tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
   }
 }
 
@@ -401,7 +401,7 @@ TYPED_TEST(ConvolutionLayerTest, TestSimpleConvolutionGroup) {
   top_data = this->blob_top_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(top_data[i]), Get<Mtype>(ref_top_data[i]), tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
   }
 }
 
@@ -433,15 +433,15 @@ TYPED_TEST(ConvolutionLayerTest, TestSobelConvolution) {
   Dtype* weights = layer->blobs()[0]->mutable_cpu_data();
   for (int c = 0; c < 3; ++c) {
     int i = c * 9;  // 3 x 3 filter
-    weights[i +  0] =  Get<Dtype>(-1);
-    weights[i +  1] =  Get<Dtype>(0);
-    weights[i +  2] =  Get<Dtype>(1);
-    weights[i +  3] =  Get<Dtype>(-2);
-    weights[i +  4] =  Get<Dtype>(0);
-    weights[i +  5] =  Get<Dtype>(2);
-    weights[i +  6] =  Get<Dtype>(-1);
-    weights[i +  7] =  Get<Dtype>(0);
-    weights[i +  8] =  Get<Dtype>(1);
+    weights[i +  0] =  -1;
+    weights[i +  1] =  0;
+    weights[i +  2] =  1;
+    weights[i +  3] =  -2;
+    weights[i +  4] =  0;
+    weights[i +  5] =  2;
+    weights[i +  6] =  -1;
+    weights[i +  7] =  0;
+    weights[i +  8] =  1;
   }
   layer->SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer->Forward(this->blob_bottom_vec_, this->blob_top_vec_);
@@ -466,9 +466,9 @@ TYPED_TEST(ConvolutionLayerTest, TestSobelConvolution) {
   Dtype* weights_1 = layer->blobs()[0]->mutable_cpu_data();
   for (int c = 0; c < 3; ++c) {
     int i = c * 3;  // 3 x 1 filter
-    weights_1[i +  0] = Get<Dtype>(1);
-    weights_1[i +  1] = Get<Dtype>(2);
-    weights_1[i +  2] = Get<Dtype>(1);
+    weights_1[i +  0] = 1;
+    weights_1[i +  1] = 2;
+    weights_1[i +  2] = 1;
   }
   layer->SetUp(sep_blob_bottom_vec, sep_blob_top_vec);
   layer->Forward(sep_blob_bottom_vec, sep_blob_top_vec);
@@ -486,16 +486,16 @@ TYPED_TEST(ConvolutionLayerTest, TestSobelConvolution) {
   layer->blobs().resize(1);
   layer->blobs()[0].reset(new Blob<Dtype,Mtype>(1, 1, 1, 3));
   Dtype* weights_2 = layer->blobs()[0]->mutable_cpu_data();
-  weights_2[0] = Get<Dtype>(-1);
-  weights_2[1] = Get<Dtype>(0);
-  weights_2[2] = Get<Dtype>(1);
+  weights_2[0] = -1;
+  weights_2[1] = 0;
+  weights_2[2] = 1;
   layer->SetUp(sep_blob_bottom_vec, sep_blob_top_vec);
   layer->Forward(sep_blob_bottom_vec, sep_blob_top_vec);
   // Test equivalence of full and separable filters.
   const Dtype* top_data = this->blob_top_->cpu_data();
   const Dtype* sep_top_data = this->blob_top_2_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(top_data[i]), Get<Mtype>(sep_top_data[i]), tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], sep_top_data[i], tol<Dtype>(1e-4));
   }
 }
 
@@ -544,11 +544,11 @@ TYPED_TEST(ConvolutionLayerTest, TestNDAgainst2D) {
   Blob<Dtype,Mtype> backward_weight_result_2d;
   // Test with 2D im2col
   {
-    caffe_set(this->blob_top_->count(), Get<Dtype>(0),
+    caffe_set(this->blob_top_->count(), Dtype(0.),
               this->blob_top_->mutable_cpu_data());
-    caffe_set(this->blob_bottom_->count(), Get<Dtype>(0),
+    caffe_set(this->blob_bottom_->count(), Dtype(0.),
               this->blob_bottom_->mutable_cpu_diff());
-    caffe_set(weights.count(), Get<Dtype>(0), weights.mutable_cpu_diff());
+    caffe_set(weights.count(), Dtype(0.), weights.mutable_cpu_diff());
     // Do SetUp and Forward; save Forward result in result_2d.
     convolution_param->set_force_nd_im2col(false);
     ConvolutionLayer<Dtype,Mtype> layer_2d(layer_param);
@@ -575,11 +575,11 @@ TYPED_TEST(ConvolutionLayerTest, TestNDAgainst2D) {
   Blob<Dtype,Mtype> backward_weight_result_nd;
   // Test with ND im2col
   {
-    caffe_set(this->blob_top_->count(), Get<Dtype>(0),
+    caffe_set(this->blob_top_->count(), Dtype(0.),
               this->blob_top_->mutable_cpu_data());
-    caffe_set(this->blob_bottom_->count(), Get<Dtype>(0),
+    caffe_set(this->blob_bottom_->count(), Dtype(0.),
               this->blob_bottom_->mutable_cpu_diff());
-    caffe_set(weights.count(), Get<Dtype>(0), weights.mutable_cpu_diff());
+    caffe_set(weights.count(), Dtype(0.), weights.mutable_cpu_diff());
     // Do SetUp and Forward; save Forward result in result_nd.
     convolution_param->set_force_nd_im2col(true);
     ConvolutionLayer<Dtype,Mtype> layer_nd(layer_param);
@@ -608,8 +608,8 @@ TYPED_TEST(ConvolutionLayerTest, TestNDAgainst2D) {
   ASSERT_EQ(backward_result_nd.count(), backward_result_2d.count());
   for (int i = 0; i < backward_result_2d.count(); ++i) {
     if (sizeof(Dtype) == 2)
-      EXPECT_NEAR(Get<float>(backward_result_2d.cpu_diff()[i]),
-          Get<float>(backward_result_nd.cpu_diff()[i]), 0.2F);
+      EXPECT_NEAR(backward_result_2d.cpu_diff()[i],
+          backward_result_nd.cpu_diff()[i], 0.2F);
     else
       EXPECT_EQ(backward_result_2d.cpu_diff()[i],
               backward_result_nd.cpu_diff()[i]);
@@ -636,7 +636,7 @@ TYPED_TEST(ConvolutionLayerTest, TestGradient) {
   convolution_param->mutable_weight_filler()->set_type("gaussian");
   convolution_param->mutable_bias_filler()->set_type("gaussian");
   ConvolutionLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-3));
+  GradientChecker<Dtype,Mtype> checker(choose<Dtype>(1e-2,2e-2), choose<Dtype>(1e-3,1e-2));
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }
@@ -665,7 +665,7 @@ TYPED_TEST(ConvolutionLayerTest, TestGradient3D) {
   convolution_param->mutable_weight_filler()->set_type("gaussian");
   convolution_param->mutable_bias_filler()->set_type("gaussian");
   ConvolutionLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(6e-2), Get<Dtype>(1e-3));
+  GradientChecker<Dtype,Mtype> checker(6e-2, 1e-3);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }
@@ -684,7 +684,7 @@ TYPED_TEST(ConvolutionLayerTest, Test1x1Gradient) {
   convolution_param->mutable_weight_filler()->set_type("gaussian");
   convolution_param->mutable_bias_filler()->set_type("gaussian");
   ConvolutionLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(5e-2), Get<Dtype>(1e-3));
+  GradientChecker<Dtype,Mtype> checker(5e-2, 1e-3);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }
@@ -702,7 +702,7 @@ TYPED_TEST(ConvolutionLayerTest, TestGradientGroup) {
   convolution_param->mutable_weight_filler()->set_type("gaussian");
   convolution_param->mutable_bias_filler()->set_type("gaussian");
   ConvolutionLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(5e-2), Get<Dtype>(1e-3));
+  GradientChecker<Dtype,Mtype> checker(5e-2, 1e-3);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }
@@ -819,14 +819,14 @@ TYPED_TEST(CuDNNConvolutionLayerTest, TestSimpleConvolutionCuDNN) {
   top_data = this->blob_top_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(top_data[i]), Get<Mtype>(ref_top_data[i]), tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
   }
   caffe_conv<Dtype,Mtype>(this->blob_bottom_2_, convolution_param, layer->blobs(),
       this->MakeReferenceTop(this->blob_top_2_));
   top_data = this->blob_top_2_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(top_data[i]), Get<Mtype>(ref_top_data[i]), tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
   }
 }
 
@@ -855,7 +855,7 @@ TYPED_TEST(CuDNNConvolutionLayerTest, TestSimpleConvolutionGroupCuDNN) {
   top_data = this->blob_top_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(top_data[i]), Get<Mtype>(ref_top_data[i]), tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
   }
 }
 
@@ -888,15 +888,15 @@ TYPED_TEST(CuDNNConvolutionLayerTest, TestSobelConvolutionCuDNN) {
   Dtype* weights = layer->blobs()[0]->mutable_cpu_data();
   for (int c = 0; c < 3; ++c) {
     int i = c * 9;  // 3 x 3 filter
-    weights[i +  0] =  Get<Dtype>(-1);
-    weights[i +  1] =  Get<Dtype>(0);
-    weights[i +  2] =  Get<Dtype>(1);
-    weights[i +  3] =  Get<Dtype>(-2);
-    weights[i +  4] =  Get<Dtype>(0);
-    weights[i +  5] =  Get<Dtype>(2);
-    weights[i +  6] =  Get<Dtype>(-1);
-    weights[i +  7] =  Get<Dtype>(0);
-    weights[i +  8] =  Get<Dtype>(1);
+    weights[i +  0] =  -1;
+    weights[i +  1] =  0;
+    weights[i +  2] =  1;
+    weights[i +  3] =  -2;
+    weights[i +  4] =  0;
+    weights[i +  5] =  2;
+    weights[i +  6] =  -1;
+    weights[i +  7] =  0;
+    weights[i +  8] =  1;
   }
   layer->SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer->Forward(this->blob_bottom_vec_, this->blob_top_vec_);
@@ -921,9 +921,9 @@ TYPED_TEST(CuDNNConvolutionLayerTest, TestSobelConvolutionCuDNN) {
   Dtype* weights_1 = layer->blobs()[0]->mutable_cpu_data();
   for (int c = 0; c < 3; ++c) {
     int i = c * 3;  // 3 x 1 filter
-    weights_1[i +  0] = Get<Dtype>(1);
-    weights_1[i +  1] = Get<Dtype>(2);
-    weights_1[i +  2] = Get<Dtype>(1);
+    weights_1[i +  0] = 1;
+    weights_1[i +  1] = 2;
+    weights_1[i +  2] = 1;
   }
   layer->SetUp(sep_blob_bottom_vec, sep_blob_top_vec);
   layer->Forward(sep_blob_bottom_vec, sep_blob_top_vec);
@@ -941,16 +941,16 @@ TYPED_TEST(CuDNNConvolutionLayerTest, TestSobelConvolutionCuDNN) {
   layer->blobs().resize(1);
   layer->blobs()[0].reset(new Blob<Dtype,Mtype>(1, 1, 1, 3));
   Dtype* weights_2 = layer->blobs()[0]->mutable_cpu_data();
-  weights_2[0] = Get<Dtype>(-1);
-  weights_2[1] = Get<Dtype>(0);
-  weights_2[2] = Get<Dtype>(1);
+  weights_2[0] = -1;
+  weights_2[1] = 0;
+  weights_2[2] = 1;
   layer->SetUp(sep_blob_bottom_vec, sep_blob_top_vec);
   layer->Forward(sep_blob_bottom_vec, sep_blob_top_vec);
   // Test equivalence of full and separable filters.
   const Dtype* top_data = this->blob_top_->cpu_data();
   const Dtype* sep_top_data = this->blob_top_2_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(Get<Mtype>(top_data[i]), Get<Mtype>(sep_top_data[i]), tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], sep_top_data[i], tol<Dtype>(1e-4));
   }
 }
 
@@ -968,7 +968,7 @@ TYPED_TEST(CuDNNConvolutionLayerTest, TestGradientCuDNN) {
   convolution_param->mutable_weight_filler()->set_type("gaussian");
   convolution_param->mutable_bias_filler()->set_type("gaussian");
   CuDNNConvolutionLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(5e-2), Get<Dtype>(1e-3));
+  GradientChecker<Dtype,Mtype> checker(5e-2, 1e-3);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }
@@ -986,7 +986,7 @@ TYPED_TEST(CuDNNConvolutionLayerTest, TestGradientGroupCuDNN) {
   convolution_param->mutable_weight_filler()->set_type("gaussian");
   convolution_param->mutable_bias_filler()->set_type("gaussian");
   CuDNNConvolutionLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(5e-2), Get<Dtype>(1e-3));
+  GradientChecker<Dtype,Mtype> checker(5e-2, 1e-3);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }

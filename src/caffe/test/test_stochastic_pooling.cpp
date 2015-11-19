@@ -166,7 +166,6 @@ TYPED_TEST(GPUStochasticPoolingLayerTest, TestStochasticTestPhase) {
 
 TYPED_TEST(GPUStochasticPoolingLayerTest, TestGradient) {
   typedef typename TypeParam::Dtype Dtype;
-FP16_DISABLE_BLOCK_BEGIN
   typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   layer_param.set_phase(TRAIN);
@@ -180,7 +179,6 @@ FP16_DISABLE_BLOCK_BEGIN
   // exhaustive gradient check.
   checker.CheckGradient(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
-FP16_DISABLE_BLOCK_END
 }
 
 #endif

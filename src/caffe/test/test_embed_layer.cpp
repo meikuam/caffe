@@ -79,13 +79,13 @@ TYPED_TEST(EmbedLayerTest, TestForward) {
   weight_shape[1] = kNumOutput;
   ASSERT_TRUE(weight_shape == layer->blobs()[0]->shape());
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-    this->blob_bottom_->mutable_cpu_data()[i] = Get<Dtype>(caffe_rng_rand() % kInputDim);
+    this->blob_bottom_->mutable_cpu_data()[i] = caffe_rng_rand() % kInputDim;
   }
   layer->Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   vector<int> weight_offset(2, 0);
   vector<int> top_offset(5, 0);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-    weight_offset[0] = Get<int>(this->blob_bottom_->cpu_data()[i]);
+    weight_offset[0] = this->blob_bottom_->cpu_data()[i];
     weight_offset[1] = 0;
     top_offset[0] = i;
     top_offset[4] = 0;
@@ -120,14 +120,14 @@ TYPED_TEST(EmbedLayerTest, TestForwardWithBias) {
   weight_shape[1] = kNumOutput;
   ASSERT_TRUE(weight_shape == layer->blobs()[0]->shape());
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-    this->blob_bottom_->mutable_cpu_data()[i] = Get<Dtype>(caffe_rng_rand() % kInputDim);
+    this->blob_bottom_->mutable_cpu_data()[i] = caffe_rng_rand() % kInputDim;
   }
   layer->Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   vector<int> bias_offset(1, 0);
   vector<int> weight_offset(2, 0);
   vector<int> top_offset(5, 0);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-    weight_offset[0] = Get<int>(this->blob_bottom_->cpu_data()[i]);
+    weight_offset[0] = this->blob_bottom_->cpu_data()[i];
     weight_offset[1] = 0;
     top_offset[0] = i;
     top_offset[4] = 0;
@@ -155,11 +155,11 @@ TYPED_TEST(EmbedLayerTest, TestGradient) {
   embed_param->mutable_weight_filler()->set_min(-10);
   embed_param->mutable_weight_filler()->set_max(10);
   EmbedLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-3));
-  this->blob_bottom_->mutable_cpu_data()[0] = Get<Dtype>(4);
-  this->blob_bottom_->mutable_cpu_data()[1] = Get<Dtype>(2);
-  this->blob_bottom_->mutable_cpu_data()[2] = Get<Dtype>(2);
-  this->blob_bottom_->mutable_cpu_data()[3] = Get<Dtype>(3);
+  GradientChecker<Dtype,Mtype> checker(choose<Dtype>(1e-2,3e-2), choose<Dtype>(1e-3,1e-2));
+  this->blob_bottom_->mutable_cpu_data()[0] = 4;
+  this->blob_bottom_->mutable_cpu_data()[1] = 2;
+  this->blob_bottom_->mutable_cpu_data()[2] = 2;
+  this->blob_bottom_->mutable_cpu_data()[3] = 3;
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_, -2);
 }
@@ -177,11 +177,11 @@ TYPED_TEST(EmbedLayerTest, TestGradientWithBias) {
   embed_param->mutable_weight_filler()->set_max(10);
   embed_param->mutable_bias_filler()->CopyFrom(embed_param->weight_filler());
   EmbedLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-3));
-  this->blob_bottom_->mutable_cpu_data()[0] = Get<Dtype>(4);
-  this->blob_bottom_->mutable_cpu_data()[1] = Get<Dtype>(2);
-  this->blob_bottom_->mutable_cpu_data()[2] = Get<Dtype>(2);
-  this->blob_bottom_->mutable_cpu_data()[3] = Get<Dtype>(3);
+  GradientChecker<Dtype,Mtype> checker(choose<Dtype>(1e-2,3e-2), choose<Dtype>(1e-3,1e-2));
+  this->blob_bottom_->mutable_cpu_data()[0] = 4;
+  this->blob_bottom_->mutable_cpu_data()[1] = 2;
+  this->blob_bottom_->mutable_cpu_data()[2] = 2;
+  this->blob_bottom_->mutable_cpu_data()[3] = 3;
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_, -2);
 }

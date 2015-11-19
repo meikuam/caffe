@@ -23,33 +23,29 @@ void hdf5_load_nd_dataset(hid_t file_id, const char* dataset_name,
   H5T_class_t class_;
   blob->Reshape(hdf5_load_nd_dataset_helper(file_id, dataset_name, min_dim, max_dim, class_));
   herr_t status = 0;
-  if (class_ == H5T_FLOAT) {
-    if (blob->dtsize() > 2) {
-      status = hdf5_load(file_id, dataset_name, blob->mutable_cpu_data());
-    } else {
-      const int count = blob->count();
-      LOG(INFO) << "Converting " << count << " float values to float16 ones";
-      std::vector<float> buf(count);
-      status = hdf5_load(file_id, dataset_name, &buf.front());
-      caffe_cpu_convert(count, &buf.front(), blob->mutable_cpu_data());
-    }
+  if (blob->dtsize() > 2) {
+    status = hdf5_load(file_id, dataset_name, blob->mutable_cpu_data());
   } else {
-    if (blob->dtsize() > 2) {
-      const int count = blob->count();
-      LOG(INFO) << "Converting " << count << " float16 values to float ones";
-      std::vector<float16> buf(count);
-      status = hdf5_load(file_id, dataset_name, &buf.front());
-      caffe_cpu_convert(count, &buf.front(), blob->mutable_cpu_data());
-    } else {
-      status = hdf5_load(file_id, dataset_name, blob->mutable_cpu_data());
-    }
+    const int count = blob->count();
+    LOG(INFO) << "Converting " << count << " values to float16";
+    std::vector<float> buf(count);
+    status = hdf5_load(file_id, dataset_name, &buf.front());
+    caffe_cpu_convert(count, &buf.front(), blob->mutable_cpu_data());
+
+//    for (int i = 0; i < count; ++i) {
+//      printf("%g ", (float) blob->mutable_cpu_data()[i]);
+//    }
+//    printf("\n");
+
+
+
   }
   CHECK_GE(status, 0) << "Failed to read dataset " << dataset_name;
 }
   
 template<class Data>
 herr_t hdf5_save(hid_t file_id, const string& dataset_name, 
-		 int num_axes, hsize_t *dims, const Data* data);
+		 int num_axes, hsize_t *dims, int count, const Data* data);
   
 template<class Blob>
 void hdf5_save_nd_dataset(hid_t file_id, const string& dataset_name, const Blob& blob,
@@ -59,7 +55,8 @@ void hdf5_save_nd_dataset(hid_t file_id, const string& dataset_name, const Blob&
   for (int i = 0; i < num_axes; ++i) {
     dims[i] = blob.shape(i);
   }
-  herr_t status = hdf5_save(file_id, dataset_name, num_axes, dims, 
+  herr_t status = hdf5_save(file_id, dataset_name, num_axes, dims,
+          blob.count(),
 			    write_diff ? blob.cpu_diff() : blob.cpu_data());
   CHECK_GE(status, 0) << "Failed to make dataset " << dataset_name;
 }

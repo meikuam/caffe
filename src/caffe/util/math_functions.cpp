@@ -238,8 +238,8 @@ void caffe_cpu_axpby<double,double>(const int N, const double alpha, const doubl
 template <>
 void caffe_cpu_axpby<float16,float>(const int N, const float alpha, const float16* X,
                              const float beta, float16* Y) {
-  for (int i=0; i<N; i++) {
-    Y[i] = Get<float16>( alpha * Get<float>(X[i]) + beta * Get<float>(Y[i]) );
+  for (int i = 0; i < N; ++i) {
+    Y[i] = alpha * X[i] + beta * Y[i];
   }
 }
 template <>

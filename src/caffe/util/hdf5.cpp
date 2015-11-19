@@ -72,28 +72,35 @@ herr_t hdf5_load(hid_t file_id, const string& dataset_name, float* data) {
 template<> 
 herr_t hdf5_save(hid_t file_id, 
 		 const string& dataset_name, 
-		 int num_axes, hsize_t *dims, const float* data) {
+		 int num_axes, hsize_t *dims, int, const float* data) {
   return H5LTmake_dataset_float(file_id, dataset_name.c_str(), num_axes, dims, data);
 }
 template<>
 herr_t hdf5_save(hid_t file_id, 
 		 const string& dataset_name, 
-		 int num_axes, hsize_t *dims, const double* data) {
+		 int num_axes, hsize_t *dims, int, const double* data) {
   return H5LTmake_dataset_double(file_id, dataset_name.c_str(), num_axes, dims, data);
 }
   
 #ifndef CPU_ONLY
 template<>
 herr_t hdf5_load(hid_t file_id, const string& dataset_name, float16* data) {
-  return H5LTread_dataset_short(file_id, dataset_name.c_str(), 
-        reinterpret_cast<short*>(data));
+  LOG(FATAL) << "Not implemented, see hdf5_load_nd_dataset for details";
+  return 0;
+//  return H5LTread_dataset_short(file_id, dataset_name.c_str(),
+//        reinterpret_cast<short*>(data));
 }
 template<>
 herr_t hdf5_save(hid_t file_id, 
 		 const string& dataset_name, 
-		 int num_axes, hsize_t *dims, const float16* data) {
-  return H5LTmake_dataset_short(file_id, dataset_name.c_str(), 
-				num_axes, dims, reinterpret_cast<const short*>(data));
+		 int num_axes, hsize_t *dims, int count, const float16* data) {
+  // we treat H5T_FLOAT and H5T_INTEGER the same in terms of storing floats
+  // therefore we store float16 values as floats
+  LOG(INFO) << "Converting " << count << " float16 values to float";
+  std::vector<float> buf(count);
+  caffe_cpu_convert(count, data, &buf.front());
+  return H5LTmake_dataset_float(file_id, dataset_name.c_str(),
+				num_axes, dims, &buf.front());
 }
 #endif // CPU_ONLY
 

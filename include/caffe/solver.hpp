@@ -174,11 +174,11 @@ class SGDSolver : public Solver<Dtype,Mtype> {
 
  protected:
   void PreSolve();
-  Mtype GetLearningRate();
+  Dtype GetLearningRate();
   virtual void ApplyUpdate();
   virtual void Normalize(int param_id);
   virtual void Regularize(int param_id);
-  virtual void ComputeUpdateValue(int param_id, Mtype rate);
+  virtual void ComputeUpdateValue(int param_id, Dtype rate);
   virtual void ClipGradients();
   virtual void SnapshotSolverState(const string& model_filename);
   virtual void SnapshotSolverStateToBinaryProto(const string& model_filename);
@@ -206,7 +206,7 @@ class NesterovSolver : public SGDSolver<Dtype,Mtype> {
       : SGDSolver<Dtype,Mtype>(param_file) {}
 
  protected:
-  virtual void ComputeUpdateValue(int param_id, Mtype rate);
+  virtual void ComputeUpdateValue(int param_id, Dtype rate);
 
   DISABLE_COPY_AND_ASSIGN(NesterovSolver);
 };
@@ -220,7 +220,7 @@ class AdaGradSolver : public SGDSolver<Dtype,Mtype> {
       : SGDSolver<Dtype,Mtype>(param_file) { constructor_sanity_check(); }
 
  protected:
-  virtual void ComputeUpdateValue(int param_id, Mtype rate);
+  virtual void ComputeUpdateValue(int param_id, Dtype rate);
   void constructor_sanity_check() {
     CHECK_EQ(0, this->param_.momentum())
         << "Momentum cannot be used with AdaGrad.";
@@ -239,7 +239,7 @@ class RMSPropSolver : public SGDSolver<Dtype,Mtype> {
       : SGDSolver<Dtype,Mtype>(param_file) { constructor_sanity_check(); }
 
  protected:
-  virtual void ComputeUpdateValue(int param_id, Mtype rate);
+  virtual void ComputeUpdateValue(int param_id, Dtype rate);
   void constructor_sanity_check() {
     CHECK_EQ(0, this->param_.momentum())
         << "Momentum cannot be used with RMSProp.";

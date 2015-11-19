@@ -82,13 +82,13 @@ void ArgMaxLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bot
             = bottom_data_vector[j].first;
         } else {
           // Produces max_ind and max_val
-          top_data[2 * i * top_k_ + j] = Get<Dtype>(bottom_data_vector[j].second);
-          top_data[2 * i * top_k_ + top_k_ + j] = Get<Dtype>(bottom_data_vector[j].first);
+          top_data[2 * i * top_k_ + j] = bottom_data_vector[j].second;
+          top_data[2 * i * top_k_ + top_k_ + j] = bottom_data_vector[j].first;
         }
       } else {
         // Produces max_ind per axis
         top_data[(i / axis_dist * top_k_ + j) * axis_dist + i % axis_dist]
-          = Get<Dtype>(bottom_data_vector[j].second);
+          = bottom_data_vector[j].second;
       }
     }
   }

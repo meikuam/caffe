@@ -63,7 +63,7 @@ template<> class dataType<double> {
 template<> class dataType<float16> {
  public:
   static const cudnnDataType_t type = CUDNN_DATA_HALF;
-  static float16 oneval, zeroval;
+  static float oneval, zeroval;
   static const void *one, *zero;
 };
 

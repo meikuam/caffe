@@ -36,9 +36,6 @@
 # define CAFFE_FP16_MTYPE float
 #endif
 
-#define FP16_DISABLE_BLOCK_BEGIN if (sizeof(Dtype) > 2) {
-#define FP16_DISABLE_BLOCK_END }
-
 // gflags 2.1 issue: namespace google was changed to gflags without warning.
 // Luckily we will be able to use GFLAGS_GFLAGS_H_ to detect if it is version
 // 2.1. If yes, we will add a temporary solution to redirect the namespace.

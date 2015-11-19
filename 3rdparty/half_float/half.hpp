@@ -1120,8 +1120,8 @@ namespace half_float
       float before = static_cast<float>(*this);
       assign(before + rhs);
       float after = static_cast<float>(*this);
-      if (before == after) {
-        CUPRINTF("+++++++++++++++ PRECISION LOSS: %g+=%g\n", before, rhs);
+      if (before == after && before != 0.f && rhs != 0.f) {
+        CUPRINTF("+++++++++++++++ PRECISION LOSS: %g += %g\n", before, rhs);
       }
 #else
       assign(static_cast<float>(*this) + rhs);
@@ -1139,8 +1139,8 @@ namespace half_float
       float before = static_cast<float>(*this);
       assign(before - rhs);
       float after = static_cast<float>(*this);
-      if (before == after) {
-        CUPRINTF("+++++++++++++++ PRECISION LOSS: %g-=%g\n", before, rhs);
+      if (before == after && before != 0.f && rhs != 0.f) {
+        CUPRINTF("+++++++++++++++ PRECISION LOSS: %g -= %g\n", before, rhs);
       }
 #else
       assign(static_cast<float>(*this) - rhs);
