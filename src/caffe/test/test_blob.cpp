@@ -145,7 +145,7 @@ TYPED_TEST(BlobMathTest, TestSumOfSquares) {
   Mtype expected_sumsq = 0;
   const Dtype* data = this->blob_->cpu_data();
   for (int i = 0; i < this->blob_->count(); ++i) {
-    expected_sumsq += Get<Mtype>(data[i]) * Get<Mtype>(data[i]);
+    expected_sumsq += data[i] * data[i];
   }
   // Do a mutable access on the current device,
   // so that the sumsq computation is done on that device.
@@ -201,7 +201,7 @@ TYPED_TEST(BlobMathTest, TestAsum) {
   Mtype expected_asum = 0;
   const Dtype* data = this->blob_->cpu_data();
   for (int i = 0; i < this->blob_->count(); ++i) {
-    expected_asum += std::fabs(Get<Mtype>(data[i]));
+    expected_asum += std::fabs(data[i]);
   }
   // Do a mutable access on the current device,
   // so that the asum computation is done on that device.
@@ -270,7 +270,7 @@ TYPED_TEST(BlobMathTest, TestScaleData) {
   this->blob_->scale_data(kDataScaleFactor);
   EXPECT_NEAR(asum_before_scale * kDataScaleFactor, this->blob_->asum_data(),
               tol<Dtype>(this->epsilon_) * asum_before_scale * kDataScaleFactor);
-  EXPECT_NEAR(0, this->blob_->asum_diff(), tol<Dtype>(0.e-6));
+  EXPECT_NEAR(0, this->blob_->asum_diff(), choose<Dtype>(1.e-6,1.e-4));
 
   // Check scale_diff too.
   const Mtype kDataToDiffScaleFactor = 7;

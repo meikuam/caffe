@@ -10,7 +10,7 @@ namespace caffe {
 template <typename Dtype, typename Mtype>
 __global__ void SigmoidForward(const int n, const Dtype* in, Dtype* out) {
   CUDA_KERNEL_LOOP(index, n) {
-    out[index] = Get<Dtype>( 1. / (1. + exp(-Get<Mtype>(in[index]))) );
+    out[index] = 1. / (1. + exp(-in[index])) ;
   }
 }
 
@@ -35,8 +35,8 @@ template <typename Dtype, typename Mtype>
 __global__ void SigmoidBackward(const int n, const Dtype* in_diff,
     const Dtype* out_data, Dtype* out_diff) {
   CUDA_KERNEL_LOOP(index, n) {
-    const Mtype sigmoid_x = Get<Mtype>(out_data[index]);
-    out_diff[index] = Get<Dtype>( Get<Mtype>(in_diff[index]) * sigmoid_x * (1 - sigmoid_x) );
+    const Mtype sigmoid_x = out_data[index];
+    out_diff[index] = in_diff[index] * sigmoid_x * (1 - sigmoid_x) ;
   }
 }
 

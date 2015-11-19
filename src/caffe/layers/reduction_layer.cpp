@@ -33,11 +33,11 @@ void ReductionLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype,Mtype>*>& bott
       op_ == ReductionParameter_ReductionOp_MEAN) {
     vector<int> sum_mult_shape(1, dim_);
     sum_multiplier_.Reshape(sum_mult_shape);
-    caffe_set(dim_, Get<Dtype>(1), sum_multiplier_.mutable_cpu_data());
+    caffe_set(dim_, typedConsts<Dtype>::one, sum_multiplier_.mutable_cpu_data());
   }
-  coeff_ = Get<Dtype>(this->layer_param().reduction_param().coeff());
+  coeff_ = this->layer_param().reduction_param().coeff();
   if (op_ == ReductionParameter_ReductionOp_MEAN) {
-    coeff_ /= Get<Dtype>(dim_);
+    coeff_ /= dim_;
   }
 }
 
@@ -54,13 +54,13 @@ void ReductionLayer<Dtype,Mtype>::Forward_cpu(
     switch (op_) {
     case ReductionParameter_ReductionOp_SUM:
     case ReductionParameter_ReductionOp_MEAN:
-      *top_data = Get<Dtype>(caffe_cpu_dot<Dtype,Mtype>(dim_, mult_data, bottom_data));
+      *top_data = caffe_cpu_dot<Dtype,Mtype>(dim_, mult_data, bottom_data);
       break;
     case ReductionParameter_ReductionOp_ASUM:
-      *top_data = Get<Dtype>(caffe_cpu_asum<Dtype,Mtype>(dim_, bottom_data));
+      *top_data = caffe_cpu_asum<Dtype,Mtype>(dim_, bottom_data);
       break;
     case ReductionParameter_ReductionOp_SUMSQ:
-      *top_data = Get<Dtype>(caffe_cpu_dot<Dtype,Mtype>(dim_, bottom_data, bottom_data));
+      *top_data = caffe_cpu_dot<Dtype,Mtype>(dim_, bottom_data, bottom_data);
       break;
     default:
       LOG(FATAL) << "Unknown reduction op: "
@@ -69,10 +69,10 @@ void ReductionLayer<Dtype,Mtype>::Forward_cpu(
     bottom_data += dim_;
     ++top_data;
   }
-  if (coeff_ != Get<Dtype>(1)) {
+  if (coeff_ != 1) {
     // Reset the top_data pointer.
     top_data = top[0]->mutable_cpu_data();
-    caffe_scal<Dtype,Mtype>(num_, Get<Mtype>(coeff_), top_data);
+    caffe_scal<Dtype,Mtype>(num_, coeff_, top_data);
   }
 }
 
@@ -99,14 +99,14 @@ void ReductionLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>&
   const Dtype* top_diff = top[0]->cpu_diff();
   Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
   for (int i = 0; i < num_; ++i) {
-    const Mtype bottom_coeff = Get<Mtype>((*top_diff) * coeff_);
+    const Dtype bottom_coeff = (*top_diff) * coeff_;
     switch (op_) {
     case ReductionParameter_ReductionOp_SUM:
     case ReductionParameter_ReductionOp_MEAN:
-      caffe_set(dim_, Get<Dtype>(bottom_coeff), bottom_diff);
+      caffe_set(dim_, bottom_coeff, bottom_diff);
       break;
     case ReductionParameter_ReductionOp_ASUM:
-      caffe_cpu_sign<Dtype,Mtype>(dim_, bottom_data, bottom_diff);
+      caffe_cpu_sign(dim_, bottom_data, bottom_diff);
       caffe_scal<Dtype,Mtype>(dim_, bottom_coeff, bottom_diff);
       break;
     case ReductionParameter_ReductionOp_SUMSQ:

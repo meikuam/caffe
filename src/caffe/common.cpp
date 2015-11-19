@@ -296,5 +296,22 @@ const char* curandGetErrorString(curandStatus_t error) {
 
 #endif  // CPU_ONLY
 
+
+const double typedConsts<double>::minus_one = - 1.0;
+const double typedConsts<double>::zero = 0.0;
+const double typedConsts<double>::one = 1.0;
+
+const float typedConsts<float>::minus_one = - 1.0f;
+const float typedConsts<float>::zero = 0.0f;
+const float typedConsts<float>::one = 1.0f;
+
+const float16 typedConsts<float16>::minus_one = - 1.0f;
+const float16 typedConsts<float16>::zero = 0.0f;
+const float16 typedConsts<float16>::one = 1.0f;
+
+const int typedConsts<int>::minus_one = - 1;
+const int typedConsts<int>::zero = 0;
+const int typedConsts<int>::one = 1;
+
 }  // namespace caffe
 

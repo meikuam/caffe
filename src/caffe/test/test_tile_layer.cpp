@@ -133,7 +133,7 @@ TYPED_TEST(TileLayerTest, TestTrivialGradient) {
   const int kNumTiles = 1;
   layer_param.mutable_tile_param()->set_tiles(kNumTiles);
   TileLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }
@@ -147,7 +147,7 @@ TYPED_TEST(TileLayerTest, TestGradientNum) {
   layer_param.mutable_tile_param()->set_axis(kTileAxis);
   layer_param.mutable_tile_param()->set_tiles(kNumTiles);
   TileLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }
@@ -161,7 +161,7 @@ TYPED_TEST(TileLayerTest, TestGradientChannels) {
   layer_param.mutable_tile_param()->set_axis(kTileAxis);
   layer_param.mutable_tile_param()->set_tiles(kNumTiles);
   TileLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }

@@ -27,26 +27,26 @@ __global__ void LRNFillScale(const int nthreads, const Dtype* const in,
     // fill the scale at [n, :, h, w]
     // accumulate values
     while (head < post_pad && head < channels) {
-      accum_scale += Get<Mtype>(in_off[head * step] * in_off[head * step]);
+      accum_scale += in_off[head * step] * in_off[head * step];
       ++head;
     }
     // both add and subtract
     while (head < channels) {
-      accum_scale += Get<Mtype>(in_off[head * step] * in_off[head * step]);
+      accum_scale += in_off[head * step] * in_off[head * step];
       if (head - size >= 0) {
-        accum_scale -= Get<Mtype>(in_off[(head - size) * step]
-                       * in_off[(head - size) * step]);
+        accum_scale -= in_off[(head - size) * step]
+                       * in_off[(head - size) * step];
       }
-      scale_off[(head - post_pad) * step] = Get<Dtype>(k + accum_scale * alpha_over_size);
+      scale_off[(head - post_pad) * step] = k + accum_scale * alpha_over_size;
       ++head;
     }
     // subtract only
     while (head < channels + post_pad) {
       if (head - size >= 0) {
-        accum_scale -= Get<Mtype>(in_off[(head - size) * step]
-                       * in_off[(head - size) * step]);
+        accum_scale -= in_off[(head - size) * step]
+                       * in_off[(head - size) * step];
       }
-      scale_off[(head - post_pad) * step] = Get<Dtype>(k + accum_scale * alpha_over_size);
+      scale_off[(head - post_pad) * step] = k + accum_scale * alpha_over_size;
       ++head;
     }
   }
@@ -73,8 +73,7 @@ template <typename Dtype, typename Mtype>
 __global__ void LRNComputeOutput(const int nthreads, const Dtype* const in,
     const Dtype* scale, const Dtype negative_beta, Dtype* out) {
   CUDA_KERNEL_LOOP(index, nthreads) {
-    out[index] = Get<Dtype>( Get<Mtype>(in[index]) *
-    		pow(Get<Mtype>(scale[index]), Get<Mtype>(negative_beta)) );
+    out[index] = in[index] * pow(scale[index], negative_beta) ;
   }
 }
 
@@ -96,7 +95,7 @@ void LRNLayer<Dtype,Mtype>::CrossChannelForward_gpu(
   n_threads = bottom[0]->count();
   // NOLINT_NEXT_LINE(whitespace/operators)
   LRNComputeOutput<Dtype,Mtype><<<CAFFE_GET_BLOCKS(n_threads), CAFFE_CUDA_NUM_THREADS>>>(
-      n_threads, bottom_data, scale_data, Get<Dtype>(-beta_), top_data);
+      n_threads, bottom_data, scale_data, -beta_, top_data);
   CUDA_POST_KERNEL_CHECK;
 }
 template void LRNLayer<float,float>::CrossChannelForward_gpu(
@@ -128,7 +127,7 @@ __global__ void LRNComputeDiff(const int nthreads,
     const Dtype* const bottom_data, const Dtype* const top_data,
     const Dtype* const scale, const Dtype* const top_diff,
     const int num, const int channels, const int height,
-    const int width, const int size, const Mtype negative_beta,
+    const int width, const int size, const Dtype negative_beta,
     const Mtype cache_ratio,
     Dtype* bottom_diff) {
   CUDA_KERNEL_LOOP(index, nthreads) {
@@ -149,34 +148,34 @@ __global__ void LRNComputeDiff(const int nthreads,
     Mtype accum_ratio(0.);
     // accumulate values
     while (head < post_pad && head < channels) {
-      accum_ratio += Get<Mtype>(top_diff_off[head * step] * top_off[head * step] /
-          scale_off[head * step]);
+      accum_ratio += top_diff_off[head * step] * top_off[head * step] /
+          scale_off[head * step];
       ++head;
     }
     // both add and subtract
     while (head < channels) {
-      accum_ratio += Get<Mtype>(top_diff_off[head * step] * top_off[head * step] /
-          scale_off[head * step]);
+      accum_ratio += top_diff_off[head * step] * top_off[head * step] /
+          scale_off[head * step];
       if (head - size >= 0) {
-        accum_ratio -= Get<Mtype>(top_diff_off[(head - size) * step] *
-            top_off[(head - size) * step] / scale_off[(head - size) * step]);
+        accum_ratio -= top_diff_off[(head - size) * step] *
+            top_off[(head - size) * step] / scale_off[(head - size) * step];
       }
       bottom_diff_off[(head - post_pad) * step] =
           top_diff_off[(head - post_pad) * step]
-            * pow(Get<Mtype>(scale_off[(head - post_pad) * step]), negative_beta)
-          - cache_ratio * Get<Mtype>(bottom_off[(head - post_pad) * step] * accum_ratio);
+            * pow(scale_off[(head - post_pad) * step], negative_beta)
+          - cache_ratio * bottom_off[(head - post_pad) * step] * accum_ratio;
       ++head;
     }
     // subtract only
     while (head < channels + post_pad) {
       if (head - size >= 0) {
-        accum_ratio -= Get<Mtype>(top_diff_off[(head - size) * step] *
-            top_off[(head - size) * step] / scale_off[(head - size) * step]);
+        accum_ratio -= top_diff_off[(head - size) * step] *
+            top_off[(head - size) * step] / scale_off[(head - size) * step];
       }
       bottom_diff_off[(head - post_pad) * step] =
           top_diff_off[(head - post_pad) * step]
-            * pow(Get<Mtype>(scale_off[(head - post_pad) * step]), negative_beta)
-          - cache_ratio * Get<Mtype>(bottom_off[(head - post_pad) * step]) * accum_ratio;
+            * pow(scale_off[(head - post_pad) * step], negative_beta)
+          - cache_ratio * bottom_off[(head - post_pad) * step] * accum_ratio;
       ++head;
     }
   }

@@ -129,8 +129,8 @@ TYPED_TEST(ConcatLayerTest, TestForwardNum) {
     for (int c = 0; c < this->blob_top_->channels(); ++c) {
       for (int h = 0; h < this->blob_top_->height(); ++h) {
         for (int w = 0; w < this->blob_top_->width(); ++w) {
-          EXPECT_EQ(Get<Mtype>(this->blob_top_->data_at(n, c, h, w)),
-              Get<Mtype>(this->blob_bottom_vec_1_[0]->data_at(n, c, h, w)));
+          EXPECT_EQ(this->blob_top_->data_at(n, c, h, w),
+              this->blob_bottom_vec_1_[0]->data_at(n, c, h, w));
         }
       }
     }
@@ -139,8 +139,8 @@ TYPED_TEST(ConcatLayerTest, TestForwardNum) {
     for (int c = 0; c < this->blob_top_->channels(); ++c) {
       for (int h = 0; h < this->blob_top_->height(); ++h) {
         for (int w = 0; w < this->blob_top_->width(); ++w) {
-          EXPECT_EQ(Get<Mtype>(this->blob_top_->data_at(n + 2, c, h, w)),
-              Get<Mtype>(this->blob_bottom_vec_1_[1]->data_at(n, c, h, w)));
+          EXPECT_EQ(this->blob_top_->data_at(n + 2, c, h, w),
+              this->blob_bottom_vec_1_[1]->data_at(n, c, h, w));
         }
       }
     }
@@ -158,16 +158,16 @@ TYPED_TEST(ConcatLayerTest, TestForwardChannels) {
     for (int c = 0; c < this->blob_bottom_0_->channels(); ++c) {
       for (int h = 0; h < this->blob_top_->height(); ++h) {
         for (int w = 0; w < this->blob_top_->width(); ++w) {
-          EXPECT_EQ(Get<Mtype>(this->blob_top_->data_at(n, c, h, w)),
-              Get<Mtype>(this->blob_bottom_vec_0_[0]->data_at(n, c, h, w)));
+          EXPECT_EQ(this->blob_top_->data_at(n, c, h, w),
+              this->blob_bottom_vec_0_[0]->data_at(n, c, h, w));
         }
       }
     }
     for (int c = 0; c < this->blob_bottom_1_->channels(); ++c) {
       for (int h = 0; h < this->blob_top_->height(); ++h) {
         for (int w = 0; w < this->blob_top_->width(); ++w) {
-          EXPECT_EQ(Get<Mtype>(this->blob_top_->data_at(n, c + 3, h, w)),
-              Get<Mtype>(this->blob_bottom_vec_0_[1]->data_at(n, c, h, w)));
+          EXPECT_EQ(this->blob_top_->data_at(n, c + 3, h, w),
+              this->blob_bottom_vec_0_[1]->data_at(n, c, h, w));
         }
       }
     }
@@ -179,7 +179,7 @@ TYPED_TEST(ConcatLayerTest, TestGradientTrivial) {
   typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   ConcatLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   this->blob_bottom_vec_0_.resize(1);
   checker.CheckGradientEltwise(&layer, this->blob_bottom_vec_0_,
       this->blob_top_vec_);
@@ -191,7 +191,7 @@ TYPED_TEST(ConcatLayerTest, TestGradientNum) {
   LayerParameter layer_param;
   layer_param.mutable_concat_param()->set_axis(0);
   ConcatLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   checker.CheckGradient(&layer, this->blob_bottom_vec_1_,
     this->blob_top_vec_);
 }
@@ -201,7 +201,7 @@ TYPED_TEST(ConcatLayerTest, TestGradientChannels) {
   typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   ConcatLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   checker.CheckGradient(&layer, this->blob_bottom_vec_0_,
     this->blob_top_vec_);
 }
@@ -211,7 +211,7 @@ TYPED_TEST(ConcatLayerTest, TestGradientChannelsBottomOneOnly) {
   typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   ConcatLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   checker.CheckGradient(&layer, this->blob_bottom_vec_0_,
     this->blob_top_vec_, 1);
 }

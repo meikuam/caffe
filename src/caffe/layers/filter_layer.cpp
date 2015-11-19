@@ -37,7 +37,7 @@ void FilterLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype,Mtype>*>& bottom,
   // will be forwarded
   for (int item_id = 0; item_id < bottom[selector_index]->shape(0); ++item_id) {
     // we don't need an offset because item size == 1
-    if (bottom_data_selector[item_id] != Get<Dtype>(0)) {
+    if (bottom_data_selector[item_id] != 0) {
       indices_to_forward_.push_back(item_id);
     }
   }
@@ -70,7 +70,7 @@ void FilterLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bot
     for (int n = 0; n < new_tops_num; ++n) {
       int data_offset_top = n * dim;
       int data_offset_bottom = indices_to_forward_[n] * bottom[t]->count(1);
-      caffe_copy<Dtype,Mtype>(dim, bottom_data + data_offset_bottom,
+      caffe_copy(dim, bottom_data + data_offset_bottom,
           top_data + data_offset_top);
     }
   }
@@ -97,17 +97,17 @@ void FilterLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& to
         if (next_to_backward_offset >= indices_to_forward_.size()) {
           // we already visited all items that were been forwarded, so
           // just set to zero remaining ones
-          caffe_set(dim, Get<Dtype>(0),
+          caffe_set(dim, typedConsts<Dtype>::zero,
               bottom[i]->mutable_cpu_diff() + data_offset_bottom);
         } else {
           batch_offset = indices_to_forward_[next_to_backward_offset];
           if (n != batch_offset) {  // this data was not been forwarded
-            caffe_set(dim, Get<Dtype>(0),
+            caffe_set(dim, typedConsts<Dtype>::zero,
                 bottom[i]->mutable_cpu_diff() + data_offset_bottom);
           } else {  // this data was been forwarded
             data_offset_top = next_to_backward_offset * dim;
             next_to_backward_offset++;  // point to next forwarded item index
-            caffe_copy<Dtype,Mtype>(dim, top[i]->mutable_cpu_diff() + data_offset_top,
+            caffe_copy(dim, top[i]->mutable_cpu_diff() + data_offset_top,
                 bottom[i]->mutable_cpu_diff() + data_offset_bottom);
           }
         }

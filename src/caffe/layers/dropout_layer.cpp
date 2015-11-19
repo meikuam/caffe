@@ -41,10 +41,10 @@ void DropoutLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bo
     // Create random numbers
     caffe_rng_bernoulli<Dtype,Mtype>(count, Mtype(1. - threshold_), mask);
     for (int i = 0; i < count; ++i) {
-      top_data[i] = Get<Dtype>( Get<Mtype>(bottom_data[i]) * mask[i] * scale_ );
+      top_data[i] = bottom_data[i] * mask[i] * scale_ ;
     }
   } else {
-    caffe_copy<Dtype,Mtype>(bottom[0]->count(), bottom_data, top_data);
+    caffe_copy(bottom[0]->count(), bottom_data, top_data);
   }
 }
 
@@ -59,10 +59,10 @@ void DropoutLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& t
       const unsigned int* mask = rand_vec_.cpu_data();
       const int count = bottom[0]->count();
       for (int i = 0; i < count; ++i) {
-        bottom_diff[i] = Get<Dtype>( Get<Mtype>(top_diff[i]) * mask[i] * scale_ );
+        bottom_diff[i] = top_diff[i] * mask[i] * scale_ ;
       }
     } else {
-      caffe_copy<Dtype,Mtype>(top[0]->count(), top_diff, bottom_diff);
+      caffe_copy(top[0]->count(), top_diff, bottom_diff);
     }
   }
 }

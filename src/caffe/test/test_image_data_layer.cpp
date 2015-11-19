@@ -85,7 +85,7 @@ TYPED_TEST(ImageDataLayerTest, TestRead) {
   for (int iter = 0; iter < 2; ++iter) {
     layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
     for (int i = 0; i < 5; ++i) {
-      EXPECT_EQ(i, Get<int>(this->blob_top_label_->cpu_data()[i]));
+      EXPECT_EQ(i, static_cast<int>(this->blob_top_label_->cpu_data()[i]));
     }
   }
 }
@@ -114,7 +114,7 @@ TYPED_TEST(ImageDataLayerTest, TestResize) {
   for (int iter = 0; iter < 2; ++iter) {
     layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
     for (int i = 0; i < 5; ++i) {
-      EXPECT_EQ(i, Get<int>(this->blob_top_label_->cpu_data()[i]));
+      EXPECT_EQ(i, static_cast<int>(this->blob_top_label_->cpu_data()[i]));
     }
   }
 }
@@ -175,7 +175,7 @@ TYPED_TEST(ImageDataLayerTest, TestShuffle) {
       // Check that the value has not been seen already (no duplicates).
       EXPECT_EQ(values_to_indices.find(value), values_to_indices.end());
       values_to_indices[value] = i;
-      num_in_order += (Get<Mtype>(value) == Mtype(i));
+      num_in_order += (value == Mtype(i));
     }
     EXPECT_EQ(5, values_to_indices.size());
     EXPECT_GT(5, num_in_order);

@@ -20,23 +20,24 @@ void HingeLossLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& 
   int count = bottom[0]->count();
   int dim = count / num;
 
-  caffe_copy<Dtype,Mtype>(count, bottom_data, bottom_diff);
+  caffe_copy(count, bottom_data, bottom_diff);
   for (int i = 0; i < num; ++i) {
-    bottom_diff[i * dim + Get<int>(label[i])] = Get<Dtype>( Get<Mtype>(bottom_diff[i * dim + Get<int>(label[i])]) * -1 );
+    bottom_diff[i * dim + static_cast<int>(label[i])] =
+        bottom_diff[i * dim + static_cast<int>(label[i])] * -1 ;
   }
   for (int i = 0; i < num; ++i) {
     for (int j = 0; j < dim; ++j) {
-      bottom_diff[i * dim + j] = Get<Dtype>( std::max(
-						      Dtype(0.f), Dtype(1. + bottom_diff[i * dim + j])));
+      bottom_diff[i * dim + j] = std::max(
+						      Dtype(0.f), Dtype(1. + bottom_diff[i * dim + j]));
     }
   }
   Dtype* loss = top[0]->mutable_cpu_data();
   switch (this->layer_param_.hinge_loss_param().norm()) {
   case HingeLossParameter_Norm_L1:
-    loss[0] = Get<Dtype>( caffe_cpu_asum<Dtype,Mtype>(count, bottom_diff) / num );
+    loss[0] = caffe_cpu_asum<Dtype,Mtype>(count, bottom_diff) / num ;
     break;
   case HingeLossParameter_Norm_L2:
-    loss[0] = Get<Dtype>( caffe_cpu_dot<Dtype,Mtype>(count, bottom_diff, bottom_diff) / num );
+    loss[0] = caffe_cpu_dot<Dtype,Mtype>(count, bottom_diff, bottom_diff) / num ;
     break;
   default:
     LOG(FATAL) << "Unknown Norm";
@@ -58,13 +59,14 @@ void HingeLossLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>&
     int dim = count / num;
 
     for (int i = 0; i < num; ++i) {
-      bottom_diff[i * dim + Get<int>(label[i])] = Get<Dtype>( Get<Mtype>(bottom_diff[i * dim + Get<int>(label[i])]) * -1);
+      bottom_diff[i * dim + static_cast<int>(label[i])] =
+          bottom_diff[i * dim + static_cast<int>(label[i])] * -1;
     }
 
-    const Mtype loss_weight = Get<Mtype>(top[0]->cpu_diff()[0]);
+    const Mtype loss_weight = top[0]->cpu_diff()[0];
     switch (this->layer_param_.hinge_loss_param().norm()) {
     case HingeLossParameter_Norm_L1:
-      caffe_cpu_sign<Dtype,Mtype>(count, bottom_diff, bottom_diff);
+      caffe_cpu_sign(count, bottom_diff, bottom_diff);
       caffe_scal<Dtype,Mtype>(count, Mtype(loss_weight / num), bottom_diff);
       break;
     case HingeLossParameter_Norm_L2:

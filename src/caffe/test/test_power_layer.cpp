@@ -45,7 +45,7 @@ class PowerLayerTest : public MultiDeviceTest<TypeParam> {
     const Dtype* top_data = this->blob_top_->cpu_data();
     const Mtype min_precision = 1e-5;
     for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-      Mtype expected_value = pow(shift + scale * Get<Mtype>(bottom_data[i]), power);
+      Mtype expected_value = pow(shift + scale * bottom_data[i], power);
       if (power == Mtype(0) || power == Mtype(1) || power == Mtype(2)) {
         EXPECT_FALSE(isnan(top_data[i]));
       }
@@ -54,7 +54,7 @@ class PowerLayerTest : public MultiDeviceTest<TypeParam> {
       } else {
         Mtype precision = std::max(
           Mtype(std::abs(expected_value * Mtype(1e-4))), min_precision);
-        EXPECT_NEAR(expected_value, Get<Mtype>(top_data[i]), tol<Dtype>(precision));
+        EXPECT_NEAR(expected_value, top_data[i], tol<Dtype>(precision));
       }
     }
   }
@@ -70,12 +70,12 @@ class PowerLayerTest : public MultiDeviceTest<TypeParam> {
       Dtype* bottom_data = this->blob_bottom_->mutable_cpu_data();
       Mtype min_value = -shift / scale;
       for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-        if (Get<Mtype>(bottom_data[i]) < min_value) {
-          bottom_data[i] = Get<Dtype>(min_value + (min_value - Get<Mtype>(bottom_data[i])));
+        if (bottom_data[i] < min_value) {
+          bottom_data[i] = min_value + (min_value - bottom_data[i]);
         }
       }
     }
-    GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-3), Get<Dtype>(1e-2), 1701, Get<Dtype>(0.), Get<Dtype>(0.01));
+    GradientChecker<Dtype,Mtype> checker(1e-3, 1e-2, 1701, 0., 0.01);
     checker.CheckGradientEltwise(&layer, this->blob_bottom_vec_,
         this->blob_top_vec_);
   }

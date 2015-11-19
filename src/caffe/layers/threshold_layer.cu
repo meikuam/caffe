@@ -10,7 +10,7 @@ template <typename Dtype, typename Mtype>
 __global__ void ThresholdForward(const int n, const Mtype threshold,
     const Dtype* in, Dtype* out) {
   CUDA_KERNEL_LOOP(index, n) {
-    out[index] = Get<Dtype>( Get<Mtype>(in[index]) > threshold ? 1 : 0 );
+    out[index] = in[index] > threshold ? 1 : 0 ;
   }
 }
 

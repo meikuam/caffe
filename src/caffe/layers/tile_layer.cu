@@ -39,7 +39,7 @@ __global__ void TileBackward(const int nthreads, const Dtype* top_diff,
     const int d = index % tile_size;
     const int b = (index / tile_size) % bottom_tile_axis;
     const int n = index / tile_size / bottom_tile_axis;
-    bottom_diff[index] = Get<Dtype>(0);
+    bottom_diff[index] = 0;
     int top_index = (n * num_tiles * bottom_tile_axis + b) * tile_size + d;
     for (int t = 0; t < num_tiles; ++t) {
       bottom_diff[index] += top_diff[top_index];

@@ -47,7 +47,7 @@ void PReLULayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>& botto
   this->param_propagate_down_.resize(this->blobs_.size(), true);
   multiplier_.Reshape(vector<int>(1, bottom[0]->count(1)));
   backward_buff_.Reshape(vector<int>(1, bottom[0]->count(1)));
-  caffe_set(multiplier_.count(), Get<Dtype>(1), multiplier_.mutable_cpu_data());
+  caffe_set(multiplier_.count(), typedConsts<Dtype>::one, multiplier_.mutable_cpu_data());
 }
 
 template <typename Dtype, typename Mtype>
@@ -74,7 +74,7 @@ void PReLULayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bott
 
   // For in-place computation
   if (bottom[0] == top[0]) {
-    caffe_copy<Dtype,Mtype>(count, bottom_data, bottom_memory_.mutable_cpu_data());
+    caffe_copy(count, bottom_data, bottom_memory_.mutable_cpu_data());
   }
 
   // if channel_shared, channel index in the following computation becomes
@@ -82,8 +82,8 @@ void PReLULayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bott
   const int div_factor = channel_shared_ ? channels : 1;
   for (int i = 0; i < count; ++i) {
     int c = (i / dim) % channels / div_factor;
-    top_data[i] = Get<Dtype>( std::max(Get<Mtype>(bottom_data[i]), Mtype(0))
-        + Get<Mtype>(slope_data[c]) * std::min(Get<Mtype>(bottom_data[i]), Mtype(0)) );
+    top_data[i] = std::max(bottom_data[i], Dtype(0.))
+        + slope_data[c] * std::min(bottom_data[i], Dtype(0.)) ;
   }
 }
 
@@ -113,10 +113,10 @@ void PReLULayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top
   // keep top_diff unchanged.
   if (this->param_propagate_down_[0]) {
     Dtype* slope_diff = this->blobs_[0]->mutable_cpu_diff();
-    caffe_set(this->blobs_[0]->count(), Get<Dtype>(0), slope_diff);
+    caffe_set(this->blobs_[0]->count(), typedConsts<Dtype>::zero, slope_diff);
     for (int i = 0; i < count; ++i) {
       int c = (i / dim) % channels / div_factor;
-      slope_diff[c] = Get<Dtype>( Get<Mtype>(top_diff[i]) * Get<Mtype>(bottom_data[i]) * (Get<Mtype>(bottom_data[i]) <= 0) + Get<Mtype>(slope_diff[c]) );
+      slope_diff[c] = top_diff[i] * bottom_data[i] * (bottom_data[i] <= 0) + slope_diff[c] ;
     }
   }
   // Propagate to bottom
@@ -124,11 +124,11 @@ void PReLULayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
     for (int i = 0; i < count; ++i) {
       int c = (i / dim) % channels / div_factor;
-      Mtype top_diff_i = Get<Mtype>(top_diff[i]);
-      Mtype bottom_data_i = Get<Mtype>(bottom_data[i]);
-      Mtype slope_data_c = Get<Mtype>(slope_data[c]);
-      bottom_diff[i] = Get<Dtype>( top_diff_i * ((bottom_data_i > 0)
-          + slope_data_c * (bottom_data_i <= 0)) );
+      Mtype top_diff_i = top_diff[i];
+      Mtype bottom_data_i = bottom_data[i];
+      Mtype slope_data_c = slope_data[c];
+      bottom_diff[i] = top_diff_i * ((bottom_data_i > 0)
+          + slope_data_c * (bottom_data_i <= 0)) ;
     }
   }
 }

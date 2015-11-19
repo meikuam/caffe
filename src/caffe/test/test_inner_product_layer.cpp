@@ -120,7 +120,7 @@ TYPED_TEST(InnerProductLayerTest, TestForwardNoBatch) {
     const Dtype* data = this->blob_top_->cpu_data();
     const int count = this->blob_top_->count();
     for (int i = 0; i < count; ++i) {
-      EXPECT_GE(Get<Mtype>(data[i]), 1.);
+      EXPECT_GE(data[i], 1.);
     }
   } else {
     LOG(ERROR) << "Skipping test due to old architecture.";
@@ -146,7 +146,7 @@ TYPED_TEST(InnerProductLayerTest, TestGradient) {
     inner_product_param->mutable_bias_filler()->set_min(1);
     inner_product_param->mutable_bias_filler()->set_max(2);
     InnerProductLayer<Dtype,Mtype> layer(layer_param);
-    GradientChecker<Dtype,Mtype> checker(Get<Dtype>(5e-2), Get<Dtype>(1e-3));
+    GradientChecker<Dtype,Mtype> checker(5e-2, 1e-3);
     checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
         this->blob_top_vec_);
   } else {

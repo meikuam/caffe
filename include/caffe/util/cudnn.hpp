@@ -72,7 +72,6 @@ inline cudnnDataType_t dataTypeEx() {
   return sizeof(Dtype) < sizeof(Utype) ? dataType<Utype>::type : dataType<Dtype>::type;
 }
 
-
 template <typename Dtype>
 inline void createTensor4dDesc(cudnnTensorDescriptor_t* desc) {
   CUDNN_CHECK(cudnnCreateTensorDescriptor(desc));

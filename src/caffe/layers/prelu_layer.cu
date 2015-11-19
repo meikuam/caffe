@@ -24,8 +24,8 @@ __global__ void PReLUBackward(const int n, const int channels, const int dim,
     const Dtype* slope_data, const int div_factor) {
   CUDA_KERNEL_LOOP(index, n) {
     int c = (index / dim) % channels / div_factor;
-    out_diff[index] = Get<Dtype>( Get<Mtype>(in_diff[index]) * ((Get<Mtype>(in_data[index]) > 0)
-        + (Get<Mtype>(in_data[index]) <= 0) * Get<Mtype>(slope_data[c])) );
+    out_diff[index] = in_diff[index] * ((in_data[index] > 0)
+        + (in_data[index] <= 0) * slope_data[c]) ;
   }
 }
 
@@ -34,7 +34,7 @@ template <typename Dtype, typename Mtype>
 __global__ void PReLUParamBackward(const int n, const Dtype* in_diff,
     const Dtype* in_data, Dtype* out_diff) {
   CUDA_KERNEL_LOOP(index, n) {
-    out_diff[index] = Get<Dtype>( Get<Mtype>(in_diff[index]) * Get<Mtype>(in_data[index]) * (Get<Mtype>(in_data[index]) <= 0) );
+    out_diff[index] = in_diff[index] * in_data[index] * (in_data[index] <= 0) ;
   }
 }
 
@@ -51,7 +51,7 @@ void PReLULayer<Dtype,Mtype>::Forward_gpu(const vector<Blob<Dtype,Mtype>*>& bott
 
   // For in-place computation
   if (top[0] == bottom[0]) {
-    caffe_copy<Dtype,Mtype>(count, bottom_data, bottom_memory_.mutable_gpu_data());
+    caffe_copy(count, bottom_data, bottom_memory_.mutable_gpu_data());
   }
 
   // NOLINT_NEXT_LINE(whitespace/operators)
@@ -106,7 +106,7 @@ void PReLULayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype,Mtype>*>& top
       }
     }
     if (channel_shared_) {
-      caffe_gpu_add_scalar<Dtype,Mtype>(this->blobs_[0]->count(), Get<Mtype>(dsum), slope_diff);
+      caffe_gpu_add_scalar<Dtype,Mtype>(this->blobs_[0]->count(), dsum, slope_diff);
     }
   }
   // Propagate to bottom

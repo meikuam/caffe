@@ -114,10 +114,10 @@ TYPED_TEST(HDF5DataLayerTest, TestRead) {
 
       EXPECT_EQ(
         label_offset + i,
-        Get<int>(this->blob_top_label_->cpu_data()[i]));
+        static_cast<int>(this->blob_top_label_->cpu_data()[i]));
       EXPECT_EQ(
         label2_offset + i,
-        Get<int>(this->blob_top_label2_->cpu_data()[i]));
+        static_cast<int>(this->blob_top_label2_->cpu_data()[i]));
     }
 
     printf("\n");
@@ -133,11 +133,11 @@ TYPED_TEST(HDF5DataLayerTest, TestRead) {
             if (sizeof(Dtype) == 2) {
               EXPECT_NEAR(
                 file_offset + data_offset + idx,
-                Get<int>(this->blob_top_data_->cpu_data()[idx]), 2.);
+                static_cast<int>(this->blob_top_data_->cpu_data()[idx]), 2.);
             } else {
               EXPECT_EQ(
                 file_offset + data_offset + idx,
-                Get<int>(this->blob_top_data_->cpu_data()[idx]))
+                static_cast<int>(this->blob_top_data_->cpu_data()[idx]))
                 << "debug: i " << i << " j " << j
                 << " iter " << iter;
             }

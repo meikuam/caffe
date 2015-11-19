@@ -95,11 +95,11 @@ class DataLayerTest : public MultiDeviceTest<TypeParam> {
     for (int iter = 0; iter < 100; ++iter) {
       layer.Forward(blob_bottom_vec_, blob_top_vec_);
       for (int i = 0; i < 5; ++i) {
-        EXPECT_EQ(i, Get<int>(blob_top_label_->cpu_data()[i]));
+        EXPECT_EQ(i, static_cast<int>(blob_top_label_->cpu_data()[i]));
       }
       for (int i = 0; i < 5; ++i) {
         for (int j = 0; j < 24; ++j) {
-          EXPECT_EQ(scale * i, Get<Mtype>(blob_top_data_->cpu_data()[i * 24 + j]))
+          EXPECT_EQ(scale * i, blob_top_data_->cpu_data()[i * 24 + j])
               << "debug: iter " << iter << " i " << i << " j " << j;
         }
       }
@@ -154,7 +154,7 @@ class DataLayerTest : public MultiDeviceTest<TypeParam> {
       layer.Forward(blob_bottom_vec_, blob_top_vec_);
       EXPECT_EQ(blob_top_data_->height(), iter % 2 + 1);
       EXPECT_EQ(blob_top_data_->width(), iter % 4 + 1);
-      EXPECT_EQ(iter, Get<int>(blob_top_label_->cpu_data()[0]));
+      EXPECT_EQ(iter, static_cast<int>(blob_top_label_->cpu_data()[0]));
       const int channels = blob_top_data_->channels();
       const int height = blob_top_data_->height();
       const int width = blob_top_data_->width();
@@ -162,7 +162,7 @@ class DataLayerTest : public MultiDeviceTest<TypeParam> {
         for (int h = 0; h < height; ++h) {
           for (int w = 0; w < width; ++w) {
             const int idx = (c * height + h) * width + w;
-            EXPECT_EQ(idx, Get<int>(blob_top_data_->cpu_data()[idx]))
+            EXPECT_EQ(idx, static_cast<int>(blob_top_data_->cpu_data()[idx]))
                 << "debug: iter " << iter << " c " << c
                 << " h " << h << " w " << w;
           }
@@ -201,17 +201,17 @@ class DataLayerTest : public MultiDeviceTest<TypeParam> {
     for (int iter = 0; iter < 2; ++iter) {
       layer.Forward(blob_bottom_vec_, blob_top_vec_);
       for (int i = 0; i < 5; ++i) {
-        EXPECT_EQ(i, Get<int>(blob_top_label_->cpu_data()[i]));
+        EXPECT_EQ(i, static_cast<int>(blob_top_label_->cpu_data()[i]));
       }
       int num_with_center_value = 0;
       for (int i = 0; i < 5; ++i) {
         for (int j = 0; j < 2; ++j) {
           const Mtype center_value = scale * (j ? 17 : 5);
           num_with_center_value +=
-              (center_value == Get<Mtype>(blob_top_data_->cpu_data()[i * 2 + j]));
+              (center_value == blob_top_data_->cpu_data()[i * 2 + j]);
           // At TEST time, check that we always get center value.
           if (phase == caffe::TEST) {
-            EXPECT_EQ(center_value, Get<Mtype>(this->blob_top_data_->cpu_data()[i * 2 + j]))
+            EXPECT_EQ(center_value, this->blob_top_data_->cpu_data()[i * 2 + j])
                 << "debug: iter " << iter << " i " << i << " j " << j;
           }
         }
@@ -247,7 +247,7 @@ class DataLayerTest : public MultiDeviceTest<TypeParam> {
       for (int iter = 0; iter < 2; ++iter) {
         layer1.Forward(blob_bottom_vec_, blob_top_vec_);
         for (int i = 0; i < 5; ++i) {
-          EXPECT_EQ(i, Get<int>(blob_top_label_->cpu_data()[i]));
+          EXPECT_EQ(i, static_cast<int>(blob_top_label_->cpu_data()[i]));
         }
         vector<Dtype> iter_crop_sequence;
         for (int i = 0; i < 5; ++i) {
@@ -268,12 +268,12 @@ class DataLayerTest : public MultiDeviceTest<TypeParam> {
     for (int iter = 0; iter < 2; ++iter) {
       layer2.Forward(blob_bottom_vec_, blob_top_vec_);
       for (int i = 0; i < 5; ++i) {
-        EXPECT_EQ(i, Get<int>(blob_top_label_->cpu_data()[i]));
+        EXPECT_EQ(i, static_cast<int>(blob_top_label_->cpu_data()[i]));
       }
       for (int i = 0; i < 5; ++i) {
         for (int j = 0; j < 2; ++j) {
-          EXPECT_EQ(Get<Mtype>(crop_sequence[iter][i * 2 + j]),
-                    Get<Mtype>(blob_top_data_->cpu_data()[i * 2 + j]))
+          EXPECT_EQ(crop_sequence[iter][i * 2 + j],
+                    blob_top_data_->cpu_data()[i * 2 + j])
               << "debug: iter " << iter << " i " << i << " j " << j;
         }
       }
@@ -303,7 +303,7 @@ class DataLayerTest : public MultiDeviceTest<TypeParam> {
       for (int iter = 0; iter < 2; ++iter) {
         layer1.Forward(blob_bottom_vec_, blob_top_vec_);
         for (int i = 0; i < 5; ++i) {
-          EXPECT_EQ(i, Get<int>(blob_top_label_->cpu_data()[i]));
+          EXPECT_EQ(i, static_cast<int>(blob_top_label_->cpu_data()[i]));
         }
         vector<Dtype> iter_crop_sequence;
         for (int i = 0; i < 5; ++i) {
@@ -324,13 +324,13 @@ class DataLayerTest : public MultiDeviceTest<TypeParam> {
     for (int iter = 0; iter < 2; ++iter) {
       layer2.Forward(blob_bottom_vec_, blob_top_vec_);
       for (int i = 0; i < 5; ++i) {
-        EXPECT_EQ(i, Get<int>(blob_top_label_->cpu_data()[i]));
+        EXPECT_EQ(i, static_cast<int>(blob_top_label_->cpu_data()[i]));
       }
       int num_sequence_matches = 0;
       for (int i = 0; i < 5; ++i) {
         for (int j = 0; j < 2; ++j) {
-          num_sequence_matches += (Get<Mtype>(crop_sequence[iter][i * 2 + j]) ==
-                                   Get<Mtype>(blob_top_data_->cpu_data()[i * 2 + j]));
+          num_sequence_matches += (crop_sequence[iter][i * 2 + j] ==
+                                   blob_top_data_->cpu_data()[i * 2 + j]);
         }
       }
       EXPECT_LT(num_sequence_matches, 10);

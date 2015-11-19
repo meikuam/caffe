@@ -9,7 +9,6 @@
 #include "caffe/common.hpp"
 #include "caffe/util/device_alternate.hpp"
 #include "caffe/util/mkl_alternate.hpp"
-#include "caffe/util/get.hpp"
 
 namespace caffe {
 
@@ -42,7 +41,7 @@ template <typename Dtype, typename Mtype>
 void caffe_cpu_axpby(const int N, const Mtype alpha, const Dtype* X,
     const Mtype beta, Dtype* Y);
 
-template <typename Dtype, typename Mtype>
+template <typename Dtype>
 void caffe_copy(const int N, const Dtype *X, Dtype *Y);
 
 template <typename Dtype>
@@ -119,9 +118,9 @@ Mtype caffe_cpu_asum(const int n, const Dtype* x);
 
 // the branchless, type-safe version from
 // http://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
-template<typename Dtype, typename Mtype>
-inline int8_t caffe_sign(Mtype val) {
-  return (Mtype(0) < val) - (val < Mtype(0));
+template<typename Dtype>
+inline int8_t caffe_sign(Dtype val) {
+  return (0 < val) - (val < 0);
 }
 
 // The following two macros are modifications of DEFINE_VSL_UNARY_FUNC
@@ -131,7 +130,7 @@ inline int8_t caffe_sign(Mtype val) {
 //   copying that file in convenient for code reviewing.
 // So they have to be pasted here temporarily.
 #define DEFINE_CAFFE_CPU_UNARY_FUNC(name, operation) \
-  template<typename Dtype, typename Mtype> \
+  template<typename Dtype> \
   void caffe_cpu_##name(const int n, const Dtype* x, Dtype* y) { \
     CHECK_GT(n, 0); CHECK(x); CHECK(y); \
     for (int i = 0; i < n; ++i) { \
@@ -140,15 +139,14 @@ inline int8_t caffe_sign(Mtype val) {
   }
 
 // output is 1 for the positives, 0 for zero, and -1 for the negatives
-#define TYPE Dtype,Mtype
-DEFINE_CAFFE_CPU_UNARY_FUNC(sign, y[i] = Get<Dtype>(caffe_sign<TYPE>(Get<Mtype>(x[i]))));
+DEFINE_CAFFE_CPU_UNARY_FUNC(sign, y[i] = caffe_sign(x[i]));
 
 // This returns a nonzero value if the input has its sign bit set.
 // The name sngbit is meant to avoid conflicts with std::signbit in the macro.
 // The extra parens are needed because CUDA < 6.5 defines signbit as a macro,
 // and we don't want that to expand here when CUDA headers are also included.
 DEFINE_CAFFE_CPU_UNARY_FUNC(sgnbit, \
-    y[i] = Get<Dtype>(static_cast<int>(std::signbit(Get<double>(x[i])))));
+    y[i] = static_cast<int>(std::signbit(static_cast<float>(x[i]))));
 
 DEFINE_CAFFE_CPU_UNARY_FUNC(fabs, y[i] = std::fabs(x[i]));
 

@@ -16,7 +16,7 @@ __global__ void DropoutForward(const int n, const Dtype* in,
     const unsigned int* mask, const unsigned int threshold, const Mtype scale,
     Dtype* out) {
   CUDA_KERNEL_LOOP(index, n) {
-    out[index] = Get<Dtype>( Get<Mtype>(in[index]) * (mask[index] > threshold) * scale );
+    out[index] = in[index] * (mask[index] > threshold) * scale ;
   }
 }
 
@@ -36,7 +36,7 @@ void DropoutLayer<Dtype,Mtype>::Forward_gpu(const vector<Blob<Dtype,Mtype>*>& bo
     DropoutForward<Dtype,Mtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, bottom_data, mask, uint_thres_, scale_, top_data);
   } else {
-    caffe_copy<Dtype,Mtype>(count, bottom_data, top_data);
+    caffe_copy(count, bottom_data, top_data);
   }
 }
 
@@ -45,7 +45,7 @@ __global__ void DropoutBackward(const int n, const Dtype* in_diff,
     const unsigned int* mask, const unsigned int threshold, const Mtype scale,
     Dtype* out_diff) {
   CUDA_KERNEL_LOOP(index, n) {
-    out_diff[index] = Get<Dtype>( Get<Mtype>(in_diff[index]) * scale * (mask[index] > threshold) );
+    out_diff[index] = in_diff[index] * scale * (mask[index] > threshold) ;
   }
 }
 
@@ -66,7 +66,7 @@ void DropoutLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype,Mtype>*>& t
           count, top_diff, mask, uint_thres_, scale_, bottom_diff);
       CUDA_POST_KERNEL_CHECK;
     } else {
-      caffe_copy<Dtype,Mtype>(top[0]->count(), top_diff, bottom_diff);
+      caffe_copy(top[0]->count(), top_diff, bottom_diff);
     }
   }
 }

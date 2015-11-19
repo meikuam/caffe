@@ -32,7 +32,7 @@ class RandomNumberGeneratorTest : public ::testing::Test {
   Mtype sample_mean(const Dtype* const seqs, const int sample_size) {
     Mtype sum = 0;
     for (int i = 0; i < sample_size; ++i) {
-      sum += Get<Mtype>(seqs[i]);
+      sum += seqs[i];
     }
     return sum / sample_size;
   }
@@ -44,7 +44,7 @@ class RandomNumberGeneratorTest : public ::testing::Test {
   Mtype sample_mean(const int* const seqs, const int sample_size) {
     Mtype sum = 0;
     for (int i = 0; i < sample_size; ++i) {
-      sum += Get<Mtype>(seqs[i]);
+      sum += seqs[i];
     }
     return sum / sample_size;
   }
@@ -82,11 +82,11 @@ class RandomNumberGeneratorTest : public ::testing::Test {
     int num_mean = 0;
     int num_nan = 0;
     for (int i = 0; i < sample_size_; ++i) {
-      if (Get<Mtype>(rng_data[i]) > true_mean) {
+      if (rng_data[i] > true_mean) {
         ++num_above_mean;
-      } else if (Get<Mtype>(rng_data[i]) < true_mean) {
+      } else if (rng_data[i] < true_mean) {
         ++num_below_mean;
-      } else if (Get<Mtype>(rng_data[i]) == true_mean) {
+      } else if (rng_data[i] == true_mean) {
         ++num_mean;
       } else {
         ++num_nan;
@@ -117,8 +117,8 @@ class RandomNumberGeneratorTest : public ::testing::Test {
   void RngUniformChecks(const Mtype lower, const Mtype upper,
                         const void* cpu_data, const Mtype sparse_p = 0) {
     const Dtype* rng_data = static_cast<const Dtype*>(cpu_data);
-    const Mtype true_mean = (Get<Mtype>(lower) + Get<Mtype>(upper)) / 2;
-    const Mtype true_std = (Get<Mtype>(upper) - Get<Mtype>(lower)) / sqrt(12);
+    const Mtype true_mean = (lower + upper) / 2;
+    const Mtype true_std = (upper - lower) / sqrt(12);
     // Check that sample mean roughly matches true mean.
     const Mtype bound = this->mean_bound(true_std);
     const Mtype sample_mean = this->sample_mean(rng_data);
@@ -134,18 +134,18 @@ class RandomNumberGeneratorTest : public ::testing::Test {
     int num_above_upper = 0;
     int num_below_lower = 0;
     for (int i = 0; i < sample_size_; ++i) {
-      if (Get<Mtype>(rng_data[i]) > true_mean) {
+      if (rng_data[i] > true_mean) {
         ++num_above_mean;
-      } else if (Get<Mtype>(rng_data[i]) < true_mean) {
+      } else if (rng_data[i] < true_mean) {
         ++num_below_mean;
-      } else if (Get<Mtype>(rng_data[i]) == true_mean) {
+      } else if (rng_data[i] == true_mean) {
         ++num_mean;
       } else {
         ++num_nan;
       }
-      if (Get<Mtype>(rng_data[i]) > upper) {
+      if (rng_data[i] > upper) {
         ++num_above_upper;
-      } else if (Get<Mtype>(rng_data[i]) < lower) {
+      } else if (rng_data[i] < lower) {
         ++num_below_lower;
       }
     }
@@ -299,7 +299,7 @@ TYPED_TEST(RandomNumberGeneratorTest, TestRngGaussianTimesGaussian) {
 
   // Multiply Gaussians.
   for (int i = 0; i < this->sample_size_; ++i) {
-    gaussian_data_1[i] = Get<Dtype>( Get<Mtype>(gaussian_data_1[i]) * Get<Mtype>(gaussian_data_2[i]));
+    gaussian_data_1[i] = gaussian_data_1[i] * gaussian_data_2[i];
   }
 
   // Check that result has mean 0.
@@ -328,7 +328,7 @@ TYPED_TEST(RandomNumberGeneratorTest, TestRngUniformTimesUniform) {
 
   // Multiply Uniforms.
   for (int i = 0; i < this->sample_size_; ++i) {
-    uniform_data_1[i] = Get<Dtype>( Get<Mtype>(uniform_data_1[i]) * Get<Mtype>(uniform_data_2[i]));
+    uniform_data_1[i] = uniform_data_1[i] * uniform_data_2[i];
   }
 
   // Check that result does not violate checked properties of Uniform on [-6, 6]
@@ -357,7 +357,7 @@ TYPED_TEST(RandomNumberGeneratorTest, TestRngGaussianTimesBernoulli) {
 
   // Multiply Gaussian by Bernoulli.
   for (int i = 0; i < this->sample_size_; ++i) {
-    gaussian_data[i] = Get<Dtype>( Get<Mtype>(gaussian_data[i]) * Get<Mtype>(bernoulli_data[i]));
+    gaussian_data[i] = gaussian_data[i] * bernoulli_data[i];
   }
 
   // Check that result does not violate checked properties of sparsified
@@ -384,7 +384,7 @@ TYPED_TEST(RandomNumberGeneratorTest, TestRngUniformTimesBernoulli) {
 
   // Multiply Uniform by Bernoulli.
   for (int i = 0; i < this->sample_size_; ++i) {
-    uniform_data[i] = Get<Dtype>( Get<Mtype>(uniform_data[i]) * Get<Mtype>(bernoulli_data[i]));
+    uniform_data[i] = uniform_data[i] * bernoulli_data[i];
   }
 
   // Check that result does not violate checked properties of sparsified
@@ -409,12 +409,12 @@ TYPED_TEST(RandomNumberGeneratorTest, TestRngBernoulliTimesBernoulli) {
 
   // Multiply Bernoullis.
   for (int i = 0; i < this->sample_size_; ++i) {
-    bernoulli_data_a[i] = Get<int>(Get<Mtype>(bernoulli_data_a[i]) * Get<Mtype>(bernoulli_data_b[i]));
+    bernoulli_data_a[i] = static_cast<int>(bernoulli_data_a[i] * bernoulli_data_b[i]);
   }
   int num_ones = 0;
   for (int i = 0; i < this->sample_size_; ++i) {
-    if (Get<Mtype>(bernoulli_data_a[i]) != Mtype(0)) {
-      EXPECT_EQ(Mtype(1), Get<Mtype>(bernoulli_data_a[i]));
+    if (bernoulli_data_a[i] != Mtype(0)) {
+      EXPECT_EQ(Mtype(1), bernoulli_data_a[i]);
       ++num_ones;
     }
   }
@@ -484,7 +484,7 @@ TYPED_TEST(RandomNumberGeneratorTest, TestRngUniformIntGPU) {
   Dtype* uniform_data =
       static_cast<Dtype*>(this->data_->mutable_cpu_data());
   for (int i = 0; i < this->sample_size_; ++i) {
-    uniform_data[i] = Get<Dtype>(uniform_uint_data[i]);
+    uniform_data[i] = uniform_uint_data[i];
   }
   const Mtype lower = 0;
   const Mtype upper = UINT_MAX;
@@ -514,7 +514,7 @@ TYPED_TEST(RandomNumberGeneratorTest, TestRngGaussianTimesGaussianGPU) {
   const Dtype* gaussian_data_2 =
       static_cast<const Dtype*>(this->data_2_->cpu_data());
   for (int i = 0; i < this->sample_size_; ++i) {
-    gaussian_data_1[i] = Get<Dtype>( Get<Mtype>(gaussian_data_1[i]) * Get<Mtype>(gaussian_data_2[i]));
+    gaussian_data_1[i] = gaussian_data_1[i] * gaussian_data_2[i];
   }
 
   // Check that result does not violate checked properties of Gaussian
@@ -548,7 +548,7 @@ TYPED_TEST(RandomNumberGeneratorTest, TestRngUniformTimesUniformGPU) {
   const Dtype* uniform_data_2 =
       static_cast<const Dtype*>(this->data_2_->cpu_data());
   for (int i = 0; i < this->sample_size_; ++i) {
-    uniform_data_1[i] = Get<Dtype>( Get<Mtype>(uniform_data_1[i]) * Get<Mtype>(uniform_data_2[i]));
+    uniform_data_1[i] = uniform_data_1[i] * uniform_data_2[i];
   }
 
   // Check that result does not violate properties of Uniform on [-7, -3].

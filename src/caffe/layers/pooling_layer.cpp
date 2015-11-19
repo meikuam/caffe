@@ -144,12 +144,12 @@ void PoolingLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bo
     // Initialize
     if (use_top_mask) {
       top_mask = top[1]->mutable_cpu_data();
-      caffe_set(top_count, Get<Dtype>(-1), top_mask);
+      caffe_set(top_count, typedConsts<Dtype>::minus_one, top_mask);
     } else {
       mask = max_idx_.mutable_cpu_data();
-      caffe_set(top_count, -1, mask);
+      caffe_set(top_count, typedConsts<int>::minus_one, mask);
     }
-    caffe_set(top_count, Get<Dtype>(- maxDtype<Dtype>()), top_data);
+    caffe_set(top_count, Dtype(- maxDtype<Dtype>()), top_data);
     // The main loop
     for (int n = 0; n < bottom[0]->num(); ++n) {
       for (int c = 0; c < channels_; ++c) {
@@ -165,10 +165,10 @@ void PoolingLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bo
             for (int h = hstart; h < hend; ++h) {
               for (int w = wstart; w < wend; ++w) {
                 const int index = h * width_ + w;
-                if (Get<Mtype>(bottom_data[index]) > Get<Mtype>(top_data[pool_index])) {
+                if (bottom_data[index] > top_data[pool_index]) {
                   top_data[pool_index] = bottom_data[index];
                   if (use_top_mask) {
-                    top_mask[pool_index] = Get<Dtype>(index);
+                    top_mask[pool_index] = index;
                   } else {
                     mask[pool_index] = index;
                   }
@@ -190,7 +190,7 @@ void PoolingLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bo
     break;
   case PoolingParameter_PoolMethod_AVE:
     for (int i = 0; i < top_count; ++i) {
-      top_data[i] = Get<Dtype>(0);
+      top_data[i] = 0;
     }
     // The main loop
     for (int n = 0; n < bottom[0]->num(); ++n) {
@@ -210,10 +210,10 @@ void PoolingLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bo
             for (int h = hstart; h < hend; ++h) {
               for (int w = wstart; w < wend; ++w) {
                 data_sum +=
-                    Get<Mtype>(bottom_data[h * width_ + w]);
+                    bottom_data[h * width_ + w];
               }
             }
-            top_data[ph * pooled_width_ + pw] = Get<Dtype>(data_sum / pool_size);
+            top_data[ph * pooled_width_ + pw] = data_sum / pool_size;
           }
         }
         // compute offset
@@ -240,7 +240,7 @@ void PoolingLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& t
   Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
   // Different pooling methods. We explicitly do the switch outside the for
   // loop to save time, although this results in more codes.
-  caffe_set(bottom[0]->count(), Get<Dtype>(0), bottom_diff);
+  caffe_set(bottom[0]->count(), typedConsts<Dtype>::zero, bottom_diff);
   // We'll output the mask to top[1] if it's of size >1.
   const bool use_top_mask = top.size() > 1;
   const int* mask = NULL;  // suppress warnings about uninitialized variables
@@ -259,8 +259,8 @@ void PoolingLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& t
           for (int pw = 0; pw < pooled_width_; ++pw) {
             const int index = ph * pooled_width_ + pw;
             const int bottom_index =
-                use_top_mask ? Get<int>(top_mask[index]) : Get<int>(mask[index]);
-            bottom_diff[bottom_index] = Get<Dtype>( Get<Mtype>(top_diff[index]) + Get<Mtype>(bottom_diff[bottom_index]) );
+                use_top_mask ? static_cast<int>(top_mask[index]) : static_cast<int>(mask[index]);
+            bottom_diff[bottom_index] = top_diff[index] + bottom_diff[bottom_index] ;
           }
         }
         bottom_diff += bottom[0]->offset(0, 1);
@@ -291,7 +291,7 @@ void PoolingLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& t
             for (int h = hstart; h < hend; ++h) {
               for (int w = wstart; w < wend; ++w) {
                 bottom_diff[h * width_ + w] =
-                  Get<Dtype>( Get<Mtype>(top_diff[ph * pooled_width_ + pw]) / pool_size + Get<Mtype>(bottom_diff[h * width_ + w]) );
+                   top_diff[ph * pooled_width_ + pw] / pool_size + bottom_diff[h * width_ + w] ;
               }
             }
           }

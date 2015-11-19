@@ -201,7 +201,7 @@ void WindowDataLayer<Dtype,Mtype>::DataLayerSetUp(const vector<Blob<Dtype,Mtype>
     CHECK(has_mean_file_ == false) <<
       "Cannot specify mean_file and mean_value at the same time";
     for (int c = 0; c < this->transform_param_.mean_value_size(); ++c) {
-      mean_values_.push_back(Get<Dtype>(this->transform_param_.mean_value(c)));
+      mean_values_.push_back(this->transform_param_.mean_value(c));
     }
     CHECK(mean_values_.size() == 1 || mean_values_.size() == channels) <<
      "Specify either 1 mean_value or as many as channels: " << channels;
@@ -257,7 +257,7 @@ void WindowDataLayer<Dtype,Mtype>::load_batch(Batch<Dtype,Mtype>* batch) {
   bool use_square = (crop_mode == "square") ? true : false;
 
   // zero out batch
-  caffe_set(batch->data_.count(), Get<Dtype>(0), top_data);
+  caffe_set(batch->data_.count(), typedConsts<Dtype>::zero, top_data);
 
   const int num_fg = static_cast<int>(static_cast<float>(batch_size)
       * fg_fraction);
@@ -408,12 +408,12 @@ void WindowDataLayer<Dtype,Mtype>::load_batch(Batch<Dtype,Mtype>* batch) {
             if (this->has_mean_file_) {
               int mean_index = (c * mean_height + h + mean_off + pad_h)
                            * mean_width + w + mean_off + pad_w;
-              top_data[top_index] = Get<Dtype>((pixel - Get<Mtype>(mean[mean_index])) * scale);
+              top_data[top_index] = (pixel - mean[mean_index]) * scale;
             } else {
               if (this->has_mean_values_) {
-                top_data[top_index] = Get<Dtype>((pixel - Get<Mtype>(this->mean_values_[c])) * scale);
+                top_data[top_index] = (pixel - this->mean_values_[c]) * scale;
               } else {
-                top_data[top_index] = Get<Dtype>(pixel * scale);
+                top_data[top_index] = pixel * scale;
               }
             }
           }
@@ -421,7 +421,7 @@ void WindowDataLayer<Dtype,Mtype>::load_batch(Batch<Dtype,Mtype>* batch) {
       }
       trans_time += timer.MicroSeconds();
       // get window label
-      top_label[item_id] = Get<Dtype>(window[WindowDataLayer<Dtype,Mtype>::LABEL]);
+      top_label[item_id] = window[WindowDataLayer<Dtype,Mtype>::LABEL];
 
       #if 0
       // useful debugging code for dumping transformed windows to disk

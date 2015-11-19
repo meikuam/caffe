@@ -70,7 +70,7 @@ class DataTransformTest : public ::testing::Test {
       transformer->Transform(datum, blob);
       for (int j = 0; j < blob->count(); ++j) {
         num_sequence_matches +=
-            (Get<Mtype>(crop_sequence[iter][j]) == Get<Mtype>(blob->cpu_data()[j]));
+            (crop_sequence[iter][j] == blob->cpu_data()[j]);
       }
     }
     return num_sequence_matches;
@@ -106,7 +106,7 @@ TYPED_TEST(DataTransformTest, TestEmptyTransform) {
   EXPECT_EQ(blob->height(), datum.height());
   EXPECT_EQ(blob->width(), datum.width());
   for (int j = 0; j < blob->count(); ++j) {
-    EXPECT_EQ(Get<int>(blob->cpu_data()[j]), label);
+    EXPECT_EQ(static_cast<int>(blob->cpu_data()[j]), label);
   }
 }
 
@@ -132,7 +132,7 @@ TYPED_TEST(DataTransformTest, TestEmptyTransformUniquePixels) {
   EXPECT_EQ(blob->height(), datum.height());
   EXPECT_EQ(blob->width(), datum.width());
   for (int j = 0; j < blob->count(); ++j) {
-    EXPECT_EQ(Get<int>(blob->cpu_data()[j]), j);
+    EXPECT_EQ(static_cast<int>(blob->cpu_data()[j]), j);
   }
 }
 
@@ -162,7 +162,7 @@ TYPED_TEST(DataTransformTest, TestCropSize) {
     EXPECT_EQ(blob->height(), crop_size);
     EXPECT_EQ(blob->width(), crop_size);
     for (int j = 0; j < blob->count(); ++j) {
-      EXPECT_EQ(Get<int>(blob->cpu_data()[j]), label);
+      EXPECT_EQ(static_cast<int>(blob->cpu_data()[j]), label);
     }
   }
 }
@@ -297,7 +297,7 @@ TYPED_TEST(DataTransformTest, TestMeanValue) {
   transformer->InitRand();
   transformer->Transform(datum, blob);
   for (int j = 0; j < blob->count(); ++j) {
-    EXPECT_EQ(Get<int>(blob->cpu_data()[j]), label - mean_value);
+    EXPECT_EQ(static_cast<int>(blob->cpu_data()[j]), label - mean_value);
   }
 }
 
@@ -323,7 +323,7 @@ TYPED_TEST(DataTransformTest, TestMeanValues) {
   transformer->Transform(datum, blob);
   for (int c = 0; c < channels; ++c) {
     for (int j = 0; j < height * width; ++j) {
-      EXPECT_EQ(Get<int>(blob->cpu_data()[blob->offset(0, c) + j]), label - c);
+      EXPECT_EQ(static_cast<int>(blob->cpu_data()[blob->offset(0, c) + j]), label - c);
     }
   }
 }
@@ -364,7 +364,7 @@ TYPED_TEST(DataTransformTest, TestMeanFile) {
   transformer->InitRand();
   transformer->Transform(datum, blob);
   for (int j = 0; j < blob->count(); ++j) {
-      EXPECT_EQ(Get<int>(blob->cpu_data()[j]), 0);
+      EXPECT_EQ(static_cast<int>(blob->cpu_data()[j]), 0);
   }
 }
 

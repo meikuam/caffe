@@ -16,7 +16,7 @@ void SoftmaxLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype,Mtype>*>& bottom
   vector<int> mult_dims(1, bottom[0]->shape(softmax_axis_));
   sum_multiplier_.Reshape(mult_dims);
   Dtype* multiplier_data = sum_multiplier_.mutable_cpu_data();
-  caffe_set(sum_multiplier_.count(), Get<Dtype>(1), multiplier_data);
+  caffe_set(sum_multiplier_.count(), typedConsts<Dtype>::one, multiplier_data);
   outer_num_ = bottom[0]->count(0, softmax_axis_);
   inner_num_ = bottom[0]->count(softmax_axis_ + 1);
   vector<int> scale_dims = bottom[0]->shape();
@@ -32,16 +32,16 @@ void SoftmaxLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bo
   Dtype* scale_data = scale_.mutable_cpu_data();
   int channels = bottom[0]->shape(softmax_axis_);
   int dim = bottom[0]->count() / outer_num_;
-  caffe_copy<Dtype,Mtype>(bottom[0]->count(), bottom_data, top_data);
+  caffe_copy(bottom[0]->count(), bottom_data, top_data);
   // We need to subtract the max to avoid numerical issues, compute the exp,
   // and then normalize.
   for (int i = 0; i < outer_num_; ++i) {
     // initialize scale_data to the first plane
-    caffe_copy<Dtype,Mtype>(inner_num_, bottom_data + i * dim, scale_data);
+    caffe_copy(inner_num_, bottom_data + i * dim, scale_data);
     for (int j = 0; j < channels; j++) {
       for (int k = 0; k < inner_num_; k++) {
-        scale_data[k] = Get<Dtype>( std::max(Get<Mtype>(scale_data[k]),
-            Get<Mtype>(bottom_data[i * dim + j * inner_num_ + k])) );
+        scale_data[k] = std::max(scale_data[k],
+            bottom_data[i * dim + j * inner_num_ + k]) ;
       }
     }
     // subtraction
@@ -70,7 +70,7 @@ void SoftmaxLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& t
   Dtype* scale_data = scale_.mutable_cpu_data();
   int channels = top[0]->shape(softmax_axis_);
   int dim = top[0]->count() / outer_num_;
-  caffe_copy<Dtype,Mtype>(top[0]->count(), top_diff, bottom_diff);
+  caffe_copy(top[0]->count(), top_diff, bottom_diff);
   for (int i = 0; i < outer_num_; ++i) {
     // compute dot(top_diff, top_data) and subtract them from the bottom diff
     for (int k = 0; k < inner_num_; ++k) {

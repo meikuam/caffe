@@ -12,7 +12,7 @@ namespace caffe {
 template <typename Dtype, typename Mtype>
 __global__ void TanHForward(const int n, const Dtype* in, Dtype* out) {
   CUDA_KERNEL_LOOP(index, n) {
-    out[index] = Get<Dtype>( tanh(Get<Mtype>(in[index])) );
+    out[index] = tanh(in[index]) ;
   }
 }
 
@@ -32,8 +32,8 @@ template <typename Dtype, typename Mtype>
 __global__ void TanHBackward(const int n, const Dtype* in_diff,
     const Dtype* out_data, Dtype* out_diff) {
   CUDA_KERNEL_LOOP(index, n) {
-    Mtype tanhx = Get<Mtype>(out_data[index]);
-    out_diff[index] = Get<Dtype>( Get<Mtype>(in_diff[index]) * (1 - tanhx * tanhx) );
+    Mtype tanhx = out_data[index];
+    out_diff[index] = in_diff[index] * (1 - tanhx * tanhx) ;
   }
 }
 

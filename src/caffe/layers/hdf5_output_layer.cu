@@ -23,9 +23,9 @@ void HDF5OutputLayer<Dtype,Mtype>::Forward_gpu(const vector<Blob<Dtype,Mtype>*>&
   const int label_datum_dim = bottom[1]->count() / bottom[1]->num();
 
   for (int i = 0; i < bottom[0]->num(); ++i) {
-    caffe_copy<Dtype,Mtype>(data_datum_dim, &bottom[0]->gpu_data()[i * data_datum_dim],
+    caffe_copy(data_datum_dim, &bottom[0]->gpu_data()[i * data_datum_dim],
         &data_blob_.mutable_cpu_data()[i * data_datum_dim]);
-    caffe_copy<Dtype,Mtype>(label_datum_dim, &bottom[1]->gpu_data()[i * label_datum_dim],
+    caffe_copy(label_datum_dim, &bottom[1]->gpu_data()[i * label_datum_dim],
         &label_blob_.mutable_cpu_data()[i * label_datum_dim]);
   }
   SaveBlobs();

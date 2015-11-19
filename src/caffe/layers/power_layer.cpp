@@ -25,12 +25,12 @@ void PowerLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bott
   const int count = bottom[0]->count();
   // Special case where we can ignore the input: scale or power is 0.
   if (diff_scale_ == Mtype(0)) {
-    Mtype value(power_ == 0 ? Mtype(1.) : Mtype(pow(shift_, power_)));
-    caffe_set(count, Get<Dtype>(value), top_data);
+    Dtype value(power_ == 0 ? Dtype(1.) : Dtype(pow(shift_, power_)));
+    caffe_set(count, value, top_data);
     return;
   }
   const Dtype* bottom_data = bottom[0]->cpu_data();
-  caffe_copy<Dtype,Mtype>(count, bottom_data, top_data);
+  caffe_copy(count, bottom_data, top_data);
   if (scale_ != Mtype(1)) {
     caffe_scal<Dtype,Mtype>(count, scale_, top_data);
   }
@@ -50,8 +50,8 @@ void PowerLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
     const int count = bottom[0]->count();
     const Dtype* top_diff = top[0]->cpu_diff();
-    if (diff_scale_ == Mtype(0) || power_ == Mtype(1)) {
-      caffe_set(count, Get<Dtype>(diff_scale_), bottom_diff);
+    if (diff_scale_ == 0. || power_ == 1.) {
+      caffe_set(count, Dtype(diff_scale_), bottom_diff);
     } else {
       const Dtype* bottom_data = bottom[0]->cpu_data();
       // Compute dy/dx = scale * power * (shift + scale * x)^(power - 1)
@@ -74,7 +74,7 @@ void PowerLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top
         caffe_div(count, top_data, bottom_data, bottom_diff);
         caffe_scal<Dtype,Mtype>(count, power_, bottom_diff);
       } else {
-        caffe_copy<Dtype,Mtype>(count, bottom_data, bottom_diff);
+        caffe_copy(count, bottom_data, bottom_diff);
         if (scale_ != Mtype(1)) {
           caffe_scal<Dtype,Mtype>(count, scale_, bottom_diff);
         }

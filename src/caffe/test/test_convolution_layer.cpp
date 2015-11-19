@@ -249,14 +249,14 @@ TYPED_TEST(ConvolutionLayerTest, TestSimpleConvolution) {
   top_data = this->blob_top_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], choose<Dtype>(1e-4,1e-2));
   }
   caffe_conv<Dtype,Mtype>(this->blob_bottom_2_, convolution_param, layer->blobs(),
       this->MakeReferenceTop(this->blob_top_2_));
   top_data = this->blob_top_2_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], choose<Dtype>(1e-4,1e-2));
   }
 }
 
@@ -295,7 +295,7 @@ TYPED_TEST(ConvolutionLayerTest, Test0DConvolution) {
                  this->blob_bottom_->cpu_data()[n * bottom_dim + bottom_d];
       }
       EXPECT_NEAR(value,
-          this->blob_top_->cpu_data()[n * dim + d],tol<Dtype>(1e-4));
+          this->blob_top_->cpu_data()[n * dim + d],choose<Dtype>(1e-4,1e-2));
     }
   }
 }
@@ -337,14 +337,14 @@ TYPED_TEST(ConvolutionLayerTest, TestSimple3DConvolution) {
   top_data = this->blob_top_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-3));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], choose<Dtype>(1e-3,5e-2));
   }
   caffe_conv(this->blob_bottom_2_, convolution_param, layer->blobs(),
       this->MakeReferenceTop(this->blob_top_2_));
   top_data = this->blob_top_2_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-3));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], choose<Dtype>(1e-3,5e-2));
   }
 }
 
@@ -372,7 +372,7 @@ TYPED_TEST(ConvolutionLayerTest, Test1x1Convolution) {
   top_data = this->blob_top_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], choose<Dtype>(1e-4,1e-2));
   }
 }
 
@@ -401,7 +401,7 @@ TYPED_TEST(ConvolutionLayerTest, TestSimpleConvolutionGroup) {
   top_data = this->blob_top_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], choose<Dtype>(1e-4,1e-2));
   }
 }
 
@@ -495,7 +495,7 @@ TYPED_TEST(ConvolutionLayerTest, TestSobelConvolution) {
   const Dtype* top_data = this->blob_top_->cpu_data();
   const Dtype* sep_top_data = this->blob_top_2_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(top_data[i], sep_top_data[i], tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], sep_top_data[i], choose<Dtype>(1e-4,1e-2));
   }
 }
 
@@ -544,11 +544,11 @@ TYPED_TEST(ConvolutionLayerTest, TestNDAgainst2D) {
   Blob<Dtype,Mtype> backward_weight_result_2d;
   // Test with 2D im2col
   {
-    caffe_set(this->blob_top_->count(), Dtype(0.),
+    caffe_set(this->blob_top_->count(), typedConsts<Dtype>::zero,
               this->blob_top_->mutable_cpu_data());
-    caffe_set(this->blob_bottom_->count(), Dtype(0.),
+    caffe_set(this->blob_bottom_->count(), typedConsts<Dtype>::zero,
               this->blob_bottom_->mutable_cpu_diff());
-    caffe_set(weights.count(), Dtype(0.), weights.mutable_cpu_diff());
+    caffe_set(weights.count(), typedConsts<Dtype>::zero, weights.mutable_cpu_diff());
     // Do SetUp and Forward; save Forward result in result_2d.
     convolution_param->set_force_nd_im2col(false);
     ConvolutionLayer<Dtype,Mtype> layer_2d(layer_param);
@@ -562,7 +562,7 @@ TYPED_TEST(ConvolutionLayerTest, TestNDAgainst2D) {
     // Copy pre-generated top diff into actual top diff;
     // do Backward and save result in backward_result_2d.
     ASSERT_EQ(this->blob_top_->shape(), top_diff.shape());
-    caffe_copy<Dtype,Mtype>(top_diff.count(), top_diff.cpu_data(),
+    caffe_copy(top_diff.count(), top_diff.cpu_data(),
                this->blob_top_->mutable_cpu_diff());
     layer_2d.Backward(this->blob_top_vec_, propagate_down,
                       this->blob_bottom_vec_);
@@ -575,11 +575,11 @@ TYPED_TEST(ConvolutionLayerTest, TestNDAgainst2D) {
   Blob<Dtype,Mtype> backward_weight_result_nd;
   // Test with ND im2col
   {
-    caffe_set(this->blob_top_->count(), Dtype(0.),
+    caffe_set(this->blob_top_->count(), typedConsts<Dtype>::zero,
               this->blob_top_->mutable_cpu_data());
-    caffe_set(this->blob_bottom_->count(), Dtype(0.),
+    caffe_set(this->blob_bottom_->count(), typedConsts<Dtype>::zero,
               this->blob_bottom_->mutable_cpu_diff());
-    caffe_set(weights.count(), Dtype(0.), weights.mutable_cpu_diff());
+    caffe_set(weights.count(), typedConsts<Dtype>::zero, weights.mutable_cpu_diff());
     // Do SetUp and Forward; save Forward result in result_nd.
     convolution_param->set_force_nd_im2col(true);
     ConvolutionLayer<Dtype,Mtype> layer_nd(layer_param);
@@ -593,7 +593,7 @@ TYPED_TEST(ConvolutionLayerTest, TestNDAgainst2D) {
     // Copy pre-generated top diff into actual top diff;
     // do Backward and save result in backward_result_nd.
     ASSERT_EQ(this->blob_top_->shape(), top_diff.shape());
-    caffe_copy<Dtype,Mtype>(top_diff.count(), top_diff.cpu_data(),
+    caffe_copy(top_diff.count(), top_diff.cpu_data(),
                this->blob_top_->mutable_cpu_diff());
     layer_nd.Backward(this->blob_top_vec_, propagate_down,
                       this->blob_bottom_vec_);
@@ -819,14 +819,14 @@ TYPED_TEST(CuDNNConvolutionLayerTest, TestSimpleConvolutionCuDNN) {
   top_data = this->blob_top_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], choose<Dtype>(1e-4,1e-2));
   }
   caffe_conv<Dtype,Mtype>(this->blob_bottom_2_, convolution_param, layer->blobs(),
       this->MakeReferenceTop(this->blob_top_2_));
   top_data = this->blob_top_2_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], choose<Dtype>(1e-4,1e-2));
   }
 }
 
@@ -855,7 +855,7 @@ TYPED_TEST(CuDNNConvolutionLayerTest, TestSimpleConvolutionGroupCuDNN) {
   top_data = this->blob_top_->cpu_data();
   ref_top_data = this->ref_blob_top_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(top_data[i], ref_top_data[i], tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], ref_top_data[i], choose<Dtype>(1e-4,1e-2));
   }
 }
 
@@ -950,7 +950,7 @@ TYPED_TEST(CuDNNConvolutionLayerTest, TestSobelConvolutionCuDNN) {
   const Dtype* top_data = this->blob_top_->cpu_data();
   const Dtype* sep_top_data = this->blob_top_2_->cpu_data();
   for (int i = 0; i < this->blob_top_->count(); ++i) {
-    EXPECT_NEAR(top_data[i], sep_top_data[i], tol<Dtype>(1e-4));
+    EXPECT_NEAR(top_data[i], sep_top_data[i], choose<Dtype>(1e-4,1e-2));
   }
 }
 

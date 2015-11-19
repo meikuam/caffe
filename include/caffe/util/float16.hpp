@@ -1,7 +1,6 @@
 #ifndef CAFFE_UTIL_FP16_H_
 #define CAFFE_UTIL_FP16_H_
 
-// #include "get.hpp"
 #include <cfloat>
 #include <iosfwd>
 #include <algorithm>

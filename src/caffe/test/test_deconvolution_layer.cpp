@@ -132,8 +132,8 @@ TYPED_TEST(DeconvolutionLayerTest, TestSimpleDeconvolution) {
           } else if (h_overlap || w_overlap) {
             expected += 3;
           }
-          EXPECT_NEAR(Get<Mtype>(top_data[this->blob_top_->offset(n, c, h, w)]),
-              expected, tol<Dtype>(1e-4));
+          EXPECT_NEAR(top_data[this->blob_top_->offset(n, c, h, w)],
+              expected, choose<Dtype>(1e-4,1e-2));
         }
       }
     }
@@ -154,7 +154,7 @@ TYPED_TEST(DeconvolutionLayerTest, TestGradient) {
   convolution_param->mutable_weight_filler()->set_type("gaussian");
   convolution_param->mutable_bias_filler()->set_type("gaussian");
   DeconvolutionLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(5e-2), Get<Dtype>(1e-3));
+  GradientChecker<Dtype,Mtype> checker(5e-2, 1e-3);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }
@@ -204,11 +204,11 @@ TYPED_TEST(DeconvolutionLayerTest, TestNDAgainst2D) {
   Blob<Dtype,Mtype> backward_weight_result_2d;
   // Test with 2D im2col
   {
-    caffe_set(this->blob_top_->count(), Get<Dtype>(0),
+    caffe_set(this->blob_top_->count(), typedConsts<Dtype>::zero,
               this->blob_top_->mutable_cpu_data());
-    caffe_set(this->blob_bottom_->count(), Get<Dtype>(0),
+    caffe_set(this->blob_bottom_->count(), typedConsts<Dtype>::zero,
               this->blob_bottom_->mutable_cpu_diff());
-    caffe_set(weights.count(), Get<Dtype>(0), weights.mutable_cpu_diff());
+    caffe_set(weights.count(), typedConsts<Dtype>::zero, weights.mutable_cpu_diff());
     // Do SetUp and Forward; save Forward result in result_2d.
     convolution_param->set_force_nd_im2col(false);
     DeconvolutionLayer<Dtype,Mtype> layer_2d(layer_param);
@@ -222,7 +222,7 @@ TYPED_TEST(DeconvolutionLayerTest, TestNDAgainst2D) {
     // Copy pre-generated top diff into actual top diff;
     // do Backward and save result in backward_result_2d.
     ASSERT_EQ(this->blob_top_->shape(), top_diff.shape());
-    caffe_copy<Dtype,Mtype>(top_diff.count(), top_diff.cpu_data(),
+    caffe_copy(top_diff.count(), top_diff.cpu_data(),
                this->blob_top_->mutable_cpu_diff());
     layer_2d.Backward(this->blob_top_vec_, propagate_down,
                       this->blob_bottom_vec_);
@@ -235,11 +235,11 @@ TYPED_TEST(DeconvolutionLayerTest, TestNDAgainst2D) {
   Blob<Dtype,Mtype> backward_weight_result_nd;
   // Test with ND im2col
   {
-    caffe_set(this->blob_top_->count(), Get<Dtype>(0),
+    caffe_set(this->blob_top_->count(), typedConsts<Dtype>::zero,
               this->blob_top_->mutable_cpu_data());
-    caffe_set(this->blob_bottom_->count(), Get<Dtype>(0),
+    caffe_set(this->blob_bottom_->count(), typedConsts<Dtype>::zero,
               this->blob_bottom_->mutable_cpu_diff());
-    caffe_set(weights.count(), Get<Dtype>(0), weights.mutable_cpu_diff());
+    caffe_set(weights.count(), typedConsts<Dtype>::zero, weights.mutable_cpu_diff());
     // Do SetUp and Forward; save Forward result in result_nd.
     convolution_param->set_force_nd_im2col(true);
     DeconvolutionLayer<Dtype,Mtype> layer_nd(layer_param);
@@ -253,7 +253,7 @@ TYPED_TEST(DeconvolutionLayerTest, TestNDAgainst2D) {
     // Copy pre-generated top diff into actual top diff;
     // do Backward and save result in backward_result_nd.
     ASSERT_EQ(this->blob_top_->shape(), top_diff.shape());
-    caffe_copy<Dtype,Mtype>(top_diff.count(), top_diff.cpu_data(),
+    caffe_copy(top_diff.count(), top_diff.cpu_data(),
                this->blob_top_->mutable_cpu_diff());
     layer_nd.Backward(this->blob_top_vec_, propagate_down,
                       this->blob_bottom_vec_);
@@ -264,8 +264,8 @@ TYPED_TEST(DeconvolutionLayerTest, TestNDAgainst2D) {
   ASSERT_EQ(result_nd.count(), result_2d.count());
   for (int i = 0; i < result_2d.count(); ++i)  {
     if (sizeof(Dtype) == 2)
-      EXPECT_NEAR(Get<float>(result_2d.cpu_data()[i]),
-          Get<float>(result_nd.cpu_data()[i]), 0.5F);
+      EXPECT_NEAR(result_2d.cpu_data()[i],
+          result_nd.cpu_data()[i], 0.5F);
     else
       EXPECT_EQ(result_2d.cpu_data()[i], result_nd.cpu_data()[i]);
   }

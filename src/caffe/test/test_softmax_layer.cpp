@@ -51,21 +51,21 @@ TYPED_TEST(SoftmaxLayerTest, TestForward) {
       for (int l = 0; l < this->blob_bottom_->width(); ++l) {
         Mtype sum = 0;
         for (int j = 0; j < this->blob_top_->channels(); ++j) {
-          sum += Get<Mtype>(this->blob_top_->data_at(i, j, k, l));
+          sum += this->blob_top_->data_at(i, j, k, l);
         }
         EXPECT_GE(sum, 0.999);
         EXPECT_LE(sum, 1.001);
         // Test exact values
         Mtype scale = 0;
         for (int j = 0; j < this->blob_bottom_->channels(); ++j) {
-          scale += exp(Get<Mtype>(this->blob_bottom_->data_at(i, j, k, l)));
+          scale += exp(this->blob_bottom_->data_at(i, j, k, l));
         }
         for (int j = 0; j < this->blob_bottom_->channels(); ++j) {
-          EXPECT_GE(Get<Mtype>(this->blob_top_->data_at(i, j, k, l)) + tol<Dtype>(1e-4),
-              exp(Get<Mtype>(this->blob_bottom_->data_at(i, j, k, l))) / scale)
+          EXPECT_GE(this->blob_top_->data_at(i, j, k, l) + choose<Dtype>(1e-4,1e-2),
+              exp(this->blob_bottom_->data_at(i, j, k, l)) / scale)
               << "debug: " << i << " " << j;
-          EXPECT_LE(Get<Mtype>(this->blob_top_->data_at(i, j, k, l)) - tol<Dtype>(1e-4),
-              exp(Get<Mtype>(this->blob_bottom_->data_at(i, j, k, l))) / scale)
+          EXPECT_LE(this->blob_top_->data_at(i, j, k, l) - choose<Dtype>(1e-4,1e-2),
+              exp(this->blob_bottom_->data_at(i, j, k, l)) / scale)
               << "debug: " << i << " " << j;
         }
       }
@@ -78,7 +78,7 @@ TYPED_TEST(SoftmaxLayerTest, TestGradient) {
   typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   SoftmaxLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-3));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-3);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }
@@ -122,21 +122,21 @@ TYPED_TEST(CuDNNSoftmaxLayerTest, TestForwardCuDNN) {
       for (int l = 0; l < this->blob_bottom_->width(); ++l) {
         Mtype sum = 0;
         for (int j = 0; j < this->blob_top_->channels(); ++j) {
-          sum += Get<Mtype>(this->blob_top_->data_at(i, j, k, l));
+          sum += this->blob_top_->data_at(i, j, k, l);
         }
         EXPECT_GE(sum, 0.999);
         EXPECT_LE(sum, 1.001);
         // Test exact values
         Mtype scale = 0;
         for (int j = 0; j < this->blob_bottom_->channels(); ++j) {
-          scale += exp(Get<Mtype>(this->blob_bottom_->data_at(i, j, k, l)));
+          scale += exp(this->blob_bottom_->data_at(i, j, k, l));
         }
         for (int j = 0; j < this->blob_bottom_->channels(); ++j) {
-          EXPECT_GE(Get<Mtype>(this->blob_top_->data_at(i, j, k, l)) + tol<Dtype>(1e-4),
-              exp(Get<Mtype>(this->blob_bottom_->data_at(i, j, k, l))) / scale)
+          EXPECT_GE(this->blob_top_->data_at(i, j, k, l) + choose<Dtype>(1e-4,1e-2),
+              exp(this->blob_bottom_->data_at(i, j, k, l)) / scale)
               << "debug: " << i << " " << j;
-          EXPECT_LE(Get<Mtype>(this->blob_top_->data_at(i, j, k, l)) - tol<Dtype>(1e-4),
-              exp(Get<Mtype>(this->blob_bottom_->data_at(i, j, k, l))) / scale)
+          EXPECT_LE(this->blob_top_->data_at(i, j, k, l) - choose<Dtype>(1e-4,1e-2),
+              exp(this->blob_bottom_->data_at(i, j, k, l)) / scale)
               << "debug: " << i << " " << j;
         }
       }
@@ -149,7 +149,7 @@ TYPED_TEST(CuDNNSoftmaxLayerTest, TestGradientCuDNN) {
   typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   CuDNNSoftmaxLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-3));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-3);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }

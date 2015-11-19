@@ -36,8 +36,8 @@ void ContrastiveLossLayer<Dtype,Mtype>::Forward_gpu(
       this->layer_param_.contrastive_loss_param().legacy_version();
   Mtype loss(0.0);
   for (int i = 0; i < bottom[0]->num(); ++i) {
-    if (Get<int>(bottom[2]->cpu_data()[i])) {  // similar pairs
-      loss += Get<Mtype>(dist_sq_.cpu_data()[i]);
+    if (static_cast<int>(bottom[2]->cpu_data()[i])) {  // similar pairs
+      loss += dist_sq_.cpu_data()[i];
     } else {  // dissimilar pairs
       if (legacy_version) {
         loss += std::max((float)(margin - dist_sq_.cpu_data()[i]), 0.F);
@@ -48,7 +48,7 @@ void ContrastiveLossLayer<Dtype,Mtype>::Forward_gpu(
     }
   }
   loss = loss / static_cast<Mtype>(bottom[0]->num()) / Mtype(2);
-  top[0]->mutable_cpu_data()[0] = Get<Dtype>(loss);
+  top[0]->mutable_cpu_data()[0] = loss;
 }
 
 template <typename Dtype, typename Mtype>
@@ -58,23 +58,23 @@ __global__ void CLLBackward(const int count, const int channels,
     Dtype *bottom_diff) {
   CUDA_KERNEL_LOOP(i, count) {
     int n = i / channels;  // the num index, to access y and dist_sq
-    if (Get<int>(y[n])) {  // similar pairs
-      bottom_diff[i] = Get<Dtype>( alpha * Get<Mtype>(diff[i]) );
+    if (static_cast<int>(y[n])) {  // similar pairs
+      bottom_diff[i] = alpha * diff[i] ;
     } else {  // dissimilar pairs
       Mtype mdist(0.0);
       Mtype beta(0.0);
       if (legacy_version) {
-        mdist = (margin - Get<Mtype>(dist_sq[n]));
+        mdist = (margin - dist_sq[n]);
         beta = -alpha;
       } else {
-        Mtype dist(sqrt(Get<Mtype>(dist_sq[n])));
+        Mtype dist(sqrt(dist_sq[n]));
         mdist = (margin - dist);
-        beta = -alpha * mdist / (dist + Mtype(1e-4)) * Get<Mtype>(diff[i]);
+        beta = -alpha * mdist / (dist + Mtype(1e-4)) * diff[i];
       }
       if (mdist > 0.0) {
-        bottom_diff[i] = Get<Dtype>(beta);
+        bottom_diff[i] = beta;
       } else {
-        bottom_diff[i] = Get<Dtype>(0);
+        bottom_diff[i] = 0;
       }
     }
   }
@@ -91,7 +91,7 @@ void ContrastiveLossLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype,Mty
       const bool legacy_version =
           this->layer_param_.contrastive_loss_param().legacy_version();
       const Mtype sign(i == 0 ? 1 : -1);
-      const Mtype alpha(sign * Get<Mtype>(top[0]->cpu_diff()[0]) /
+      const Mtype alpha(sign * top[0]->cpu_diff()[0] /
           static_cast<Mtype>(bottom[0]->num()));
       // NOLINT_NEXT_LINE(whitespace/operators)
       CLLBackward<Dtype,Mtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(

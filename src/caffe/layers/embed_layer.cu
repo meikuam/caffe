@@ -17,7 +17,7 @@ __global__ void EmbedForward(const int nthreads, const Dtype* bottom_data,
   CUDA_KERNEL_LOOP(top_index, nthreads) {
     const int n = top_index / N;
     const int d = top_index % N;
-    const int index = Get<int>(bottom_data[n]);
+    const int index = static_cast<int>(bottom_data[n]);
     const int weight_index = index * N + d;
     top_data[top_index] = weight[weight_index];
   }
@@ -35,7 +35,7 @@ __global__ void EmbedBackward(const int nthreads, const Dtype* bottom_data,
   CUDA_KERNEL_LOOP(top_index, nthreads) {
     const int n = top_index / N;
     const int d = top_index % N;
-    const int index = Get<int>(bottom_data[n]);
+    const int index = static_cast<int>(bottom_data[n]);
     const int weight_index = index * N + d;
     caffe_gpu_atomic_add(top_diff[top_index], weight_diff + weight_index);
   }
@@ -52,9 +52,9 @@ void EmbedLayer<Dtype,Mtype>::Forward_gpu(const vector<Blob<Dtype,Mtype>*>& bott
       <<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
       count, bottom_data, weight, M_, N_, K_, top_data);
   if (bias_term_) {
-    caffe_gpu_gemm<Dtype,Mtype>(CblasNoTrans, CblasNoTrans, M_, N_, 1, Get<Mtype>(1),
+    caffe_gpu_gemm<Dtype,Mtype>(CblasNoTrans, CblasNoTrans, M_, N_, 1, 1,
         bias_multiplier_.gpu_data(),
-        this->blobs_[1]->gpu_data(), Get<Mtype>(1), top_data);
+        this->blobs_[1]->gpu_data(), 1, top_data);
   }
 }
 
@@ -74,8 +74,8 @@ void EmbedLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype,Mtype>*>& top
   if (bias_term_ && this->param_propagate_down_[1]) {
     const Dtype* top_diff = top[0]->gpu_diff();
     Dtype* bias_diff = this->blobs_[1]->mutable_gpu_diff();
-    caffe_gpu_gemv<Dtype,Mtype>(CblasTrans, M_, N_, Get<Mtype>(1), top_diff,
-        bias_multiplier_.gpu_data(), Get<Mtype>(1), bias_diff);
+    caffe_gpu_gemv<Dtype,Mtype>(CblasTrans, M_, N_, 1, top_diff,
+        bias_multiplier_.gpu_data(), 1, bias_diff);
   }
 }
 

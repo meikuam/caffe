@@ -90,7 +90,7 @@ void GradientChecker<Dtype,Mtype>::CheckGradientSingle(Layer<Dtype,Mtype>* layer
   vector<bool> propagate_down(bottom.size(), check_bottom == -1);
   for (int i = 0; i < layer->blobs().size(); ++i) {
     Blob<Dtype,Mtype>* blob = layer->blobs()[i].get();
-    caffe_set(blob->count(), Dtype(0.), blob->mutable_cpu_diff());
+    caffe_set(blob->count(), typedConsts<Dtype>::zero, blob->mutable_cpu_diff());
     blobs_to_check.push_back(blob);
   }
   if (check_bottom == -1) {
@@ -122,7 +122,7 @@ void GradientChecker<Dtype,Mtype>::CheckGradientSingle(Layer<Dtype,Mtype>* layer
     const Dtype* diff = blobs_to_check[blob_id]->cpu_diff();
     Dtype* computed_gradients =
         computed_gradient_blobs[blob_id]->mutable_cpu_data();
-    caffe_copy<Dtype,Mtype>(count, diff, computed_gradients);
+    caffe_copy(count, diff, computed_gradients);
   }
   // Compute derivative of top w.r.t. each bottom and parameter input using
   // finite differencing.
@@ -244,7 +244,7 @@ Dtype GradientChecker<Dtype,Mtype>::GetObjAndGradient(const Layer<Dtype,Mtype>& 
         loss += top_blob_data[j] * top_blob_data[j];
       }
       // set the diff: simply the data.
-      caffe_copy<Dtype,Mtype>(top_blob->count(), top_blob_data, top_blob_diff);
+      caffe_copy(top_blob->count(), top_blob_data, top_blob_diff);
     }
     loss /= 2.;
   } else {
@@ -252,7 +252,7 @@ Dtype GradientChecker<Dtype,Mtype>::GetObjAndGradient(const Layer<Dtype,Mtype>& 
     for (int i = 0; i < top.size(); ++i) {
       Blob<Dtype,Mtype>* top_blob = top[i];
       Dtype* top_blob_diff = top_blob->mutable_cpu_diff();
-      caffe_set(top_blob->count(), Dtype(0.), top_blob_diff);
+      caffe_set(top_blob->count(), typedConsts<Dtype>::zero, top_blob_diff);
     }
     const Dtype loss_weight = 2.;
     loss = top[top_id]->cpu_data()[top_data_id] * loss_weight;

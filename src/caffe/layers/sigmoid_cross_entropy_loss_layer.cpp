@@ -42,11 +42,11 @@ void SigmoidCrossEntropyLossLayer<Dtype,Mtype>::Forward_cpu(
   const Dtype* target = bottom[1]->cpu_data();
   Mtype loss(0.f);
   for (int i = 0; i < count; ++i) {
-    Mtype input_val = Get<Mtype>(input_data[i]);
-    loss -= input_val * (Get<Mtype>(target[i]) - (input_val >= 0)) -
+    Mtype input_val = input_data[i];
+    loss -= input_val * (target[i] - (input_val >= 0)) -
         log(1 + exp(input_val - 2 * input_val * (input_val >= 0)));
   }
-  top[0]->mutable_cpu_data()[0] = Get<Dtype>(loss / num);
+  top[0]->mutable_cpu_data()[0] = loss / num;
 }
 
 template <typename Dtype, typename Mtype>
@@ -66,8 +66,8 @@ void SigmoidCrossEntropyLossLayer<Dtype,Mtype>::Backward_cpu(
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
     caffe_sub(count, sigmoid_output_data, target, bottom_diff);
     // Scale down gradient
-    const Mtype loss_weight = Get<Mtype>(top[0]->cpu_diff()[0]);
-    caffe_scal<Dtype,Mtype>(count, Get<Mtype>(loss_weight / num), bottom_diff);
+    const Mtype loss_weight = top[0]->cpu_diff()[0];
+    caffe_scal<Dtype,Mtype>(count, loss_weight / num, bottom_diff);
   }
 }
 

@@ -58,11 +58,11 @@ class EuclideanLossLayerTest : public MultiDeviceTest<TypeParam> {
     const Mtype loss_weight_2 =
         layer_weight_2.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
     const Mtype kErrorMargin = 1e-5;
-    EXPECT_NEAR(Get<Mtype>(loss_weight_1) * kLossWeight,
-        Get<Mtype>(loss_weight_2), tol<Dtype>(kErrorMargin));
+    EXPECT_NEAR(loss_weight_1 * kLossWeight,
+        loss_weight_2, tol<Dtype>(kErrorMargin));
     // Make sure the loss is non-trivial.
     const Mtype kNonTrivialAbsThresh = 1e-1;
-    EXPECT_GE(fabs(Get<Mtype>(loss_weight_1)), kNonTrivialAbsThresh);
+    EXPECT_GE(fabs(loss_weight_1), kNonTrivialAbsThresh);
   }
 
   Blob<Dtype,Mtype>* const blob_bottom_data_;
@@ -86,7 +86,7 @@ TYPED_TEST(EuclideanLossLayerTest, TestGradient) {
   layer_param.add_loss_weight(kLossWeight);
   EuclideanLossLayer<Dtype,Mtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2), 1701);
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2, 1701);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }

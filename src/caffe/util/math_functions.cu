@@ -160,7 +160,7 @@ __global__
 void axpy_kernel(const int N, const T_MATH alpha, const T_STORE *x, T_STORE *y)
 {
   for (int idx = threadIdx.x + blockDim.x*blockIdx.x; idx < N; idx += blockDim.x*gridDim.x) {
-    y[idx] = Get<T_STORE>( alpha * Get<T_MATH>(x[idx]) + Get<T_MATH>(y[idx]) );
+    y[idx] = alpha * x[idx] + y[idx];
   }
 }
 
@@ -197,7 +197,7 @@ __global__
 void scal_kernel(const int N, const T_MATH alpha, T_STORE *X)
 {
   for (int idx = threadIdx.x + blockDim.x*blockIdx.x; idx < N; idx += blockDim.x*gridDim.x) {
-    X[idx] = Get<T_STORE>( alpha * Get<T_MATH>(X[idx]));
+    X[idx] = alpha * X[idx];
   }
 }
 
@@ -233,7 +233,7 @@ void axpby_kernel(const int N, const T_MATH alpha, const T_STORE* X,
     const T_MATH beta, T_STORE* Y)
 {
   CUDA_KERNEL_LOOP(idx, N) {
-    Y[idx] = Get<T_STORE>( alpha * Get<T_MATH>(X[idx]) + beta * Get<T_MATH>(Y[idx]) );
+    Y[idx] = alpha * X[idx] + beta * Y[idx];
   }
 }
 
@@ -277,7 +277,7 @@ struct float16_dot_mult {
   __host__ __device__
   float operator()(float16& x, float16& y)
   {
-    return Get<float>(x) * Get<float>(y);
+    return x * y;
   }
 };
 
@@ -345,7 +345,7 @@ struct float16_asum_reduce
   __host__ __device__
   float operator()(const float& a, const float16& b)
   {
-    return a + fabs(Get<float>(b));
+    return a + fabs(b);
   }
 };
 
@@ -413,7 +413,7 @@ __global__
 void scale_kernel(const int n, const T_MATH alpha, const T_STORE* x, T_STORE* y)
 {
   CUDA_KERNEL_LOOP(idx, n) {
-    y[idx] = Get<T_STORE>( alpha * Get<T_MATH>(x[idx]) );
+    y[idx] = alpha * x[idx];
   }
 }
 
@@ -823,8 +823,8 @@ __global__ void popcll_kernel(const int n, const double* a,
 __global__ void popch_kernel(const int n, const float16* a,
     const float16* b, uint8_t* y) {
   CUDA_KERNEL_LOOP(index, n) {
-    y[index] = __popc(static_cast<uint32_t>(Get<float>(a[index])) ^
-                      static_cast<uint32_t>(Get<float>(b[index])));
+    y[index] = __popc(static_cast<uint32_t>(a[index]) ^
+                      static_cast<uint32_t>(b[index]));
   }
 }
 
@@ -877,7 +877,7 @@ __global__
 void convert_kernel(const int n, const T_IN* in, T_OUT* out)
 {
   for (int idx=threadIdx.x+blockIdx.x*blockDim.x; idx<n; idx+=blockDim.x*gridDim.x) {
-    out[idx] = Get<T_OUT>(in[idx]);
+    out[idx] = in[idx];
   }
 }
 

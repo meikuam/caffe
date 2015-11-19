@@ -19,7 +19,7 @@ void PowerLayer<Dtype,Mtype>::Forward_gpu(const vector<Blob<Dtype,Mtype>*>& bott
     return;
   }
   const Dtype* bottom_data = bottom[0]->gpu_data();
-  caffe_copy<Dtype,Mtype>(count, bottom_data, top_data);
+  caffe_copy(count, bottom_data, top_data);
   if (scale_ != Mtype(1)) {
     caffe_gpu_scal<Dtype,Mtype>(count, scale_, top_data);
   }
@@ -63,7 +63,7 @@ void PowerLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype,Mtype>*>& top
         caffe_gpu_div<Dtype,Mtype>(count, top_data, bottom_data, bottom_diff);
         caffe_gpu_scal<Dtype,Mtype>(count, power_, bottom_diff);
       } else {
-        caffe_copy<Dtype,Mtype>(count, bottom_data, bottom_diff);
+        caffe_copy(count, bottom_data, bottom_diff);
         if (scale_ != Mtype(1)) {
           caffe_gpu_scal<Dtype,Mtype>(count, scale_, bottom_diff);
         }

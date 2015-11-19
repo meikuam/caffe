@@ -18,7 +18,7 @@ void FilterLayer<Dtype,Mtype>::Forward_gpu(const vector<Blob<Dtype,Mtype>*>& bot
     for (int n = 0; n < new_tops_num; ++n) {
       int data_offset_top = n * dim;
       int data_offset_bottom = indices_to_forward_[n] * dim;
-      caffe_copy<Dtype,Mtype>(dim, bottom_data + data_offset_bottom,
+      caffe_copy(dim, bottom_data + data_offset_bottom,
           top_data + data_offset_top);
     }
   }
@@ -45,18 +45,18 @@ void FilterLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype,Mtype>*>& to
           // we already visited all items that were been forwarded, so
           // just set to zero remaining ones
           data_offset_bottom = n * dim;
-          caffe_gpu_set<Dtype,Mtype>(dim, Get<Mtype>(0),
+          caffe_gpu_set<Dtype,Mtype>(dim, 0,
               bottom[i]->mutable_gpu_diff() + data_offset_bottom);
         } else {
           batch_offset = indices_to_forward_[next_to_backward_offset];
           data_offset_bottom = n * dim;
           if (n != batch_offset) {  // this data was not been forwarded
-            caffe_gpu_set<Dtype,Mtype>(dim, Get<Mtype>(0),
+            caffe_gpu_set<Dtype,Mtype>(dim, 0,
                 bottom[i]->mutable_gpu_diff() + data_offset_bottom);
           } else {  // this data was been forwarded
             data_offset_top = next_to_backward_offset * dim;
             ++next_to_backward_offset;  // point to next forwarded item index
-            caffe_copy<Dtype,Mtype>(dim, top[i]->mutable_gpu_diff() + data_offset_top,
+            caffe_copy(dim, top[i]->mutable_gpu_diff() + data_offset_top,
                 bottom[i]->mutable_gpu_diff() + data_offset_bottom);
           }
         }

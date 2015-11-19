@@ -73,9 +73,9 @@ TYPED_TEST(SplitLayerTest, Test) {
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-    Mtype bottom_value = Get<Mtype>(this->blob_bottom_->cpu_data()[i]);
-    EXPECT_EQ(bottom_value, Get<Mtype>(this->blob_top_a_->cpu_data()[i]));
-    EXPECT_EQ(bottom_value, Get<Mtype>(this->blob_top_b_->cpu_data()[i]));
+    Mtype bottom_value = this->blob_bottom_->cpu_data()[i];
+    EXPECT_EQ(bottom_value, this->blob_top_a_->cpu_data()[i]);
+    EXPECT_EQ(bottom_value, this->blob_top_b_->cpu_data()[i]);
   }
 }
 
@@ -84,7 +84,7 @@ TYPED_TEST(SplitLayerTest, TestGradient) {
   typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   SplitLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2);
   checker.CheckGradientEltwise(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }

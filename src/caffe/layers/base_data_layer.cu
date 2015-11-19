@@ -11,13 +11,13 @@ void BasePrefetchingDataLayer<Dtype,Mtype>::Forward_gpu(
   // Reshape to loaded data.
   top[0]->ReshapeLike(batch->data_);
   // Copy the data
-  caffe_copy<Dtype,Mtype>(batch->data_.count(), batch->data_.gpu_data(),
+  caffe_copy(batch->data_.count(), batch->data_.gpu_data(),
       top[0]->mutable_gpu_data());
   if (this->output_labels_) {
     // Reshape to loaded labels.
     top[1]->ReshapeLike(batch->label_);
     // Copy the labels.
-    caffe_copy<Dtype,Mtype>(batch->label_.count(), batch->label_.gpu_data(),
+    caffe_copy(batch->label_.count(), batch->label_.gpu_data(),
         top[1]->mutable_gpu_data());
   }
   // Ensure the copy is synchronous wrt the host, so that the next batch isn't

@@ -139,7 +139,7 @@ __global__ void StoPoolForwardTest(const int nthreads,
     const int wstart = pw * stride_w;
     const int wend = min(wstart + kernel_w, width);
     // We set cumsum to be 0 to avoid divide-by-zero problems
-    Mtype cumsum(FLT_MIN);
+    Mtype cumsum(minDtype<Mtype>());
     Mtype cumvalues(0.);
     const Dtype* const bottom_slice =
         bottom_data + (n * channels + c) * height * width;

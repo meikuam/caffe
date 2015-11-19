@@ -335,7 +335,7 @@ class Layer: public LayerBase {
    * @brief Returns the scalar loss associated with a top blob at a given index.
    */
   inline Dtype loss(const int top_index) const {
-    return (loss_.size() > top_index) ? loss_[top_index] : Get<Dtype>(0);
+    return (loss_.size() > top_index) ? loss_[top_index] : Dtype(0.);
   }
 
   /**
@@ -343,7 +343,7 @@ class Layer: public LayerBase {
    */
   inline void set_loss(const int top_index, const Dtype value) {
     if (loss_.size() <= top_index) {
-      loss_.resize(top_index + 1, Get<Dtype>(0));
+      loss_.resize(top_index + 1, 0);
     }
     loss_[top_index] = value;
   }
@@ -447,7 +447,7 @@ class Layer: public LayerBase {
       CHECK_EQ(top.size(), num_loss_weights) << "loss_weight must be "
           "unspecified or specified once per top blob.";
       for (int top_id = 0; top_id < top.size(); ++top_id) {
-        const Dtype loss_weight = Get<Dtype>(layer_param_.loss_weight(top_id));
+        const Dtype loss_weight = layer_param_.loss_weight(top_id);
         if (loss_weight == 0.) { continue; }
         this->set_loss(top_id, loss_weight);
         const int count = top[top_id]->count();
@@ -467,13 +467,13 @@ inline Mtype Layer<Dtype,Mtype>::Forward(const vector<Blob<Dtype,Mtype>*>& botto
     const vector<Blob<Dtype,Mtype>*>& top) {
   // Lock during forward to ensure sequential forward
   Lock();
-  Mtype loss = Get<Mtype>(0);
+  Mtype loss = 0;
   Reshape(bottom, top);
   switch (Caffe::mode()) {
   case Caffe::CPU:
     Forward_cpu(bottom, top);
     for (int top_id = 0; top_id < top.size(); ++top_id) {
-      if (!Get<Mtype>(this->loss(top_id))) { continue; }
+      if (!this->loss(top_id)) { continue; }
       const int count = top[top_id]->count();
       const Dtype* data = top[top_id]->cpu_data();
       const Dtype* loss_weights = top[top_id]->cpu_diff();
@@ -484,11 +484,11 @@ inline Mtype Layer<Dtype,Mtype>::Forward(const vector<Blob<Dtype,Mtype>*>& botto
     Forward_gpu(bottom, top);
 #ifndef CPU_ONLY
     for (int top_id = 0; top_id < top.size(); ++top_id) {
-      if (!Get<Mtype>(this->loss(top_id))) { continue; }
+      if (!this->loss(top_id)) { continue; }
       const int count = top[top_id]->count();
       const Dtype* data = top[top_id]->gpu_data();
       const Dtype* loss_weights = top[top_id]->gpu_diff();
-      Mtype blob_loss = Get<Mtype>(0);
+      Mtype blob_loss = 0;
       caffe_gpu_dot<Dtype,Mtype>(count, data, loss_weights, &blob_loss);
       loss += blob_loss;
     }

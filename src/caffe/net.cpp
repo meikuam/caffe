@@ -156,16 +156,16 @@ void Net<Dtype,Mtype>::Init(const NetParameter& in_param) {
     }
     for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
       if (blob_loss_weights_.size() <= top_id_vecs_[layer_id][top_id]) {
-        blob_loss_weights_.resize(top_id_vecs_[layer_id][top_id] + 1, Get<Dtype>(0));
+        blob_loss_weights_.resize(top_id_vecs_[layer_id][top_id] + 1, 0);
       }
       blob_loss_weights_[top_id_vecs_[layer_id][top_id]] = layer->loss(top_id);
       if (Caffe::root_solver()) {
         LOG(INFO) << "Top shape: "
                   << top_vecs_[layer_id][top_id]->shape_string();
       }
-      if (Get<Mtype>(layer->loss(top_id)) != 0.) {
+      if (layer->loss(top_id) != 0.) {
         if (Caffe::root_solver()) {
-          LOG(INFO) << "    with loss weight " << Get<Mtype>(layer->loss(top_id));
+          LOG(INFO) << "    with loss weight " << layer->loss(top_id);
         }
       }
       memory_used_ += top_vecs_[layer_id][top_id]->count();
@@ -211,7 +211,7 @@ void Net<Dtype,Mtype>::Init(const NetParameter& in_param) {
     bool layer_skip_propagate_down = true;
     for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
       const string& blob_name = blob_names_[top_id_vecs_[layer_id][top_id]];
-      if (Get<Mtype>(layers_[layer_id]->loss(top_id)) != 0. ||
+      if (layers_[layer_id]->loss(top_id) != 0. ||
           (blobs_under_loss.find(blob_name) != blobs_under_loss.end())) {
         layer_contributes_loss = true;
       }
@@ -588,7 +588,7 @@ template <typename Dtype, typename Mtype>
 Mtype Net<Dtype,Mtype>::ForwardFromTo(int start, int end) {
   CHECK_GE(start, 0);
   CHECK_LT(end, layers_.size());
-  Mtype loss = Get<Mtype>(0);
+  Mtype loss = 0;
   if (debug_info_) {
     for (int i = 0; i < net_input_blobs_.size(); ++i) {
       InputDebugInfo(i);
@@ -809,8 +809,8 @@ template <typename Dtype, typename Mtype>
 void Net<Dtype,Mtype>::Backward() {
   BackwardFromTo(layers_.size() - 1, 0);
   if (debug_info_) {
-    Mtype asum_data = Get<Mtype>(0), asum_diff = Get<Mtype>(0),
-      sumsq_data = Get<Mtype>(0), sumsq_diff = Get<Mtype>(0);
+    Mtype asum_data = 0, asum_diff = 0,
+      sumsq_data = 0, sumsq_diff = 0;
     for (int i = 0; i < learnable_params_.size(); ++i) {
       asum_data += learnable_params_[i]->asum_data();
       asum_diff += learnable_params_[i]->asum_diff();
@@ -1023,12 +1023,12 @@ void Net<Dtype,Mtype>::ClearParamDiffs() {
     Blob<Dtype,Mtype>* blob = learnable_params_[i];
     switch (Caffe::mode()) {
     case Caffe::CPU:
-      caffe_set(blob->count(), Get<Dtype>(0),
+      caffe_set(blob->count(), typedConsts<Dtype>::zero,
                 blob->mutable_cpu_diff());
       break;
     case Caffe::GPU:
 #ifndef CPU_ONLY
-      caffe_gpu_set<Dtype,Mtype>(blob->count(), Get<Mtype>(0),
+      caffe_gpu_set<Dtype,Mtype>(blob->count(), 0,
                     blob->mutable_gpu_diff());
 #else
       NO_GPU;

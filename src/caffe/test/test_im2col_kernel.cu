@@ -141,8 +141,8 @@ TYPED_TEST(Im2colKernelTest, Test2D) {
 
     // Compare results against CPU version
     for (int i = 0; i < this->blob_top_->count(); ++i) {
-      Mtype cpuval = Get<Mtype>(cpu_data[i]);
-      Mtype gpuval = Get<Mtype>(this->blob_top_->cpu_data()[i]);
+      Mtype cpuval = cpu_data[i];
+      Mtype gpuval = this->blob_top_->cpu_data()[i];
       EXPECT_EQ(cpuval, gpuval);
       if (cpuval != gpuval) {
         break;

@@ -28,12 +28,13 @@ void MultinomialLogisticLossLayer<Dtype,Mtype>::Forward_cpu(
   int dim = bottom[0]->count() / bottom[0]->num();
   Mtype loss(0.f);
   for (int i = 0; i < num; ++i) {
-    int label = Get<int>(bottom_label[i]);
+    int label = static_cast<int>(bottom_label[i]);
     Mtype prob = std::max(
-        Get<Mtype>(bottom_data[i * dim + label]), Mtype(kLOG_THRESHOLD));
+        bottom_data[i * dim + label],
+        Dtype(choose<Dtype>(kLOG_THRESHOLD,minDtype<Dtype>())));
     loss -= log(prob);
   }
-  top[0]->mutable_cpu_data()[0] = Get<Dtype>(loss / num);
+  top[0]->mutable_cpu_data()[0] = loss / num;
 }
 
 template <typename Dtype, typename Mtype>
@@ -50,13 +51,14 @@ void MultinomialLogisticLossLayer<Dtype,Mtype>::Backward_cpu(
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
     int num = bottom[0]->num();
     int dim = bottom[0]->count() / bottom[0]->num();
-    caffe_set(bottom[0]->count(), Get<Dtype>(0), bottom_diff);
-    const Mtype scale = - Get<Mtype>(top[0]->cpu_diff()[0]) / num;
+    caffe_set(bottom[0]->count(), typedConsts<Dtype>::zero, bottom_diff);
+    const Mtype scale = - top[0]->cpu_diff()[0] / num;
     for (int i = 0; i < num; ++i) {
-      int label = Get<int>(bottom_label[i]);
+      int label = static_cast<int>(bottom_label[i]);
       Mtype prob = std::max(
-          Get<Mtype>(bottom_data[i * dim + label]), Mtype(kLOG_THRESHOLD));
-      bottom_diff[i * dim + label] = Get<Dtype>(scale / prob);
+          bottom_data[i * dim + label],
+          Dtype(choose<Dtype>(kLOG_THRESHOLD,minDtype<Dtype>())));
+      bottom_diff[i * dim + label] = scale / prob;
     }
   }
 }

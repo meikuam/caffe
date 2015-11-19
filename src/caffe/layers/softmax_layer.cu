@@ -18,9 +18,9 @@ __global__ void kernel_channel_max(const int num, const int channels,
     int s = index % spatial_dim;
     Mtype maxval(- maxDtype<Dtype>());
     for (int c = 0; c < channels; ++c) {
-      maxval = max(Get<Mtype>(data[(n * channels + c) * spatial_dim + s]), maxval);
+      maxval = max(data[(n * channels + c) * spatial_dim + s], maxval);
     }
-    out[index] = Get<Dtype>(maxval);
+    out[index] = maxval;
   }
 }
 
@@ -31,14 +31,14 @@ __global__ void kernel_channel_subtract(const int count,
   CUDA_KERNEL_LOOP(index, count) {
     int n = index / channels / spatial_dim;
     int s = index % spatial_dim;
-    data[index] = Get<Dtype>( Get<Mtype>(data[index]) - Get<Mtype>(channel_max[n * spatial_dim + s]) );
+    data[index] = data[index] - channel_max[n * spatial_dim + s] ;
   }
 }
 
 template <typename Dtype, typename Mtype>
 __global__ void kernel_exp(const int count, const Dtype* data, Dtype* out) {
   CUDA_KERNEL_LOOP(index, count) {
-    out[index] = Get<Dtype>( exp(Get<Mtype>(data[index])) );
+    out[index] = exp(data[index]) ;
   }
 }
 
@@ -50,9 +50,9 @@ __global__ void kernel_channel_sum(const int num, const int channels,
     int s = index % spatial_dim;
     Mtype sum(0.);
     for (int c = 0; c < channels; ++c) {
-      sum += Get<Mtype>(data[(n * channels + c) * spatial_dim + s]);
+      sum += data[(n * channels + c) * spatial_dim + s];
     }
-    channel_sum[index] = Get<Dtype>(sum);
+    channel_sum[index] = sum;
   }
 }
 
@@ -63,7 +63,7 @@ __global__ void kernel_channel_div(const int count,
   CUDA_KERNEL_LOOP(index, count) {
     int n = index / channels / spatial_dim;
     int s = index % spatial_dim;
-    data[index] = Get<Dtype>( Get<Mtype>(data[index]) / Get<Mtype>(channel_sum[n * spatial_dim + s]) );
+    data[index] = data[index] / channel_sum[n * spatial_dim + s] ;
   }
 }
 
@@ -76,10 +76,10 @@ __global__ void kernel_channel_dot(const int num, const int channels,
     int s = index % spatial_dim;
     Mtype dot(0.);
     for (int c = 0; c < channels; ++c) {
-      dot += (Get<Mtype>(data_1[(n * channels + c) * spatial_dim + s])
-          * Get<Mtype>(data_2[(n * channels + c) * spatial_dim + s]));
+      dot += (data_1[(n * channels + c) * spatial_dim + s]
+          * data_2[(n * channels + c) * spatial_dim + s]);
     }
-    channel_dot[index] = Get<Dtype>(dot);
+    channel_dot[index] = dot;
   }
 }
 
@@ -91,7 +91,7 @@ void SoftmaxLayer<Dtype,Mtype>::Forward_gpu(const vector<Blob<Dtype,Mtype>*>& bo
   Dtype* scale_data = scale_.mutable_gpu_data();
   int count = bottom[0]->count();
   int channels = top[0]->shape(softmax_axis_);
-  caffe_copy<Dtype,Mtype>(count, bottom_data, top_data);
+  caffe_copy(count, bottom_data, top_data);
   // We need to subtract the max to avoid numerical issues, compute the exp,
   // and then normalize.
   // compute max
@@ -129,7 +129,7 @@ void SoftmaxLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype,Mtype>*>& t
   Dtype* scale_data = scale_.mutable_gpu_data();
   int count = top[0]->count();
   int channels = top[0]->shape(softmax_axis_);
-  caffe_copy<Dtype,Mtype>(count, top_diff, bottom_diff);
+  caffe_copy(count, top_diff, bottom_diff);
   // Compute inner1d(top_diff, top_data) and subtract them from the bottom diff.
   // NOLINT_NEXT_LINE(whitespace/operators)
   kernel_channel_dot<Dtype,Mtype><<<CAFFE_GET_BLOCKS(outer_num_ * inner_num_),

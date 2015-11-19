@@ -36,14 +36,15 @@ __global__ void SoftmaxLossForwardGPU(const int nthreads,
   for( int idx = blockIdx.x*blockDim.x + threadIdx.x ; idx < nthreads ; idx += blockDim.x*gridDim.x ) {
     const int n = idx / spatial_dim;
     const int s = idx % spatial_dim;
-    const int label_value = Get<int>(label[n * spatial_dim + s]);
+    const int label_value = static_cast<int>(label[n * spatial_dim + s]);
     if (has_ignore_label_ && label_value == ignore_label_) {
-      loss[idx] = Get<Dtype>(0);
-      counts[idx] = Get<Dtype>(0);
+      loss[idx] = 0;
+      counts[idx] = 0;
     } else {
-      Mtype tmp = -log(max(Get<Mtype>(prob_data[n * dim + label_value * spatial_dim + s]), Mtype(FLT_MIN)));
-      loss[idx] = Get<Dtype>(tmp);
-      counts[idx] = Get<Dtype>(1);
+      Mtype tmp = -log(max(prob_data[n * dim + label_value * spatial_dim + s],
+          Dtype(minDtype<Dtype>())));
+      loss[idx] = tmp;
+      counts[idx] = 1;
       lossSum += tmp;
       count += 1;
     }
@@ -100,7 +101,7 @@ void SoftmaxWithLossLayer<Dtype,Mtype>::Forward_gpu(
   } else {
     loss /= outer_num_;
   }
-  top[0]->mutable_cpu_data()[0] = Get<Dtype>(loss);
+  top[0]->mutable_cpu_data()[0] = loss;
   if (top.size() == 2) {
     top[1]->ShareData(prob_);
   }
@@ -116,16 +117,17 @@ __global__ void SoftmaxLossBackwardGPU(const int nthreads, const Dtype* top,
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int n = index / spatial_dim;
     const int s = index % spatial_dim;
-    const int label_value = Get<int>(label[n * spatial_dim + s]);
+    const int label_value = static_cast<int>(label[n * spatial_dim + s]);
 
     if (has_ignore_label_ && label_value == ignore_label_) {
       for (int c = 0; c < channels; ++c) {
-        bottom_diff[n * dim + c * spatial_dim + s] = Get<Dtype>(0);
+        bottom_diff[n * dim + c * spatial_dim + s] = 0;
       }
-      counts[index] = Get<Dtype>(0);
+      counts[index] = 0;
     } else {
-      bottom_diff[n * dim + label_value * spatial_dim + s] = Get<Dtype>( Get<Mtype>(bottom_diff[n * dim + label_value * spatial_dim + s]) - Get<Mtype>(1) );
-      counts[index] = Get<Dtype>(1);
+      bottom_diff[n * dim + label_value * spatial_dim + s] =
+          bottom_diff[n * dim + label_value * spatial_dim + s] - 1 ;
+      counts[index] = 1;
     }
   }
 }
@@ -152,7 +154,7 @@ void SoftmaxWithLossLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype,Mty
     SoftmaxLossBackwardGPU<Dtype,Mtype><<<CAFFE_GET_BLOCKS(nthreads),
         CAFFE_CUDA_NUM_THREADS>>>(nthreads, top_data, label, bottom_diff,
         outer_num_, dim, inner_num_, has_ignore_label_, ignore_label_, counts);
-    const Mtype loss_weight = Get<Mtype>(top[0]->cpu_diff()[0]);
+    const Mtype loss_weight = top[0]->cpu_diff()[0];
     if (normalize_) {
       Mtype count;
       caffe_gpu_asum<Dtype,Mtype>(nthreads, counts, &count);

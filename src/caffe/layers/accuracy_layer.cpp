@@ -57,15 +57,17 @@ void AccuracyLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& b
   const int num_labels = bottom[0]->shape(label_axis_);
 
   if (top.size() > 1) {
-    caffe_set(counts_.count(), 0, counts_.mutable_cpu_data());
-    caffe_set(valid_counts_.count(), 0, valid_counts_.mutable_cpu_data());
+    caffe_set(counts_.count(), typedConsts<int>::zero,
+        counts_.mutable_cpu_data());
+    caffe_set(valid_counts_.count(), typedConsts<int>::zero,
+        valid_counts_.mutable_cpu_data());
   }
 
   int count = 0, validCount = 0;
   for (int i = 0; i < outer_num_; ++i) {
     for (int j = 0; j < inner_num_; ++j) {
       const int label_value =
-          Get<int>(bottom_label[i * inner_num_ + j]);
+          static_cast<int>(bottom_label[i * inner_num_ + j]);
       if (has_ignore_label_ && label_value == ignore_label_) {
         continue;
       }
@@ -101,7 +103,7 @@ void AccuracyLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& b
 
   // LOG(INFO) << "Accuracy: " << accuracy;
   double ratio = (double) validCount / count;
-  top[0]->mutable_cpu_data()[0] = Get<Dtype>(ratio);
+  top[0]->mutable_cpu_data()[0] = ratio;
   if (top.size() > 1) {
     for (int i = 0; i < top[1]->count(); ++i) {
         ratio = 

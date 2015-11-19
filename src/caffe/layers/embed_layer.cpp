@@ -60,7 +60,7 @@ void EmbedLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype,Mtype>*>& bottom,
   if (bias_term_) {
     vector<int> bias_shape(1, M_);
     bias_multiplier_.Reshape(bias_shape);
-    caffe_set(M_, Get<Dtype>(1), bias_multiplier_.mutable_cpu_data());
+    caffe_set(M_, typedConsts<Dtype>::one, bias_multiplier_.mutable_cpu_data());
   }
 }
 
@@ -72,11 +72,11 @@ void EmbedLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bott
   Dtype* top_data = top[0]->mutable_cpu_data();
   int index;
   for (int n = 0; n < M_; ++n) {
-    index = Get<int>(bottom_data[n]);
+    index = static_cast<int>(bottom_data[n]);
     DCHECK_GE(index, 0);
     DCHECK_LT(index, K_);
-    DCHECK_EQ(Get<Dtype>(index), bottom_data[n]) << "non-integer input";
-    caffe_copy<Dtype,Mtype>(N_, weight + index * N_, top_data + n * N_);
+    DCHECK_EQ(index, bottom_data[n]) << "non-integer input";
+    caffe_copy(N_, weight + index * N_, top_data + n * N_);
   }
   if (bias_term_) {
     const Dtype* bias = this->blobs_[1]->cpu_data();
@@ -96,10 +96,10 @@ void EmbedLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top
     Dtype* weight_diff = this->blobs_[0]->mutable_cpu_diff();
     int index;
     for (int n = 0; n < M_; ++n) {
-      index = Get<int>(bottom_data[n]);
+      index = static_cast<int>(bottom_data[n]);
       DCHECK_GE(index, 0);
       DCHECK_LT(index, K_);
-      DCHECK_EQ(Get<Dtype>(index), bottom_data[n])
+      DCHECK_EQ(index, bottom_data[n])
           << "non-integer input";
       caffe_axpy<Dtype,Mtype>(N_, Mtype(1), top_diff + n * N_, weight_diff + index * N_);
     }

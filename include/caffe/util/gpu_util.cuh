@@ -36,32 +36,28 @@ template <>
 inline __device__
 float16 caffe_gpu_atomic_add(const float16 val, float16* address) {
 // TODO check for FP16 implementation in future CUDA releases
-   return float16(0);
-#if 0
-   union U {
-      unsigned int i;
-      __half2 h;
-   };
-   union Up {
-      unsigned int * i;
-      __half2 * h;
-   };
+// See atomicA in cudnn_ops.hxx
 
-   Up up;
-   up.h = address;
+  // The size of 'unsigned' should be 4B, twice the size of 'half1'.
+  union U {
+      unsigned u;
+      __half h[sizeof(unsigned) == 2*sizeof(__half) ? 2 : -1];
+  };
+  unsigned *aligned_address = (unsigned int *)(((uintptr_t) address) & ~(uintptr_t)0x2);
+  unsigned idx = (address == (float16*) aligned_address ? 0 : 1);
+  U old_val, new_val, assumed;
+  old_val.u = *aligned_address;
+  float16 ret = *address;
 
-   U old;
-   old.h = *address;
-   U assumed;
-
-   do {
-      assumed.i = old.i;
-      U temp;
-      temp.h = __hadd2(val, assumed.h);
-      old.i = atomicCAS( up.i, assumed.i, temp.i);
-   } while (assumed.i != old.i );
-   return old.h;
-# endif
+  do {
+      assumed.u = old_val.u;
+      new_val.u = old_val.u;
+      float tmp = __half2float(new_val.h[idx]);
+      tmp += __half2float(val);
+      new_val.h[idx].x = __float2half_rn(tmp);
+      old_val.u = atomicCAS(aligned_address, assumed.u, new_val.u);
+  } while (assumed.u != old_val.u);
+  return ret;
 }
 
 }  // namespace caffe

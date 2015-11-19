@@ -9,7 +9,7 @@ namespace caffe {
 
 template <typename Dtype, typename Mtype>
 inline Dtype sigmoid(Dtype x) {
-  return Get<Dtype>(1. / (1. + exp(-Get<Mtype>(x))));
+  return 1. / (1. + exp(-x));
 }
 
 template <typename Dtype, typename Mtype>
@@ -33,8 +33,8 @@ void SigmoidLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& t
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
     const int count = bottom[0]->count();
     for (int i = 0; i < count; ++i) {
-      const Mtype sigmoid_x = Get<Mtype>(top_data[i]);
-      bottom_diff[i] = Get<Dtype>( Get<Mtype>(top_diff[i]) * sigmoid_x * (1. - sigmoid_x) );
+      const Mtype sigmoid_x = top_data[i];
+      bottom_diff[i] = top_diff[i] * sigmoid_x * (1. - sigmoid_x) ;
     }
   }
 }

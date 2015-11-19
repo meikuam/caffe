@@ -14,7 +14,6 @@ namespace bp = boost::python;
 #include "caffe/caffe.hpp"
 #include "caffe/util/gpu_memory.hpp"
 #include "caffe/util/signal_handler.h"
-#include "caffe/util/get.hpp"
 
 using caffe::Blob;
 using caffe::Caffe;
@@ -25,9 +24,8 @@ using caffe::shared_ptr;
 using caffe::string;
 using caffe::Timer;
 using caffe::vector;
-using std::ostringstream;
-using caffe::Get;
 using caffe::float16;
+using std::ostringstream;
 
 DEFINE_string(gpu, "",
     "Optional; run in GPU mode on given device IDs separated by ','."
@@ -189,7 +187,7 @@ int test() {
     for (int j = 0; j < result.size(); ++j) {
       const float16* result_vec = result[j]->cpu_data();
       for (int k = 0; k < result[j]->count(); ++k, ++idx) {
-        const float score = Get<float>(result_vec[k]);
+        const float score = result_vec[k];
         if (i == 0) {
           test_score.push_back(score);
           test_score_output_id.push_back(j);

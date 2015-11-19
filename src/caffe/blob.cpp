@@ -156,7 +156,7 @@ void Blob<Dtype,Mtype>::Update() {
   switch (data_->head()) {
   case SyncedMemory::HEAD_AT_CPU:
     // perform computation on CPU
-    caffe_axpy<Dtype,Mtype>(count_, Get<Mtype>(-1),
+    caffe_axpy<Dtype,Mtype>(count_, -1,
         static_cast<const Dtype*>(diff_->cpu_data()),
         static_cast<Dtype*>(data_->mutable_cpu_data()));
     break;
@@ -164,7 +164,7 @@ void Blob<Dtype,Mtype>::Update() {
   case SyncedMemory::SYNCED:
 #ifndef CPU_ONLY
     // perform computation on GPU
-    caffe_gpu_axpy<Dtype,Mtype>(count_, Get<Mtype>(-1),
+    caffe_gpu_axpy<Dtype,Mtype>(count_, -1,
         static_cast<const Dtype*>(diff_->gpu_data()),
         static_cast<Dtype*>(data_->mutable_gpu_data()));
 #else
@@ -188,7 +188,7 @@ template <> int Blob<int, int>::asum_data() const {
 
 template <typename Dtype, typename Mtype>
 Mtype Blob<Dtype,Mtype>::asum_data() const {
-  if (!data_) { return Get<Mtype>(0); }
+  if (!data_) { return 0; }
   switch (data_->head()) {
   case SyncedMemory::HEAD_AT_CPU:
     return caffe_cpu_asum<Dtype,Mtype>(count_, cpu_data());
@@ -204,11 +204,11 @@ Mtype Blob<Dtype,Mtype>::asum_data() const {
     NO_GPU;
 #endif
   case SyncedMemory::UNINITIALIZED:
-    return Get<Mtype>(0);
+    return 0;
   default:
     LOG(FATAL) << "Unknown SyncedMemory head state: " << data_->head();
   }
-  return Get<Mtype>(0);
+  return 0;
 }
 
 template <> unsigned int Blob<unsigned int, unsigned int>::asum_diff() const {
@@ -223,7 +223,7 @@ template <> int Blob<int,int>::asum_diff() const {
 
 template <typename Dtype, typename Mtype>
 Mtype Blob<Dtype,Mtype>::asum_diff() const {
-  if (!diff_) { return Get<Mtype>(0); }
+  if (!diff_) { return 0; }
   switch (diff_->head()) {
   case SyncedMemory::HEAD_AT_CPU:
     return caffe_cpu_asum<Dtype,Mtype>(count_, cpu_diff());
@@ -239,11 +239,11 @@ Mtype Blob<Dtype,Mtype>::asum_diff() const {
     NO_GPU;
 #endif
   case SyncedMemory::UNINITIALIZED:
-    return Get<Mtype>(0);
+    return 0;
   default:
     LOG(FATAL) << "Unknown SyncedMemory head state: " << diff_->head();
   }
-  return Get<Mtype>(0);
+  return 0;
 }
 
 template <> unsigned int Blob<unsigned int, unsigned int>::sumsq_data() const {
@@ -260,7 +260,7 @@ template <typename Dtype, typename Mtype>
 Mtype Blob<Dtype, Mtype>::sumsq_data() const {
   Mtype sumsq;
   const Dtype* data;
-  if (!data_) { return Get<Mtype>(0); }
+  if (!data_) { return 0; }
   switch (data_->head()) {
   case SyncedMemory::HEAD_AT_CPU:
     data = cpu_data();
@@ -276,7 +276,7 @@ Mtype Blob<Dtype, Mtype>::sumsq_data() const {
 #endif
     break;
   case SyncedMemory::UNINITIALIZED:
-    return Get<Mtype>(0);
+    return 0;
   default:
     LOG(FATAL) << "Unknown SyncedMemory head state: " << data_->head();
   }
@@ -297,7 +297,7 @@ template <typename Dtype, typename Mtype>
 Mtype Blob<Dtype, Mtype>::sumsq_diff() const {
   Mtype sumsq;
   const Dtype* diff;
-  if (!diff_) { return Get<Mtype>(0); }
+  if (!diff_) { return 0; }
   switch (diff_->head()) {
   case SyncedMemory::HEAD_AT_CPU:
     diff = cpu_diff();
@@ -313,7 +313,7 @@ Mtype Blob<Dtype, Mtype>::sumsq_diff() const {
     NO_GPU;
 #endif
   case SyncedMemory::UNINITIALIZED:
-    return Get<Mtype>(0);
+    return 0;
   default:
     LOG(FATAL) << "Unknown SyncedMemory head state: " << data_->head();
   }
@@ -421,19 +421,19 @@ void Blob<Dtype, Mtype>::CopyFrom(const Blob& source, bool copy_diff, bool resha
   switch (Caffe::mode()) {
   case Caffe::GPU:
     if (copy_diff) {
-      caffe_copy<Dtype,Mtype>(count_, source.gpu_diff(),
+      caffe_copy(count_, source.gpu_diff(),
           static_cast<Dtype*>(diff_->mutable_gpu_data()));
     } else {
-      caffe_copy<Dtype,Mtype>(count_, source.gpu_data(),
+      caffe_copy(count_, source.gpu_data(),
           static_cast<Dtype*>(data_->mutable_gpu_data()));
     }
     break;
   case Caffe::CPU:
     if (copy_diff) {
-      caffe_copy<Dtype,Mtype>(count_, source.cpu_diff(),
+      caffe_copy(count_, source.cpu_diff(),
           static_cast<Dtype*>(diff_->mutable_cpu_data()));
     } else {
-      caffe_copy<Dtype,Mtype>(count_, source.cpu_data(),
+      caffe_copy(count_, source.cpu_data(),
           static_cast<Dtype*>(data_->mutable_cpu_data()));
     }
     break;
@@ -470,12 +470,12 @@ void Blob<Dtype, Mtype>::FromProto(const BlobProto& proto, bool reshape) {
   if (proto.double_data_size() > 0) {
     CHECK_EQ(count_, proto.double_data_size());
     for (int i = 0; i < count_; ++i) {
-      data_vec[i] = Get<Dtype>(proto.double_data(i));
+      data_vec[i] = proto.double_data(i);
     }
   } else if (proto.data_size() > 0) {
     CHECK_EQ(count_, proto.data_size());
     for (int i = 0; i < count_; ++i) {
-      data_vec[i] = Get<Dtype>(proto.data(i));
+      data_vec[i] = proto.data(i);
     }
   } else if (proto.half_data_size() > 0) {
     CHECK_EQ(count_, proto.half_data_size());
@@ -489,13 +489,13 @@ void Blob<Dtype, Mtype>::FromProto(const BlobProto& proto, bool reshape) {
     CHECK_EQ(count_, proto.double_diff_size());
     Dtype* diff_vec = mutable_cpu_diff();
     for (int i = 0; i < count_; ++i) {
-      diff_vec[i] = Get<Dtype>(proto.double_diff(i));
+      diff_vec[i] = proto.double_diff(i);
     }
   } else if (proto.diff_size() > 0) {
     CHECK_EQ(count_, proto.diff_size());
     Dtype* diff_vec = mutable_cpu_diff();
     for (int i = 0; i < count_; ++i) {
-      diff_vec[i] = Get<Dtype>(proto.diff(i));
+      diff_vec[i] = proto.diff(i);
     }
   } else if (proto.half_diff_size() > 0) {
     CHECK_EQ(count_, proto.half_diff_size());
@@ -597,7 +597,7 @@ void Blob<float16,CAFFE_FP16_MTYPE>::FromProto(const BlobProto& proto, bool resh
     CHECK_EQ(count_, proto.data_size());
     float16* data_vec = mutable_cpu_data();
     for (int i = 0; i < count_; ++i) {
-      data_vec[i] = Get<float16>(proto.data(i));
+      data_vec[i] = proto.data(i);
     } 
   } else if (proto.half_data_size() > 0) {
     float16* data_vec = mutable_cpu_data();
@@ -610,7 +610,7 @@ void Blob<float16,CAFFE_FP16_MTYPE>::FromProto(const BlobProto& proto, bool resh
     CHECK_EQ(count_, proto.diff_size());
     float16* diff_vec = mutable_cpu_diff();
     for (int i = 0; i < count_; ++i) {
-      diff_vec[i] = Get<float16>(proto.half_diff(i));
+      diff_vec[i] = proto.half_diff(i);
     }
   }
   else if (proto.half_diff_size() > 0) {

@@ -32,14 +32,14 @@ class FilterLayerTest : public MultiDeviceTest<TypeParam> {
     GaussianFiller<Dtype,Mtype> filler(filler_param);
     // fill the selector blob
     Dtype* bottom_data_selector_ = blob_bottom_selector_->mutable_cpu_data();
-    bottom_data_selector_[0] = Get<Dtype>(0);
-    bottom_data_selector_[1] = Get<Dtype>(1);
-    bottom_data_selector_[2] = Get<Dtype>(1);
-    bottom_data_selector_[3] = Get<Dtype>(0);
+    bottom_data_selector_[0] = 0;
+    bottom_data_selector_[1] = 1;
+    bottom_data_selector_[2] = 1;
+    bottom_data_selector_[3] = 0;
     // fill the other bottom blobs
     filler.Fill(blob_bottom_data_);
     for (int i = 0; i < blob_bottom_labels_->count(); ++i) {
-      blob_bottom_labels_->mutable_cpu_data()[i] = Get<Dtype>(caffe_rng_rand() % 5);
+      blob_bottom_labels_->mutable_cpu_data()[i] = caffe_rng_rand() % 5;
     }
     blob_bottom_vec_.push_back(blob_bottom_data_);
     blob_bottom_vec_.push_back(blob_bottom_labels_);
@@ -121,7 +121,7 @@ TYPED_TEST(FilterLayerTest, TestGradient) {
   typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   FilterLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-3));
+  GradientChecker<Dtype,Mtype> checker(1e-2, 1e-3);
   // check only input 0 (data) because labels and selector
   // don't need backpropagation
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,

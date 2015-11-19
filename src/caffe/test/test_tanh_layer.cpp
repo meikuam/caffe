@@ -56,12 +56,12 @@ class TanHLayerTest : public MultiDeviceTest<TypeParam> {
     // Now, check values
     const Dtype* bottom_data = this->blob_bottom_->cpu_data();
     const Dtype* top_data = this->blob_top_->cpu_data();
-    const Dtype min_precision = Get<Dtype>(1e-5);
+    const Dtype min_precision = choose<Dtype>(1e-5,1e-3);
     for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-      Mtype expected_value = tanh_naive(Get<Mtype>(bottom_data[i]));
-      Mtype precision = std::max(
-        Mtype(std::abs(expected_value * Mtype(1e-4))), Get<Mtype>(min_precision));
-      EXPECT_NEAR(expected_value, Get<Mtype>(top_data[i]), tol<Dtype>(precision));
+      Dtype expected_value = tanh_naive(bottom_data[i]);
+      Dtype precision = std::max(
+        Dtype(std::abs(expected_value * 1e-4)), min_precision);
+      EXPECT_NEAR(expected_value, top_data[i], precision);
     }
   }
 
@@ -73,7 +73,7 @@ class TanHLayerTest : public MultiDeviceTest<TypeParam> {
 
     LayerParameter layer_param;
     TanHLayer<Dtype,Mtype> layer(layer_param);
-    GradientChecker<Dtype,Mtype> checker(Get<Dtype>(1e-2), Get<Dtype>(1e-2), 1701);
+    GradientChecker<Dtype,Mtype> checker(1e-2, 1e-2, 1701);
     checker.CheckGradientEltwise(&layer, this->blob_bottom_vec_,
         this->blob_top_vec_);
   }

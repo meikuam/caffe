@@ -5,7 +5,6 @@
 
 #include "caffe/common.hpp"
 #include "caffe/util/im2col.hpp"
-#include "caffe/util/get.hpp"
 
 namespace caffe {
 
@@ -33,7 +32,7 @@ __global__ void im2col_gpu_kernel(const int n, const Dtype* data_im,
         int h = h_in + i;
         int w = w_in + j;
         *data_col_ptr = (h >= 0 && w >= 0 && h < height && w < width) ?
-            data_im_ptr[i * width + j] : Get<Dtype>(0);
+            data_im_ptr[i * width + j] : Dtype(0.);
         data_col_ptr += height_col * width_col;
       }
     }
@@ -121,7 +120,7 @@ __global__ void im2col_nd_gpu_kernel(const int n, const Dtype* data_im,
         }
         *data_col_ptr = data_im_ptr[data_im_offset];
       } else {
-        *data_col_ptr = Get<Dtype>(0);
+        *data_col_ptr = 0;
       }
       data_col_ptr += data_col_inc;
       incremented = false;
@@ -264,10 +263,10 @@ __global__ void col2im_gpu_kernel(const int n, const Dtype* data_col,
     int coeff_w_col = (1 - stride_w * height_col * width_col);
     for (int h_col = h_col_start; h_col < h_col_end; ++h_col) {
       for (int w_col = w_col_start; w_col < w_col_end; ++w_col) {
-        val += Get<Mtype>(data_col[offset + h_col * coeff_h_col + w_col * coeff_w_col]);
+        val += data_col[offset + h_col * coeff_h_col + w_col * coeff_w_col];
       }
     }
-    data_im[index] = Get<Dtype>(val);
+    data_im[index] = val;
   }
 }
 
@@ -338,7 +337,7 @@ __global__ void col2im_nd_gpu_kernel(const int n, const Dtype* data_col,
       if (d_col_start[i] >= d_col_end[i]) {
         // Skip computation if the dimension is 0 at any spatial axis --
         // final val will be 0.
-        data_im[index] = Get<Dtype>(0);
+        data_im[index] = 0;
         done = true;
         break;  // for (int i = 0; i < num_axes; ++i)
       }
@@ -347,7 +346,7 @@ __global__ void col2im_nd_gpu_kernel(const int n, const Dtype* data_col,
       continue;  // CUDA_KERNEL_LOOP(index, n)
     }
     // Loop over the col to compute the output val.
-    Dtype val = Get<Dtype>(0);
+    Dtype val = 0;
     bool incremented = true;
     do {
       // Compute the final offset.

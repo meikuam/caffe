@@ -113,11 +113,11 @@ void LRNLayer<Dtype,Mtype>::CrossChannelForward_cpu(
   Dtype* scale_data = scale_.mutable_cpu_data();
   // start with the constant value
   for (int i = 0; i < scale_.count(); ++i) {
-    scale_data[i] = Get<Dtype>(k_);
+    scale_data[i] = k_;
   }
   Blob<Dtype,Mtype> padded_square(1, channels_ + size_ - 1, height_, width_);
   Dtype* padded_square_data = padded_square.mutable_cpu_data();
-  caffe_set(padded_square.count(), Get<Dtype>(0), padded_square_data);
+  caffe_set(padded_square.count(), typedConsts<Dtype>::zero, padded_square_data);
   Mtype alpha_over_size = alpha_ / size_;
   // go through the images
   for (int n = 0; n < num_; ++n) {
@@ -133,7 +133,7 @@ void LRNLayer<Dtype,Mtype>::CrossChannelForward_cpu(
     }
     for (int c = 1; c < channels_; ++c) {
       // copy previous scale
-      caffe_copy<Dtype,Mtype>(height_ * width_,
+      caffe_copy(height_ * width_,
           scale_data + scale_.offset(n, c - 1),
           scale_data + scale_.offset(n, c));
       // add head
@@ -192,7 +192,7 @@ void LRNLayer<Dtype,Mtype>::CrossChannelBackward_cpu(
   Dtype* accum_ratio_data = accum_ratio.mutable_cpu_data();
   // We hack a little bit by using the diff() to store an additional result
   Dtype* accum_ratio_times_bottom = accum_ratio.mutable_cpu_diff();
-  caffe_set(padded_ratio.count(), Get<Dtype>(0), padded_ratio_data);
+  caffe_set(padded_ratio.count(), typedConsts<Dtype>::zero, padded_ratio_data);
   Mtype cache_ratio_value(2. * alpha_ * beta_ / size_);
 
   caffe_powx<Dtype,Mtype>(scale_.count(), scale_data, -beta_, bottom_diff);
@@ -211,7 +211,7 @@ void LRNLayer<Dtype,Mtype>::CrossChannelBackward_cpu(
         scale_data + block_offset,
         padded_ratio_data + padded_ratio.offset(0, inverse_pre_pad));
     // Now, compute the accumulated ratios and the bottom diff
-    caffe_set(accum_ratio.count(), Get<Dtype>(0), accum_ratio_data);
+    caffe_set(accum_ratio.count(), typedConsts<Dtype>::zero, accum_ratio_data);
     for (int c = 0; c < size_ - 1; ++c) {
       caffe_axpy<Dtype,Mtype>(height_ * width_, Mtype(1.),
           padded_ratio_data + padded_ratio.offset(0, c), accum_ratio_data);

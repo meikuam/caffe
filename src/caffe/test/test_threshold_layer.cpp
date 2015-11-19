@@ -61,13 +61,13 @@ TYPED_TEST(ThresholdLayerTest, Test) {
   const Dtype* top_data = this->blob_top_->cpu_data();
   const Mtype threshold_ = layer_param.threshold_param().threshold();
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-    EXPECT_GE(Get<Mtype>(top_data[i]), 0.);
-    EXPECT_LE(Get<Mtype>(top_data[i]), 1.);
-    if (Get<Mtype>(top_data[i]) == 0) {
-      EXPECT_LE(Get<Mtype>(bottom_data[i]), threshold_);
+    EXPECT_GE(top_data[i], 0.);
+    EXPECT_LE(top_data[i], 1.);
+    if (top_data[i] == 0) {
+      EXPECT_LE(bottom_data[i], threshold_);
     }
-    if (Get<Mtype>(top_data[i]) == 1) {
-      EXPECT_GT(Get<Mtype>(bottom_data[i]), threshold_);
+    if (top_data[i] == 1) {
+      EXPECT_GT(bottom_data[i], threshold_);
     }
   }
 }
@@ -88,13 +88,13 @@ TYPED_TEST(ThresholdLayerTest, Test2) {
   const Mtype threshold_ = layer_param.threshold_param().threshold();
   EXPECT_FLOAT_EQ(threshold_, 0.5);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
-    EXPECT_GE(Get<Mtype>(top_data[i]), 0.);
-    EXPECT_LE(Get<Mtype>(top_data[i]), 1.);
-    if (Get<Mtype>(top_data[i]) == 0) {
-      EXPECT_LE(Get<Mtype>(bottom_data[i]), threshold_);
+    EXPECT_GE(top_data[i], 0.);
+    EXPECT_LE(top_data[i], 1.);
+    if (top_data[i] == 0) {
+      EXPECT_LE(bottom_data[i], threshold_);
     }
-    if (Get<Mtype>(top_data[i]) == 1) {
-      EXPECT_GT(Get<Mtype>(bottom_data[i]), threshold_);
+    if (top_data[i] == 1) {
+      EXPECT_GT(bottom_data[i], threshold_);
     }
   }
 }

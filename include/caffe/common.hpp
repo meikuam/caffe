@@ -223,6 +223,69 @@ class Caffe {
   DISABLE_COPY_AND_ASSIGN(Caffe);
 };
 
+// Unlike dataType<> this one keeps typed values to be used in caffe_* calls.
+template <typename Dtype> class typedConsts;
+template<> class typedConsts<double>  {
+ public:
+  static const double minus_one, zero, one;
+};
+template<> class typedConsts<float>  {
+ public:
+  static const float minus_one, zero, one;
+};
+template<> class typedConsts<float16>  {
+ public:
+  static const float16 minus_one, zero, one;
+};
+template<> class typedConsts<int>  {
+ public:
+  static const int minus_one, zero, one;
+};
+
+template <typename T>
+CAFFE_UTIL_IHD float maxDtype() {
+  return FLT_MAX;
+}
+template <>
+CAFFE_UTIL_IHD float maxDtype<half>() {
+  return HLF_MAX;
+}
+template <>
+CAFFE_UTIL_IHD float maxDtype<float16>() {
+  return HLF_MAX;
+}
+
+template <typename T>
+CAFFE_UTIL_IHD float minDtype() {
+  return FLT_MIN;
+}
+template <>
+CAFFE_UTIL_IHD float minDtype<half>() {
+  return HLF_MIN;
+}
+template <>
+CAFFE_UTIL_IHD float minDtype<float16>() {
+  return HLF_MIN;
+}
+
+template <typename T>
+CAFFE_UTIL_IHD float tol(float t) {
+  return t;
+}
+template <>
+CAFFE_UTIL_IHD float tol<half>(float t) {
+  return t < 1.e-4 ? 2.5e-2 : t * 2.5e2;
+}
+template <>
+CAFFE_UTIL_IHD float tol<float16>(float t) {
+  return t < 1.e-4 ? 2.5e-2 : t * 2.5e2;
+}
+
+template <typename T>
+CAFFE_UTIL_IHD float choose(float fine, float coarse) {
+  return sizeof(T) > 2 ? fine : coarse;
+}
+
 }  // namespace caffe
 
 #endif  // CAFFE_COMMON_HPP_

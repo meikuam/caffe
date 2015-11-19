@@ -35,10 +35,10 @@ void ReductionLayer<Dtype,Mtype>::Forward_gpu(
     bottom_data += dim_;
     ++top_data;
   }
-  if (coeff_ != Get<Dtype>(1)) {
+  if (coeff_ != 1) {
     // Reset the top_data pointer.
     top_data = top[0]->mutable_gpu_data();
-    caffe_gpu_scal<Dtype,Mtype>(num_, Get<Mtype>(coeff_), top_data);
+    caffe_gpu_scal<Dtype,Mtype>(num_, coeff_, top_data);
   }
 }
 
@@ -65,7 +65,7 @@ void ReductionLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype,Mtype>*>&
   const Dtype* top_diff = top[0]->cpu_diff();
   Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
   for (int i = 0; i < num_; ++i) {
-    const Mtype bottom_coeff = Get<Mtype>((*top_diff) * coeff_);
+    const Mtype bottom_coeff = (*top_diff) * coeff_;
     switch (op_) {
     case ReductionParameter_ReductionOp_SUM:
     case ReductionParameter_ReductionOp_MEAN:

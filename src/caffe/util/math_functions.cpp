@@ -159,18 +159,18 @@ void caffe_add_scalar(const int N, const double alpha, double* Y) {
 template <>
 void caffe_add_scalar(const int N, const float alpha, float16* Y) {
   for (int i = 0; i < N; ++i) {
-    Y[i] = Get<float16>( Get<float>(Y[i]) + alpha );
+    Y[i] = Y[i] + alpha;
   }
 }
 template <>
 void caffe_add_scalar(const int N, const float16 alpha, float16* Y) {
   for (int i = 0; i < N; ++i) {
-    Y[i] = Get<float16>( Get<float16>(Y[i]) + alpha );
+    Y[i] = Y[i] + alpha;
   }
 }
 #endif
 
-template <typename Dtype, typename Mtype>
+template <typename Dtype>
 void caffe_copy(const int N, const Dtype* X, Dtype* Y) {
   if (X != Y) {
     if (Caffe::mode() == Caffe::GPU) {
@@ -186,15 +186,14 @@ void caffe_copy(const int N, const Dtype* X, Dtype* Y) {
   }
 }
 
-template void caffe_copy<int,int>(const int N, const int* X, int* Y);
-template void caffe_copy<unsigned int, unsigned int>(const int N, const unsigned int* X,
+template void caffe_copy<int>(const int N, const int* X, int* Y);
+template void caffe_copy<unsigned int>(const int N, const unsigned int* X,
     unsigned int* Y);
-template void caffe_copy<float,float>(const int N, const float* X, float* Y);
-template void caffe_copy<double,double>(const int N, const double* X, double* Y);
+template void caffe_copy<float>(const int N, const float* X, float* Y);
+template void caffe_copy<double>(const int N, const double* X, double* Y);
 
 #ifndef CPU_ONLY
-template void caffe_copy<float16,float>(const int N, const float16* X, float16* Y);
-template void caffe_copy<float16,float16>(const int N, const float16* X, float16* Y);
+template void caffe_copy<float16>(const int N, const float16* X, float16* Y);
 #endif
 
 template <>
@@ -211,7 +210,7 @@ void caffe_scal<double,double>(const int N, const double alpha, double *X) {
 template <>
 void caffe_scal<float16,float>(const int N, const float alpha, float16 *X) {
   for (int i = 0; i < N; ++i) {
-    X[i] = Get<float16>( alpha * Get<float>(X[i]) );
+    X[i] = alpha * X[i];
   }
 }
 
@@ -311,7 +310,7 @@ void caffe_mul<float16>(const int n, const float16* a, const float16* b,
     float16* y) {
   for (int i=0; i<n; ++i) {
     //  vhMul(n, a, b, y);
-    y[i] = Get<float16>( Get<float>(a[i]) * Get<float>(b[i]) );
+    y[i] = a[i] * b[i];
   }
 }
 #endif
@@ -648,8 +647,8 @@ int caffe_cpu_hamming_distance<float16>(const int n, const float16* x,
                                         const float16* y) {
   int dist = 0;
   for (int i = 0; i < n; ++i) {
-    dist += __builtin_popcount(static_cast<uint16_t>(Get<float>(x[i])) ^
-                               static_cast<uint16_t>(Get<float>(y[i])));
+    dist += __builtin_popcount(static_cast<uint16_t>(x[i]) ^
+                               static_cast<uint16_t>(y[i]));
   }
   return dist;
 }
