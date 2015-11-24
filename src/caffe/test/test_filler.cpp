@@ -107,8 +107,7 @@ TYPED_TEST(PositiveUnitballFillerTest, TestFill) {
     for (int j = 0; j < dim; ++j) {
       sum += data[i * dim + j];
     }
-    EXPECT_GE(sum, 0.999);
-    EXPECT_LE(sum, 1.001);
+    EXPECT_NEAR(sum, 1., choose<Dtype>(0.001,0.002));
   }
 }
 

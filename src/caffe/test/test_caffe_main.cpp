@@ -18,8 +18,10 @@ using caffe::CAFFE_TEST_CUDA_PROP;
 #endif
 
 int main(int argc, char** argv) {
+#ifdef DEBUG
   FLAGS_colorlogtostderr = 0;
   FLAGS_stderrthreshold = 0;
+#endif
   ::testing::InitGoogleTest(&argc, argv);
   caffe::GlobalInit(&argc, &argv);
   {

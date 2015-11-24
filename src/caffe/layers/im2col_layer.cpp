@@ -125,7 +125,7 @@ void Im2colLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bot
     DCHECK_EQ(pad_.count(), num_spatial_axes_);
     DCHECK_EQ(stride_.count(), num_spatial_axes_);
     if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
-      im2col_cpu<Dtype,Mtype>(bottom_data + n * bottom_dim_, channels_,
+      im2col_cpu(bottom_data + n * bottom_dim_, channels_,
           bottom[0]->shape(channel_axis_ + 1),
           bottom[0]->shape(channel_axis_ + 2),
           kernel_shape_.cpu_data()[0], kernel_shape_.cpu_data()[1],
@@ -133,7 +133,7 @@ void Im2colLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bot
           stride_.cpu_data()[0], stride_.cpu_data()[1],
           top_data + n * top_dim_);
     } else {
-      im2col_nd_cpu<Dtype,Mtype>(bottom_data + n * bottom_dim_, num_spatial_axes_,
+      im2col_nd_cpu(bottom_data + n * bottom_dim_, num_spatial_axes_,
           bottom[0]->shape().data() + channel_axis_,
           top[0]->shape().data() + channel_axis_,
           kernel_shape_.cpu_data(), pad_.cpu_data(), stride_.cpu_data(),
@@ -149,7 +149,7 @@ void Im2colLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& to
   Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
   for (int n = 0; n < num_; ++n) {
     if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
-      col2im_cpu<Dtype,Mtype>(top_diff + n * top_dim_, channels_,
+      col2im_cpu(top_diff + n * top_dim_, channels_,
           bottom[0]->shape(channel_axis_ + 1),
           bottom[0]->shape(channel_axis_ + 2),
           kernel_shape_.cpu_data()[0], kernel_shape_.cpu_data()[1],
@@ -157,7 +157,7 @@ void Im2colLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& to
           stride_.cpu_data()[0], stride_.cpu_data()[1],
           bottom_diff + n * bottom_dim_);
     } else {
-      col2im_nd_cpu<Dtype,Mtype>(top_diff + n * top_dim_, num_spatial_axes_,
+      col2im_nd_cpu(top_diff + n * top_dim_, num_spatial_axes_,
           bottom[0]->shape().data() + channel_axis_,
           top[0]->shape().data() + channel_axis_,
           kernel_shape_.cpu_data(), pad_.cpu_data(), stride_.cpu_data(),

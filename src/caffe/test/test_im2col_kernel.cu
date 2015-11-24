@@ -114,7 +114,7 @@ TYPED_TEST(Im2colKernelTest, Test2D) {
 
   // CPU Version
   for (int n = 0; n < this->blob_bottom_->num(); ++n) {
-    im2col_cpu<Dtype,Mtype>(this->blob_bottom_->cpu_data() + this->blob_bottom_->offset(n),
+    im2col_cpu(this->blob_bottom_->cpu_data() + this->blob_bottom_->offset(n),
       this->channels_, this->height_, this->width_,
       this->kernel_size_, this->kernel_size_, this->pad_, this->pad_,
       this->stride_, this->stride_,
@@ -167,7 +167,7 @@ TYPED_TEST(Im2colKernelTest, TestND) {
 
   // CPU Version
   for (int n = 0; n < this->blob_bottom_->num(); ++n) {
-    im2col_nd_cpu<Dtype,Mtype>(bottom_data_cpu + this->blob_bottom_->offset(n), 2,
+    im2col_nd_cpu(bottom_data_cpu + this->blob_bottom_->offset(n), 2,
         this->blob_bottom_->shape().data() + 1,
         this->blob_top_cpu_->shape().data() + 1,
         this->blob_kernel_shape_->cpu_data(),

@@ -229,7 +229,7 @@ inline CAFFE_UTIL_HD void checkFLoat (float f) {
 /// to synchronize the rounding mode with that of the underlying single-precision implementation.
 #ifndef HALF_ROUND_STYLE
 //	#define HALF_ROUND_STYLE	-1			// = std::round_indeterminate
-  #define HALF_ROUND_STYLE  1      // = std::round_indeterminate
+  #define HALF_ROUND_STYLE  1      // = std::round_to_nearest
 #endif
 
 /// Tie-breaking behaviour for round to nearest.
