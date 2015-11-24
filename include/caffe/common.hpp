@@ -242,30 +242,49 @@ template<> class typedConsts<int>  {
   static const int minus_one, zero, one;
 };
 
-template <typename T>
-CAFFE_UTIL_IHD float maxDtype() {
+template <typename Dtype>
+CAFFE_UTIL_IHD Dtype maxDtype();
+template <>
+CAFFE_UTIL_IHD double maxDtype<double>() {
+  return DBL_MAX;
+}
+template <>
+CAFFE_UTIL_IHD float maxDtype<float>() {
   return FLT_MAX;
 }
 template <>
-CAFFE_UTIL_IHD float maxDtype<half>() {
-  return HLF_MAX;
-}
-template <>
-CAFFE_UTIL_IHD float maxDtype<float16>() {
+CAFFE_UTIL_IHD float16 maxDtype<float16>() {
   return HLF_MAX;
 }
 
-template <typename T>
-CAFFE_UTIL_IHD float minDtype() {
+template <typename Dtype>
+CAFFE_UTIL_IHD Dtype minDtype();
+template <>
+CAFFE_UTIL_IHD double minDtype<double>() {
+  return DBL_MIN;
+}
+template <>
+CAFFE_UTIL_IHD float minDtype<float>() {
   return FLT_MIN;
 }
 template <>
-CAFFE_UTIL_IHD float minDtype<half>() {
+CAFFE_UTIL_IHD float16 minDtype<float16>() {
   return HLF_MIN;
 }
+
+template <typename Dtype>
+CAFFE_UTIL_IHD Dtype epsilonDtype();
 template <>
-CAFFE_UTIL_IHD float minDtype<float16>() {
-  return HLF_MIN;
+CAFFE_UTIL_IHD double epsilonDtype<double>() {
+  return DBL_EPSILON;
+}
+template <>
+CAFFE_UTIL_IHD float epsilonDtype<float>() {
+  return FLT_EPSILON;
+}
+template <>
+CAFFE_UTIL_IHD float16 epsilonDtype<float16>() {
+  return HLF_EPSILON;
 }
 
 template <typename T>
@@ -273,17 +292,13 @@ CAFFE_UTIL_IHD float tol(float t) {
   return t;
 }
 template <>
-CAFFE_UTIL_IHD float tol<half>(float t) {
-  return t < 1.e-4 ? 2.5e-2 : t * 2.5e2;
-}
-template <>
 CAFFE_UTIL_IHD float tol<float16>(float t) {
   return t < 1.e-4 ? 2.5e-2 : t * 2.5e2;
 }
 
-template <typename T>
-CAFFE_UTIL_IHD float choose(float fine, float coarse) {
-  return sizeof(T) > 2 ? fine : coarse;
+template <typename Dtype>
+CAFFE_UTIL_IHD Dtype choose(Dtype fine, Dtype coarse) {
+  return sizeof(Dtype) > 2 ? fine : coarse;
 }
 
 }  // namespace caffe

@@ -7,12 +7,12 @@
 
 namespace caffe {
 
-template <typename Dtype, typename Mtype>
+template <typename Dtype>
 __global__ void MaxForward(const int nthreads, const Dtype* bottom_data_a,
     const Dtype* bottom_data_b, const int blob_idx, Dtype* top_data,
     int* mask) {
   CUDA_KERNEL_LOOP(index, nthreads) {
-    Mtype maxval(- maxDtype<Dtype>());
+    Dtype maxval = - maxDtype<Dtype>();
     int maxidx = -1;
     if (bottom_data_a[index] > bottom_data_b[index]) {
       // only update for very first bottom_data blob (blob_idx == 0)
@@ -55,11 +55,11 @@ void EltwiseLayer<Dtype,Mtype>::Forward_gpu(const vector<Blob<Dtype,Mtype>*>& bo
   case EltwiseParameter_EltwiseOp_MAX:
     mask = max_idx_.mutable_gpu_data();
     // NOLINT_NEXT_LINE(whitespace/operators)
-    MaxForward<Dtype,Mtype> <<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
+    MaxForward<<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, bottom[0]->gpu_data(), bottom[1]->gpu_data(), 0, top_data, mask);
     for (int i = 2; i < bottom.size(); ++i) {
       // NOLINT_NEXT_LINE(whitespace/operators)
-      MaxForward<Dtype,Mtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
+      MaxForward<<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
           count, top_data, bottom[i]->gpu_data(), i-1, top_data, mask);
     }
     break;

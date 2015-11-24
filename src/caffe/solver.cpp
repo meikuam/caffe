@@ -896,8 +896,8 @@ void AdaGradSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
   const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_lr = this->net_->params_lr();
   Dtype delta(this->param_.delta());
-  if (delta < minDtype<Dtype>()) {
-    delta = minDtype<Dtype>();
+  if (sizeof(Dtype) == 2 && delta < epsilonDtype<Dtype>()) {
+    delta = epsilonDtype<Dtype>();
   }
   Mtype local_rate = rate * net_params_lr[param_id];
   switch (Caffe::mode()) {
@@ -979,8 +979,8 @@ void RMSPropSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
 
   // get the learning rate
   Dtype delta(this->param_.delta());
-  if (delta < minDtype<Dtype>()) {
-    delta = minDtype<Dtype>();
+  if (sizeof(Dtype) == 2 && delta < epsilonDtype<Dtype>()) {
+    delta = epsilonDtype<Dtype>();
   }
   Mtype rms_decay(this->param_.rms_decay());
   Mtype local_rate = rate * net_params_lr[param_id];
@@ -1067,8 +1067,8 @@ void AdaDeltaSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
   const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_lr = this->net_->params_lr();
   Dtype delta(this->param_.delta());
-  if (delta < minDtype<Dtype>()) {
-    delta = minDtype<Dtype>();
+  if (sizeof(Dtype) == 2 && delta < epsilonDtype<Dtype>()) {
+    delta = epsilonDtype<Dtype>();
   }
   Mtype momentum = this->param_.momentum();
   Mtype local_rate = rate * net_params_lr[param_id];
@@ -1229,8 +1229,8 @@ void AdamSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
   const Mtype correction(std::sqrt(1. - pow(beta2, Mtype(t))) / (1. - pow(beta1, Mtype(t))));
   const int N = net_params[param_id]->count();
   Mtype eps_hat(this->param_.delta());
-  if (eps_hat != 0. && eps_hat < minDtype<Dtype>()) {
-    eps_hat = minDtype<Dtype>();
+  if (sizeof(Dtype) == 2 && eps_hat < epsilonDtype<Dtype>()) {
+    eps_hat = epsilonDtype<Dtype>();
   }
 
   switch (Caffe::mode()) {

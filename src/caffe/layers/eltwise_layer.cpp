@@ -68,7 +68,7 @@ void EltwiseLayer<Dtype,Mtype>::Forward_cpu(
     // Initialize
     mask = max_idx_.mutable_cpu_data();
     caffe_set(count, typedConsts<int>::minus_one, mask);
-    caffe_set(count, Dtype(- maxDtype<Dtype>()), top_data);
+    caffe_set(count, - maxDtype<Dtype>(), top_data);
     // bottom 0 & 1
     bottom_data_a = bottom[0]->cpu_data();
     bottom_data_b = bottom[1]->cpu_data();

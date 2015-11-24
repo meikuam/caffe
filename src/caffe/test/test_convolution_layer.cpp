@@ -665,7 +665,7 @@ TYPED_TEST(ConvolutionLayerTest, TestGradient3D) {
   convolution_param->mutable_weight_filler()->set_type("gaussian");
   convolution_param->mutable_bias_filler()->set_type("gaussian");
   ConvolutionLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(6e-2, 1e-3);
+  GradientChecker<Dtype,Mtype> checker(6e-2, choose<Dtype>(1e-3,1e-2));
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }

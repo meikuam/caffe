@@ -31,7 +31,7 @@ void MultinomialLogisticLossLayer<Dtype,Mtype>::Forward_cpu(
     int label = static_cast<int>(bottom_label[i]);
     Mtype prob = std::max(
         bottom_data[i * dim + label],
-        Dtype(choose<Dtype>(kLOG_THRESHOLD,minDtype<Dtype>())));
+        choose<Dtype>(Dtype(kLOG_THRESHOLD), minDtype<Dtype>()));
     loss -= log(prob);
   }
   top[0]->mutable_cpu_data()[0] = loss / num;
@@ -57,7 +57,7 @@ void MultinomialLogisticLossLayer<Dtype,Mtype>::Backward_cpu(
       int label = static_cast<int>(bottom_label[i]);
       Mtype prob = std::max(
           bottom_data[i * dim + label],
-          Dtype(choose<Dtype>(kLOG_THRESHOLD,minDtype<Dtype>())));
+          choose<Dtype>(Dtype(kLOG_THRESHOLD), minDtype<Dtype>()));
       bottom_diff[i * dim + label] = scale / prob;
     }
   }

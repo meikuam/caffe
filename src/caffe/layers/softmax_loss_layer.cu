@@ -41,8 +41,7 @@ __global__ void SoftmaxLossForwardGPU(const int nthreads,
       loss[idx] = 0;
       counts[idx] = 0;
     } else {
-      Mtype tmp = -log(max(prob_data[n * dim + label_value * spatial_dim + s],
-          Dtype(minDtype<Dtype>())));
+      Mtype tmp = -log(max(prob_data[n * dim + label_value * spatial_dim + s], minDtype<Dtype>()));
       loss[idx] = tmp;
       counts[idx] = 1;
       lossSum += tmp;
