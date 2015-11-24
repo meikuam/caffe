@@ -30,10 +30,15 @@ class RandomNumberGeneratorTest : public ::testing::Test {
   }
 
   Mtype sample_mean(const Dtype* const seqs, const int sample_size) {
-    Mtype sum = 0;
+    Mtype sum = 0, psum = 0;
     for (int i = 0; i < sample_size; ++i) {
-      sum += seqs[i];
+      psum += seqs[i];
+      if (i > 0 && i % 100 == 0) {
+        sum += psum;
+        psum = 0.;
+      }
     }
+    sum += psum;
     return sum / sample_size;
   }
 
