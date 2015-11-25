@@ -178,7 +178,7 @@ class RandomNumberGeneratorTest : public ::testing::Test {
 
   void RngBernoulliFill(const Mtype p, void* cpu_data) {
     int* rng_data = static_cast<int*>(cpu_data);
-    caffe_rng_bernoulli<Dtype,Mtype>(sample_size_, p, rng_data);
+    caffe_rng_bernoulli(sample_size_, p, rng_data);
   }
 
   void RngBernoulliChecks(const Mtype p, const void* cpu_data) {

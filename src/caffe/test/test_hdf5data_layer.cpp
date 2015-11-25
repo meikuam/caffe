@@ -107,11 +107,6 @@ TYPED_TEST(HDF5DataLayerTest, TestRead) {
     int file_offset = (iter % 4 < 2) ? 0 : 2400;
 
     for (int i = 0; i < batch_size; ++i) {
-
-
-      printf("[%g]", (float) this->blob_top_label_->cpu_data()[i]);
-
-
       EXPECT_EQ(
         label_offset + i,
         static_cast<int>(this->blob_top_label_->cpu_data()[i]));
@@ -119,9 +114,6 @@ TYPED_TEST(HDF5DataLayerTest, TestRead) {
         label2_offset + i,
         static_cast<int>(this->blob_top_label2_->cpu_data()[i]));
     }
-
-    printf("\n");
-
     for (int i = 0; i < batch_size; ++i) {
       for (int j = 0; j < num_cols; ++j) {
         for (int h = 0; h < height; ++h) {

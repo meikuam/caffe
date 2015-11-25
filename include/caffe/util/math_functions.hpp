@@ -87,11 +87,11 @@ template <typename Dtype, typename Mtype>
 void caffe_rng_gaussian(const int n, const Mtype mu, const Mtype sigma,
                         Dtype* r);
 
-template <typename Dtype, typename Mtype>
-void caffe_rng_bernoulli(const int n, const Mtype p, int* r);
+template <typename Dtype>
+void caffe_rng_bernoulli(const int n, const Dtype p, int* r);
 
-template <typename Dtype, typename Mtype>
-void caffe_rng_bernoulli(const int n, const Mtype p, unsigned int* r);
+template <typename Dtype>
+void caffe_rng_bernoulli(const int n, const Dtype p, unsigned int* r);
 
 template <typename Dtype>
 void caffe_exp(const int n, const Dtype* a, Dtype* y);
