@@ -73,7 +73,7 @@ class SigmoidCrossEntropyLossLayerTest : public MultiDeviceTest<TypeParam> {
     targets_filler_param.set_min(0.0);
     targets_filler_param.set_max(1.0);
     UniformFiller<Dtype,Mtype> targets_filler(targets_filler_param);
-    Mtype eps = 2e-2;
+    Mtype eps = choose<Dtype>(2e-2,8e-2);
     for (int i = 0; i < 100; ++i) {
       // Fill the data vector
       data_filler.Fill(this->blob_bottom_data_);

@@ -121,7 +121,7 @@ class BlobMathTest : public MultiDeviceTest<TypeParam> {
  protected:
   BlobMathTest()
       : blob_(new Blob<Dtype,Mtype>(2, 3, 4, 5)),
-        epsilon_(1e-6) {}
+        epsilon_(choose<Dtype>(1e-6,2e-3)) {}
 
   virtual ~BlobMathTest() { delete blob_; }
   Blob<Dtype,Mtype>* const blob_;
@@ -142,11 +142,17 @@ TYPED_TEST(BlobMathTest, TestSumOfSquares) {
   filler_param.set_max(3);
   UniformFiller<Dtype,Mtype> filler(filler_param);
   filler.Fill(this->blob_);
-  Mtype expected_sumsq = 0;
+  Mtype expected_sumsq = 0, psum = 0;
   const Dtype* data = this->blob_->cpu_data();
   for (int i = 0; i < this->blob_->count(); ++i) {
-    expected_sumsq += data[i] * data[i];
+    psum += data[i] * data[i];
+    if (i > 0 && i % 10 == 0) {
+      expected_sumsq += psum;
+      psum = 0;
+    }
   }
+  expected_sumsq += psum;
+
   // Do a mutable access on the current device,
   // so that the sumsq computation is done on that device.
   // (Otherwise, this would only check the CPU sumsq implementation.)
@@ -198,11 +204,17 @@ TYPED_TEST(BlobMathTest, TestAsum) {
   filler_param.set_max(3);
   UniformFiller<Dtype,Mtype> filler(filler_param);
   filler.Fill(this->blob_);
-  Mtype expected_asum = 0;
+  Mtype expected_asum = 0, psum = 0;
   const Dtype* data = this->blob_->cpu_data();
   for (int i = 0; i < this->blob_->count(); ++i) {
-    expected_asum += std::fabs(data[i]);
+    psum += std::fabs(data[i]);
+    if (i > 0 && i % 10 == 0) {
+      expected_asum += psum;
+      psum = 0;
+    }
   }
+  expected_asum += psum;
+
   // Do a mutable access on the current device,
   // so that the asum computation is done on that device.
   // (Otherwise, this would only check the CPU asum implementation.)

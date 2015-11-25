@@ -832,7 +832,7 @@ TYPED_TEST(NetTest, TestLossWeight) {
   // Check that the loss is non-trivial, otherwise the test doesn't prove much.
   const Mtype kMinLossAbsValue = 1e-2;
   ASSERT_GE(fabs(loss), kMinLossAbsValue);
-  const Mtype kErrorMargin = 2e-4;
+  const Mtype kErrorMargin = choose<Dtype>(2e-4,5e-4);
   const int kNumLossWeights = 6;
   Dtype kLossWeights[kNumLossWeights] = {2., 0., 1., -1., -2.5, 3.7};
   for (int i = 0; i < kNumLossWeights; ++i) {
@@ -883,7 +883,7 @@ TYPED_TEST(NetTest, TestLossWeightMidNet) {
   // Check that the loss is non-trivial, otherwise the test doesn't prove much.
   const Mtype kMinLossAbsValue = 1e-2;
   ASSERT_GE(fabs(loss), kMinLossAbsValue);
-  const Mtype kErrorMargin = 1e-4;
+  const Mtype kErrorMargin = choose<Dtype>(1e-4,5e-3);
   const int kNumLossWeights = 6;
   Dtype kLossWeights[kNumLossWeights] = {2., 0., 1., -1., -2.5, 3.7};
   for (int i = 0; i < kNumLossWeights; ++i) {
@@ -898,13 +898,8 @@ TYPED_TEST(NetTest, TestLossWeightMidNet) {
         this->net_->blob_by_name("data");
     ASSERT_EQ(data_grad.count(), weighted_blob->count());
     for (int j = 0; j < data_grad.count(); ++j) {
-      if (sizeof(Dtype) == 2) {
-        EXPECT_NEAR(data_grad.cpu_diff()[j] * kLossWeights[i],
-                    weighted_blob->cpu_diff()[j], 0.1);
-      } else {
-        EXPECT_NEAR(data_grad.cpu_diff()[j] * kLossWeights[i],
-                    weighted_blob->cpu_diff()[j], error_margin);
-      }
+      EXPECT_NEAR(data_grad.cpu_diff()[j] * kLossWeights[i],
+                  weighted_blob->cpu_diff()[j], choose<Dtype>(error_margin,0.25));
     }
   }
 }
@@ -916,7 +911,7 @@ TYPED_TEST(NetTest, TestComboLossWeight) {
   Dtype loss_weight;
   Dtype midnet_loss_weight;
   const bool kForceBackward = true;
-  const Mtype kErrorMargin = 1e-4;
+  const Mtype kErrorMargin = choose<Dtype>(1e-4,2e-3);
 
   // Get the loss and gradients with 'EuclideanLoss' weight 1,
   // 'InnerProduct' weight 1.
@@ -968,13 +963,9 @@ TYPED_TEST(NetTest, TestComboLossWeight) {
                                     blob_grads[j]->cpu_diff()[k];
       if (grad_should_change) {
         // Test non-triviality.
-        const Mtype kMinGradDiffAbsValue = 1e-4;
-        EXPECT_GT(fabs(grad_diff_2), kMinGradDiffAbsValue) << blob_name;
-        if (sizeof(Dtype) == 2) {
-          EXPECT_NEAR(2 * grad_diff_2, grad_diff_3, 0.2) << blob_name;
-        } else {
-          EXPECT_NEAR(2 * grad_diff_2, grad_diff_3, kErrorMargin) << blob_name;
-        }
+        const Mtype kMinGradDiffAbsValue = choose<Dtype>(1e-4,0.);
+        EXPECT_GE(fabs(grad_diff_2), kMinGradDiffAbsValue) << blob_name;
+        EXPECT_NEAR(2 * grad_diff_2, grad_diff_3, choose<Dtype>(kErrorMargin,0.3)) << blob_name;
       } else {
         EXPECT_EQ(0, grad_diff_2) << blob_name;
         EXPECT_EQ(0, grad_diff_3) << blob_name;
@@ -1021,11 +1012,7 @@ TYPED_TEST(NetTest, TestComboLossWeight) {
         // Test non-triviality.
         const Mtype kMinGradDiffAbsValue = 1e-4;
         EXPECT_GT(fabs(grad_diff_2), kMinGradDiffAbsValue) << blob_name;
-        if (sizeof(Dtype) == 2) {
-          EXPECT_NEAR(2 * grad_diff_2, grad_diff_3, 0.2) << blob_name;
-        } else {
-          EXPECT_NEAR(2 * grad_diff_2, grad_diff_3, kErrorMargin) << blob_name;
-        }
+        EXPECT_NEAR(2 * grad_diff_2, grad_diff_3, choose<Dtype>(kErrorMargin,0.3)) << blob_name;
       } else {
         EXPECT_EQ(0, grad_diff_2) << blob_name;
         EXPECT_EQ(0, grad_diff_3) << blob_name;
@@ -1045,7 +1032,7 @@ TYPED_TEST(NetTest, TestComboLossWeight) {
   // Test non-triviality.
   EXPECT_GT(fabs(loss_diff_2), kMinLossDiffAbsValue);
   loss_diff_3 = loss_midnet_3 - loss;
-  EXPECT_NEAR(2 * loss_diff_2, loss_diff_3, kErrorMargin);
+  EXPECT_NEAR(2 * loss_diff_2, loss_diff_3, choose<Dtype>(kErrorMargin,6e-3));
 }
 
 TYPED_TEST(NetTest, TestBackwardWithAccuracyLayer) {
