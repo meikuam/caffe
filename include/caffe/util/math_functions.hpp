@@ -145,8 +145,9 @@ DEFINE_CAFFE_CPU_UNARY_FUNC(sign, y[i] = caffe_sign(x[i]));
 // The name sngbit is meant to avoid conflicts with std::signbit in the macro.
 // The extra parens are needed because CUDA < 6.5 defines signbit as a macro,
 // and we don't want that to expand here when CUDA headers are also included.
+// Note: on ARM std::signbit may return −2147483648 instead of 1.
 DEFINE_CAFFE_CPU_UNARY_FUNC(sgnbit, \
-    y[i] = static_cast<int>(std::signbit(static_cast<float>(x[i]))));
+    y[i] = std::signbit(static_cast<float>(x[i])) == 0 ? 0 : 1);
 
 DEFINE_CAFFE_CPU_UNARY_FUNC(fabs, y[i] = std::fabs(x[i]));
 

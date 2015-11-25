@@ -47,10 +47,15 @@ class RandomNumberGeneratorTest : public ::testing::Test {
   }
 
   Mtype sample_mean(const int* const seqs, const int sample_size) {
-    Mtype sum = 0;
+    Mtype sum = 0, psum = 0;
     for (int i = 0; i < sample_size; ++i) {
-      sum += seqs[i];
+      psum += seqs[i];
+      if (i > 0 && i % 100 == 0) {
+        sum += psum;
+        psum = 0.;
+      }
     }
+    sum += psum;
     return sum / sample_size;
   }
 
@@ -162,7 +167,7 @@ class RandomNumberGeneratorTest : public ::testing::Test {
     }
     if (sparse_p == Mtype(0)) {
       if (sizeof(Dtype) == 2) {
-        EXPECT_LE(num_mean, 5);
+        EXPECT_LE(num_mean, 15);
       } else {
         EXPECT_EQ(0, num_above_upper);
         EXPECT_EQ(0, num_mean);
@@ -492,7 +497,7 @@ TYPED_TEST(RandomNumberGeneratorTest, TestRngUniformIntGPU) {
     uniform_data[i] = uniform_uint_data[i];
   }
   const Mtype lower = 0;
-  const Mtype upper = UINT_MAX;
+  const Mtype upper = sizeof(Dtype) > 2 ? UINT_MAX : 64000U;
   this->RngUniformChecks(lower, upper, uniform_data);
 }
 
