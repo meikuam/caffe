@@ -11,6 +11,12 @@
 
 using namespace caffe;  // NOLINT(build/namespaces)
 
+#ifdef CPU_ONLY  // CPU-only Caffe.
+int main(int argc, char** argv) {
+  std::cout << "Not available in CPU_ONLY mode" << std::endl;
+  return 0;
+}
+#else
 DEFINE_string(model, "",
     "The model definition protocol buffer text file.");
 
@@ -184,3 +190,4 @@ int main(int argc, char** argv) {
 
   return 0;
 }
+#endif // CPU_ONLY
