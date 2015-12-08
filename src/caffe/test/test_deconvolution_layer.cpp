@@ -22,10 +22,10 @@ class DeconvolutionLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   DeconvolutionLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>(2, 3, 6, 4)),
-        blob_bottom_2_(new Blob<Dtype,Mtype>(2, 3, 6, 4)),
-        blob_top_(new Blob<Dtype,Mtype>()),
-        blob_top_2_(new Blob<Dtype,Mtype>()) {}
+      : blob_bottom_(new Blob<Dtype>(2, 3, 6, 4)),
+        blob_bottom_2_(new Blob<Dtype>(2, 3, 6, 4)),
+        blob_top_(new Blob<Dtype>()),
+        blob_top_2_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     // fill the values
     FillerParameter filler_param;
@@ -44,12 +44,12 @@ class DeconvolutionLayerTest : public MultiDeviceTest<TypeParam> {
     delete blob_top_2_;
   }
 
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_bottom_2_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  Blob<Dtype,Mtype>* const blob_top_2_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_bottom_2_;
+  Blob<Dtype>* const blob_top_;
+  Blob<Dtype>* const blob_top_2_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(DeconvolutionLayerTest, TestDtypesAndDevices);
@@ -184,8 +184,8 @@ TYPED_TEST(DeconvolutionLayerTest, TestNDAgainst2D) {
   convolution_param->set_kernel_h(kernel_h);
   convolution_param->set_kernel_w(kernel_w);
   convolution_param->mutable_weight_filler()->set_type("gaussian");
-  Blob<Dtype,Mtype> weights;
-  Blob<Dtype,Mtype> top_diff;
+  Blob<Dtype> weights;
+  Blob<Dtype> top_diff;
   // Shape and fill weights and top_diff.
   bool copy_diff;
   bool reshape;
@@ -199,9 +199,9 @@ TYPED_TEST(DeconvolutionLayerTest, TestNDAgainst2D) {
     weights.CopyFrom(*layer.blobs()[0], copy_diff, reshape);
   }
   vector<bool> propagate_down(1, true);
-  Blob<Dtype,Mtype> result_2d;
-  Blob<Dtype,Mtype> backward_result_2d;
-  Blob<Dtype,Mtype> backward_weight_result_2d;
+  Blob<Dtype> result_2d;
+  Blob<Dtype> backward_result_2d;
+  Blob<Dtype> backward_weight_result_2d;
   // Test with 2D im2col
   {
     caffe_set(this->blob_top_->count(), typedConsts<Dtype>::zero,
@@ -230,9 +230,9 @@ TYPED_TEST(DeconvolutionLayerTest, TestNDAgainst2D) {
     backward_result_2d.CopyFrom(*this->blob_bottom_, copy_diff, reshape);
     backward_weight_result_2d.CopyFrom(weights, copy_diff, reshape);
   }
-  Blob<Dtype,Mtype> result_nd;
-  Blob<Dtype,Mtype> backward_result_nd;
-  Blob<Dtype,Mtype> backward_weight_result_nd;
+  Blob<Dtype> result_nd;
+  Blob<Dtype> backward_result_nd;
+  Blob<Dtype> backward_weight_result_nd;
   // Test with ND im2col
   {
     caffe_set(this->blob_top_->count(), typedConsts<Dtype>::zero,

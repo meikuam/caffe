@@ -11,8 +11,8 @@
 namespace caffe {
 
 template <typename Dtype, typename Mtype>
-void DropoutLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top) {
+void DropoutLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype,Mtype>::LayerSetUp(bottom, top);
   threshold_ = this->layer_param_.dropout_param().dropout_ratio();
   DCHECK(threshold_ > 0.);
@@ -22,8 +22,8 @@ void DropoutLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>& bot
 }
 
 template <typename Dtype, typename Mtype>
-void DropoutLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top) {
+void DropoutLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype,Mtype>::Reshape(bottom, top);
   // Set up the cache for random number generation
   rand_vec_.Reshape(bottom[0]->num(), bottom[0]->channels(),
@@ -31,8 +31,8 @@ void DropoutLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype,Mtype>*>& bottom
 }
 
 template <typename Dtype, typename Mtype>
-void DropoutLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom,
-    const vector<Blob<Dtype,Mtype>*>& top) {
+void DropoutLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   unsigned int* mask = rand_vec_.mutable_cpu_data();
@@ -49,9 +49,9 @@ void DropoutLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bo
 }
 
 template <typename Dtype, typename Mtype>
-void DropoutLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top,
+void DropoutLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down,
-    const vector<Blob<Dtype,Mtype>*>& bottom) {
+    const vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[0]) {
     const Dtype* top_diff = top[0]->cpu_diff();
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();

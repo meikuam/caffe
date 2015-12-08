@@ -30,27 +30,27 @@ class GradientChecker {
   // layers.
   // Note that after the gradient check, we do not guarantee that the data
   // stored in the layer parameters and the blobs are unchanged.
-  void CheckGradient(Layer<Dtype,Mtype>* layer, const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top, int check_bottom = -1) {
+  void CheckGradient(Layer<Dtype,Mtype>* layer, const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top, int check_bottom = -1) {
       layer->SetUp(bottom, top);
       CheckGradientSingle(layer, bottom, top, check_bottom, -1, -1);
   }
   void CheckGradientExhaustive(Layer<Dtype,Mtype>* layer,
-      const vector<Blob<Dtype,Mtype>*>& bottom, const vector<Blob<Dtype,Mtype>*>& top,
+      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
       int check_bottom = -1);
 
   // CheckGradientEltwise can be used to test layers that perform element-wise
   // computation only (e.g., neuron layers) -- where (d y_i) / (d x_j) = 0 when
   // i != j.
   void CheckGradientEltwise(Layer<Dtype,Mtype>* layer,
-      const vector<Blob<Dtype,Mtype>*>& bottom, const vector<Blob<Dtype,Mtype>*>& top);
+      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
 
   // Checks the gradient of a single output with respect to particular input
   // blob(s).  If check_bottom = i >= 0, check only the ith bottom Blob.
   // If check_bottom == -1, check everything -- all bottom Blobs and all
   // param Blobs.  Otherwise (if check_bottom < -1), check only param Blobs.
   void CheckGradientSingle(Layer<Dtype,Mtype>* layer,
-      const vector<Blob<Dtype,Mtype>*>& bottom, const vector<Blob<Dtype,Mtype>*>& top,
+      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
       int check_bottom, int top_id, int top_data_id, bool element_wise = false);
 
   // Checks the gradient of a network. This network should not have any data
@@ -58,11 +58,11 @@ class GradientChecker {
   // such cases yet. All input blobs and parameter blobs are going to be
   // checked, layer-by-layer to avoid numerical problems to accumulate.
   void CheckGradientNet(const Net<Dtype,Mtype>& net,
-      const vector<Blob<Dtype,Mtype>*>& input);
+      const vector<Blob<Dtype>*>& input);
 
  protected:
   Dtype GetObjAndGradient(const Layer<Dtype,Mtype>& layer,
-      const vector<Blob<Dtype,Mtype>*>& top, int top_id = -1, int top_data_id = -1);
+      const vector<Blob<Dtype>*>& top, int top_id = -1, int top_data_id = -1);
   Dtype stepsize_;
   Dtype threshold_;
   unsigned int seed_;
@@ -73,7 +73,7 @@ class GradientChecker {
 
 template <typename Dtype, typename Mtype>
 void GradientChecker<Dtype,Mtype>::CheckGradientSingle(Layer<Dtype,Mtype>* layer,
-    const vector<Blob<Dtype,Mtype>*>& bottom, const vector<Blob<Dtype,Mtype>*>& top,
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
     int check_bottom, int top_id, int top_data_id, bool element_wise) {
   if (element_wise) {
     CHECK_EQ(0, layer->blobs().size());
@@ -86,10 +86,10 @@ void GradientChecker<Dtype,Mtype>::CheckGradientSingle(Layer<Dtype,Mtype>* layer
   }
   // First, figure out what blobs we need to check against, and zero init
   // parameter blobs.
-  vector<Blob<Dtype,Mtype>*> blobs_to_check;
+  vector<Blob<Dtype>*> blobs_to_check;
   vector<bool> propagate_down(bottom.size(), check_bottom == -1);
   for (int i = 0; i < layer->blobs().size(); ++i) {
-    Blob<Dtype,Mtype>* blob = layer->blobs()[i].get();
+    Blob<Dtype>* blob = layer->blobs()[i].get();
     caffe_set(blob->count(), typedConsts<Dtype>::zero, blob->mutable_cpu_diff());
     blobs_to_check.push_back(blob);
   }
@@ -112,11 +112,11 @@ void GradientChecker<Dtype,Mtype>::CheckGradientSingle(Layer<Dtype,Mtype>* layer
   GetObjAndGradient(*layer, top, top_id, top_data_id);
   layer->Backward(top, propagate_down, bottom);
   // Store computed gradients for all checked blobs
-  vector<shared_ptr<Blob<Dtype,Mtype> > >
+  vector<shared_ptr<Blob<Dtype> > >
       computed_gradient_blobs(blobs_to_check.size());
   for (int blob_id = 0; blob_id < blobs_to_check.size(); ++blob_id) {
-    Blob<Dtype,Mtype>* current_blob = blobs_to_check[blob_id];
-    computed_gradient_blobs[blob_id].reset(new Blob<Dtype,Mtype>());
+    Blob<Dtype>* current_blob = blobs_to_check[blob_id];
+    computed_gradient_blobs[blob_id].reset(new Blob<Dtype>());
     computed_gradient_blobs[blob_id]->ReshapeLike(*current_blob);
     const int count = blobs_to_check[blob_id]->count();
     const Dtype* diff = blobs_to_check[blob_id]->cpu_diff();
@@ -128,7 +128,7 @@ void GradientChecker<Dtype,Mtype>::CheckGradientSingle(Layer<Dtype,Mtype>* layer
   // finite differencing.
   // LOG(ERROR) << "Checking " << blobs_to_check.size() << " blobs.";
   for (int blob_id = 0; blob_id < blobs_to_check.size(); ++blob_id) {
-    Blob<Dtype,Mtype>* current_blob = blobs_to_check[blob_id];
+    Blob<Dtype>* current_blob = blobs_to_check[blob_id];
     const Dtype* computed_gradients =
         computed_gradient_blobs[blob_id]->cpu_data();
     // LOG(ERROR) << "Blob " << blob_id << ": checking "
@@ -188,7 +188,7 @@ void GradientChecker<Dtype,Mtype>::CheckGradientSingle(Layer<Dtype,Mtype>* layer
 
 template <typename Dtype, typename Mtype>
 void GradientChecker<Dtype,Mtype>::CheckGradientExhaustive(Layer<Dtype,Mtype>* layer,
-    const vector<Blob<Dtype,Mtype>*>& bottom, const vector<Blob<Dtype,Mtype>*>& top,
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
     int check_bottom) {
   layer->SetUp(bottom, top);
   CHECK_GT(top.size(), 0) << "Exhaustive mode requires at least one top blob.";
@@ -204,7 +204,7 @@ void GradientChecker<Dtype,Mtype>::CheckGradientExhaustive(Layer<Dtype,Mtype>* l
 
 template <typename Dtype, typename Mtype>
 void GradientChecker<Dtype,Mtype>::CheckGradientEltwise(Layer<Dtype,Mtype>* layer,
-    const vector<Blob<Dtype,Mtype>*>& bottom, const vector<Blob<Dtype,Mtype>*>& top) {
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   layer->SetUp(bottom, top);
   CHECK_GT(top.size(), 0) << "Eltwise mode requires at least one top blob.";
   const int check_bottom = -1;
@@ -218,10 +218,10 @@ void GradientChecker<Dtype,Mtype>::CheckGradientEltwise(Layer<Dtype,Mtype>* laye
 
 template <typename Dtype, typename Mtype>
 void GradientChecker<Dtype,Mtype>::CheckGradientNet(
-    const Net<Dtype,Mtype>& net, const vector<Blob<Dtype,Mtype>*>& input) {
+    const Net<Dtype,Mtype>& net, const vector<Blob<Dtype>*>& input) {
   const vector<shared_ptr<Layer<Dtype,Mtype> > >& layers = net.layers();
-  vector<vector<Blob<Dtype,Mtype>*> >& bottom_vecs = net.bottom_vecs();
-  vector<vector<Blob<Dtype,Mtype>*> >& top_vecs = net.top_vecs();
+  vector<vector<Blob<Dtype>*> >& bottom_vecs = net.bottom_vecs();
+  vector<vector<Blob<Dtype>*> >& top_vecs = net.top_vecs();
   for (int i = 0; i < layers.size(); ++i) {
     net.Forward(input);
     LOG(ERROR) << "Checking gradient for " << layers[i]->layer_param().name();
@@ -231,12 +231,12 @@ void GradientChecker<Dtype,Mtype>::CheckGradientNet(
 
 template <typename Dtype, typename Mtype>
 Dtype GradientChecker<Dtype,Mtype>::GetObjAndGradient(const Layer<Dtype,Mtype>& layer,
-    const vector<Blob<Dtype,Mtype>*>& top, int top_id, int top_data_id) {
+    const vector<Blob<Dtype>*>& top, int top_id, int top_data_id) {
   Dtype loss = 0.;
   if (top_id < 0) {
     // the loss will be half of the sum of squares of all outputs
     for (int i = 0; i < top.size(); ++i) {
-      Blob<Dtype,Mtype>* top_blob = top[i];
+      Blob<Dtype>* top_blob = top[i];
       const Dtype* top_blob_data = top_blob->cpu_data();
       Dtype* top_blob_diff = top_blob->mutable_cpu_diff();
       int count = top_blob->count();
@@ -250,7 +250,7 @@ Dtype GradientChecker<Dtype,Mtype>::GetObjAndGradient(const Layer<Dtype,Mtype>& 
   } else {
     // the loss will be the top_data_id-th element in the top_id-th blob.
     for (int i = 0; i < top.size(); ++i) {
-      Blob<Dtype,Mtype>* top_blob = top[i];
+      Blob<Dtype>* top_blob = top[i];
       Dtype* top_blob_diff = top_blob->mutable_cpu_diff();
       caffe_set(top_blob->count(), typedConsts<Dtype>::zero, top_blob_diff);
     }

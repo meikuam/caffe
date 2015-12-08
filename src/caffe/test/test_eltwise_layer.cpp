@@ -20,10 +20,10 @@ class EltwiseLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   EltwiseLayerTest()
-      : blob_bottom_a_(new Blob<Dtype,Mtype>(2, 3, 4, 5)),
-        blob_bottom_b_(new Blob<Dtype,Mtype>(2, 3, 4, 5)),
-        blob_bottom_c_(new Blob<Dtype,Mtype>(2, 3, 4, 5)),
-        blob_top_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_a_(new Blob<Dtype>(2, 3, 4, 5)),
+        blob_bottom_b_(new Blob<Dtype>(2, 3, 4, 5)),
+        blob_bottom_c_(new Blob<Dtype>(2, 3, 4, 5)),
+        blob_top_(new Blob<Dtype>()) {
     // fill the values
     Caffe::set_random_seed(1701);
     FillerParameter filler_param;
@@ -42,12 +42,12 @@ class EltwiseLayerTest : public MultiDeviceTest<TypeParam> {
     delete blob_bottom_c_;
     delete blob_top_;
   }
-  Blob<Dtype,Mtype>* const blob_bottom_a_;
-  Blob<Dtype,Mtype>* const blob_bottom_b_;
-  Blob<Dtype,Mtype>* const blob_bottom_c_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_a_;
+  Blob<Dtype>* const blob_bottom_b_;
+  Blob<Dtype>* const blob_bottom_c_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(EltwiseLayerTest, TestDtypesAndDevices);

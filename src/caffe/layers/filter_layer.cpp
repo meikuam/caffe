@@ -8,15 +8,15 @@
 namespace caffe {
 
 template <typename Dtype, typename Mtype>
-void FilterLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top) {
+void FilterLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
   CHECK_EQ(top.size(), bottom.size() - 1);
   first_reshape_ = true;
 }
 
 template <typename Dtype, typename Mtype>
-void FilterLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top) {
+void FilterLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
   // bottom[0...k-1] are the blobs to filter
   // bottom[last] is the "selector_blob"
   int selector_index = bottom.size() - 1;
@@ -59,8 +59,8 @@ void FilterLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype,Mtype>*>& bottom,
 }
 
 template <typename Dtype, typename Mtype>
-void FilterLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top) {
+void FilterLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
   int new_tops_num = indices_to_forward_.size();
   // forward all filtered items for all bottoms but the Selector (bottom[last])
   for (int t = 0; t < top.size(); ++t) {
@@ -77,8 +77,8 @@ void FilterLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bot
 }
 
 template <typename Dtype, typename Mtype>
-void FilterLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype,Mtype>*>& bottom) {
+void FilterLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[bottom.size() - 1]) {
     LOG(FATAL) << this->type()
                << "Layer cannot backpropagate to filter index inputs";

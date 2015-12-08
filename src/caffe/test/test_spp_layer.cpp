@@ -21,10 +21,10 @@ class SPPLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   SPPLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>()),
-        blob_bottom_2_(new Blob<Dtype,Mtype>()),
-        blob_bottom_3_(new Blob<Dtype,Mtype>()),
-        blob_top_(new Blob<Dtype,Mtype>()) {}
+      : blob_bottom_(new Blob<Dtype>()),
+        blob_bottom_2_(new Blob<Dtype>()),
+        blob_bottom_3_(new Blob<Dtype>()),
+        blob_top_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     Caffe::set_random_seed(1701);
     blob_bottom_->Reshape(2, 3, 9, 8);
@@ -41,14 +41,14 @@ class SPPLayerTest : public MultiDeviceTest<TypeParam> {
   }
   virtual ~SPPLayerTest() { delete blob_bottom_; delete blob_top_; }
 
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_bottom_2_;
-  Blob<Dtype,Mtype>* const blob_bottom_3_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_2_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_3_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_bottom_2_;
+  Blob<Dtype>* const blob_bottom_3_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_bottom_vec_2_;
+  vector<Blob<Dtype>*> blob_bottom_vec_3_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(SPPLayerTest, TestDtypesAndDevices);

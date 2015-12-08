@@ -12,8 +12,8 @@
 namespace caffe {
 
 template <typename Dtype, typename Mtype>
-void HDF5OutputLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>& bottom,
-    const vector<Blob<Dtype,Mtype>*>& top) {
+void HDF5OutputLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
   file_name_ = this->layer_param_.hdf5_output_param().file_name();
   file_id_ = H5Fcreate(file_name_.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,
                        H5P_DEFAULT);
@@ -41,8 +41,8 @@ void HDF5OutputLayer<Dtype,Mtype>::SaveBlobs() {
 }
 
 template <typename Dtype, typename Mtype>
-void HDF5OutputLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top) {
+void HDF5OutputLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
   CHECK_GE(bottom.size(), 2);
   CHECK_EQ(bottom[0]->num(), bottom[1]->num());
   data_blob_.Reshape(bottom[0]->num(), bottom[0]->channels(),
@@ -62,8 +62,8 @@ void HDF5OutputLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>&
 }
 
 template <typename Dtype, typename Mtype>
-void HDF5OutputLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype,Mtype>*>& bottom) {
+void HDF5OutputLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   return;
 }
 

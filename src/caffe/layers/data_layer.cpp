@@ -27,8 +27,8 @@ DataLayer<Dtype,Mtype>::~DataLayer() {
 }
 
 template <typename Dtype, typename Mtype>
-void DataLayer<Dtype,Mtype>::DataLayerSetUp(const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top) {
+void DataLayer<Dtype,Mtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
   const int batch_size = this->layer_param_.data_param().batch_size();
 
   // Read a data point, and use it to initialize the top blob.
@@ -104,9 +104,9 @@ void DataLayer<Dtype,Mtype>::load_batch(Batch<Dtype,Mtype>* batch) {
   }
   timer.Stop();
   batch_timer.Stop();
-  DLOG(INFO) << "Prefetch batch: " << batch_timer.MilliSeconds() << " ms.";
-  DLOG(INFO) << "     Read time: " << read_time / 1000 << " ms.";
-  DLOG(INFO) << "Transform time: " << trans_time / 1000 << " ms.";
+//  DLOG(INFO) << "Prefetch batch: " << batch_timer.MilliSeconds() << " ms.";
+//  DLOG(INFO) << "     Read time: " << read_time / 1000 << " ms.";
+//  DLOG(INFO) << "Transform time: " << trans_time / 1000 << " ms.";
 }
 
 INSTANTIATE_CLASS(DataLayer);

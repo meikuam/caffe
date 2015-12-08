@@ -19,8 +19,8 @@ class MaxPoolingDropoutTest : public MultiDeviceTest<TypeParam> {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   MaxPoolingDropoutTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>()),
-        blob_top_(new Blob<Dtype,Mtype>()) {}
+      : blob_bottom_(new Blob<Dtype>()),
+        blob_top_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     Caffe::set_random_seed(1703);
     blob_bottom_->Reshape(2, 3, 6, 5);
@@ -33,10 +33,10 @@ class MaxPoolingDropoutTest : public MultiDeviceTest<TypeParam> {
     blob_top_vec_.push_back(blob_top_);
   }
   virtual ~MaxPoolingDropoutTest() { delete blob_bottom_; delete blob_top_; }
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(MaxPoolingDropoutTest, TestDtypesAndDevices);

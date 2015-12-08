@@ -10,7 +10,7 @@ namespace caffe {
 
 template <typename Dtype, typename Mtype>
 void ContrastiveLossLayer<Dtype,Mtype>::Forward_gpu(
-    const vector<Blob<Dtype,Mtype>*>& bottom, const vector<Blob<Dtype,Mtype>*>& top) {
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   const int count = bottom[0]->count();
   caffe_gpu_sub<Dtype,Mtype>(
       count,
@@ -81,8 +81,8 @@ __global__ void CLLBackward(const int count, const int channels,
 }
 
 template <typename Dtype, typename Mtype>
-void ContrastiveLossLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype,Mtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype,Mtype>*>& bottom) {
+void ContrastiveLossLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   for (int i = 0; i < 2; ++i) {
     if (propagate_down[i]) {
       const int count = bottom[0]->count();

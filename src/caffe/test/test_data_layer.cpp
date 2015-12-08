@@ -27,8 +27,8 @@ class DataLayerTest : public MultiDeviceTest<TypeParam> {
  protected:
   DataLayerTest()
       : backend_(DataParameter_DB_LEVELDB),
-        blob_top_data_(new Blob<Dtype,Mtype>()),
-        blob_top_label_(new Blob<Dtype,Mtype>()),
+        blob_top_data_(new Blob<Dtype>()),
+        blob_top_label_(new Blob<Dtype>()),
         seed_(1701) {}
   virtual void SetUp() {
     filename_.reset(new string());
@@ -341,10 +341,10 @@ class DataLayerTest : public MultiDeviceTest<TypeParam> {
 
   DataParameter_DB backend_;
   shared_ptr<string> filename_;
-  Blob<Dtype,Mtype>* const blob_top_data_;
-  Blob<Dtype,Mtype>* const blob_top_label_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_top_data_;
+  Blob<Dtype>* const blob_top_label_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
   int seed_;
 };
 

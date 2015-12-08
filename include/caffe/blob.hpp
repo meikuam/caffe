@@ -21,7 +21,7 @@ namespace caffe {
  *
  * TODO(dox): more thorough description.
  */
-template <typename Dtype, typename Mtype>
+template <typename Dtype>
 class Blob {
  public:
   Blob()
@@ -187,7 +187,7 @@ class Blob {
    *        of other (and die otherwise); if true, Reshape this Blob to other's
    *        shape if necessary
    */
-  void CopyFrom(const Blob<Dtype,Mtype>& source, bool copy_diff = false,
+  void CopyFrom(const Blob<Dtype>& source, bool copy_diff = false,
       bool reshape = false);
 
   inline Dtype data_at(const int n, const int c, const int h,
@@ -228,22 +228,29 @@ class Blob {
   Dtype* mutable_gpu_data();
   Dtype* mutable_cpu_diff();
   Dtype* mutable_gpu_diff();
+  template <typename Mtype>
   void Update();
   void FromProto(const BlobProto& proto, bool reshape = true);
   void ToProto(BlobProto* proto, bool write_diff = false) const;
 
   /// @brief Compute the sum of absolute values (L1 norm) of the data.
+  template <typename Mtype>
   Mtype asum_data() const;
   /// @brief Compute the sum of absolute values (L1 norm) of the diff.
+  template <typename Mtype>
   Mtype asum_diff() const;
   /// @brief Compute the sum of squares (L2 norm squared) of the data.
+  template <typename Mtype>
   Mtype sumsq_data() const;
   /// @brief Compute the sum of squares (L2 norm squared) of the diff.
+  template <typename Mtype>
   Mtype sumsq_diff() const;
 
   /// @brief Scale the blob data by a constant factor.
+  template <typename Mtype>
   void scale_data(Mtype scale_factor);
   /// @brief Scale the blob diff by a constant factor.
+  template <typename Mtype>
   void scale_diff(Mtype scale_factor);
 
   /**

@@ -21,9 +21,9 @@ class HDF5DataLayerTest : public MultiDeviceTest<TypeParam> {
  protected:
   HDF5DataLayerTest()
       : filename(NULL),
-        blob_top_data_(new Blob<Dtype,Mtype>()),
-        blob_top_label_(new Blob<Dtype,Mtype>()),
-        blob_top_label2_(new Blob<Dtype,Mtype>()) {}
+        blob_top_data_(new Blob<Dtype>()),
+        blob_top_label_(new Blob<Dtype>()),
+        blob_top_label2_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     blob_top_vec_.push_back(blob_top_data_);
     blob_top_vec_.push_back(blob_top_label_);
@@ -43,11 +43,11 @@ class HDF5DataLayerTest : public MultiDeviceTest<TypeParam> {
   }
 
   string* filename;
-  Blob<Dtype,Mtype>* const blob_top_data_;
-  Blob<Dtype,Mtype>* const blob_top_label_;
-  Blob<Dtype,Mtype>* const blob_top_label2_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_top_data_;
+  Blob<Dtype>* const blob_top_label_;
+  Blob<Dtype>* const blob_top_label2_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(HDF5DataLayerTest, TestDtypesAndDevices);

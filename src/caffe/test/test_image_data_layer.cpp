@@ -24,8 +24,8 @@ class ImageDataLayerTest : public MultiDeviceTest<TypeParam> {
  protected:
   ImageDataLayerTest()
       : seed_(1701),
-        blob_top_data_(new Blob<Dtype,Mtype>()),
-        blob_top_label_(new Blob<Dtype,Mtype>()) {}
+        blob_top_data_(new Blob<Dtype>()),
+        blob_top_label_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     blob_top_vec_.push_back(blob_top_data_);
     blob_top_vec_.push_back(blob_top_label_);
@@ -55,10 +55,10 @@ class ImageDataLayerTest : public MultiDeviceTest<TypeParam> {
   int seed_;
   string filename_;
   string filename_reshape_;
-  Blob<Dtype,Mtype>* const blob_top_data_;
-  Blob<Dtype,Mtype>* const blob_top_label_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_top_data_;
+  Blob<Dtype>* const blob_top_label_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(ImageDataLayerTest, TestDtypesAndDevices);

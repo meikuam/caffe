@@ -20,10 +20,10 @@ class ConcatLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   ConcatLayerTest()
-      : blob_bottom_0_(new Blob<Dtype,Mtype>(2, 3, 6, 5)),
-        blob_bottom_1_(new Blob<Dtype,Mtype>(2, 5, 6, 5)),
-        blob_bottom_2_(new Blob<Dtype,Mtype>(5, 3, 6, 5)),
-        blob_top_(new Blob<Dtype,Mtype>()) {}
+      : blob_bottom_0_(new Blob<Dtype>(2, 3, 6, 5)),
+        blob_bottom_1_(new Blob<Dtype>(2, 5, 6, 5)),
+        blob_bottom_2_(new Blob<Dtype>(5, 3, 6, 5)),
+        blob_top_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     // fill the values
     shared_ptr<ConstantFiller<Dtype,Mtype> > filler;
@@ -49,12 +49,12 @@ class ConcatLayerTest : public MultiDeviceTest<TypeParam> {
     delete blob_bottom_2_; delete blob_top_;
   }
 
-  Blob<Dtype,Mtype>* const blob_bottom_0_;
-  Blob<Dtype,Mtype>* const blob_bottom_1_;
-  Blob<Dtype,Mtype>* const blob_bottom_2_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_0_, blob_bottom_vec_1_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_0_;
+  Blob<Dtype>* const blob_bottom_1_;
+  Blob<Dtype>* const blob_bottom_2_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_0_, blob_bottom_vec_1_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(ConcatLayerTest, TestDtypesAndDevices);

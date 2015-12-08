@@ -21,10 +21,10 @@ class AccuracyLayerTest : public CPUDeviceTest<TypeParam> {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   AccuracyLayerTest()
-      : blob_bottom_data_(new Blob<Dtype,Mtype>()),
-        blob_bottom_label_(new Blob<Dtype,Mtype>()),
-        blob_top_(new Blob<Dtype,Mtype>()),
-        blob_top_per_class_(new Blob<Dtype,Mtype>()),
+      : blob_bottom_data_(new Blob<Dtype>()),
+        blob_bottom_label_(new Blob<Dtype>()),
+        blob_top_(new Blob<Dtype>()),
+        blob_top_per_class_(new Blob<Dtype>()),
         top_k_(3) {
     vector<int> shape(2);
     shape[0] = 100;
@@ -63,13 +63,13 @@ class AccuracyLayerTest : public CPUDeviceTest<TypeParam> {
     delete blob_top_;
     delete blob_top_per_class_;
   }
-  Blob<Dtype,Mtype>* const blob_bottom_data_;
-  Blob<Dtype,Mtype>* const blob_bottom_label_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  Blob<Dtype,Mtype>* const blob_top_per_class_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_per_class_vec_;
+  Blob<Dtype>* const blob_bottom_data_;
+  Blob<Dtype>* const blob_bottom_label_;
+  Blob<Dtype>* const blob_top_;
+  Blob<Dtype>* const blob_top_per_class_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
+  vector<Blob<Dtype>*> blob_top_per_class_vec_;
   int top_k_;
 };
 

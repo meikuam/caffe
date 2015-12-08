@@ -198,7 +198,7 @@ void Solver<Dtype,Mtype>::InitTestNets() {
 
 template <typename Dtype, typename Mtype>
 void Solver<Dtype,Mtype>::Step(int iters) {
-  vector<Blob<Dtype,Mtype>*> bottom_vec;
+  vector<Blob<Dtype>*> bottom_vec;
   const int start_iter = iter_;
   const int stop_iter = iter_ + iters;
   int average_loss = this->param_.average_loss();
@@ -246,7 +246,7 @@ void Solver<Dtype,Mtype>::Step(int iters) {
     if (display) {
       LOG_IF(INFO, Caffe::root_solver()) << "Iteration " << iter_
           << ", loss = " << smoothed_loss;
-      const vector<Blob<Dtype,Mtype>*>& result = net_->output_blobs();
+      const vector<Blob<Dtype>*>& result = net_->output_blobs();
       int score_index = 0;
       for (int j = 0; j < result.size(); ++j) {
         const Dtype* result_vec = result[j]->cpu_data();
@@ -353,7 +353,7 @@ void Solver<Dtype,Mtype>::Test(const int test_net_id) {
       ShareTrainedLayersWith(net_.get());
   vector<Dtype> test_score;
   vector<int> test_score_output_id;
-  vector<Blob<Dtype,Mtype>*> bottom_vec;
+  vector<Blob<Dtype>*> bottom_vec;
   const shared_ptr<Net<Dtype,Mtype> >& test_net = test_nets_[test_net_id];
   Mtype loss(0.);
   for (int i = 0; i < param_.test_iter(test_net_id); ++i) {
@@ -373,7 +373,7 @@ void Solver<Dtype,Mtype>::Test(const int test_net_id) {
     }
 
     Mtype iter_loss;
-    const vector<Blob<Dtype,Mtype>*>& result =
+    const vector<Blob<Dtype>*>& result =
         test_net->Forward(bottom_vec, &iter_loss);
     if (param_.test_compute_loss()) {
       loss += iter_loss;
@@ -552,15 +552,15 @@ Dtype SGDSolver<Dtype,Mtype>::GetLearningRate() {
 template <typename Dtype, typename Mtype>
 void SGDSolver<Dtype,Mtype>::PreSolve() {
   // Initialize the history
-  const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
+  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   history_.clear();
   update_.clear();
   temp_.clear();
   for (int i = 0; i < net_params.size(); ++i) {
     const vector<int>& shape = net_params[i]->shape();
-    history_.push_back(shared_ptr<Blob<Dtype,Mtype> >(new Blob<Dtype,Mtype>(shape)));
-    update_.push_back(shared_ptr<Blob<Dtype,Mtype> >(new Blob<Dtype,Mtype>(shape)));
-    temp_.push_back(shared_ptr<Blob<Dtype,Mtype> >(new Blob<Dtype,Mtype>(shape)));
+    history_.push_back(shared_ptr<Blob<Dtype> >(new Blob<Dtype>(shape)));
+    update_.push_back(shared_ptr<Blob<Dtype> >(new Blob<Dtype>(shape)));
+    temp_.push_back(shared_ptr<Blob<Dtype> >(new Blob<Dtype>(shape)));
   }
 }
 
@@ -568,10 +568,10 @@ template <typename Dtype, typename Mtype>
 void SGDSolver<Dtype,Mtype>::ClipGradients() {
   const Mtype clip_gradients(this->param_.clip_gradients());
   if (clip_gradients < 0) { return; }
-  const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
+  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   Mtype sumsq_diff(0);
   for (int i = 0; i < net_params.size(); ++i) {
-    sumsq_diff += net_params[i]->sumsq_diff();
+    sumsq_diff += net_params[i]->template sumsq_diff<Mtype>();
   }
   const Mtype l2norm_diff(std::sqrt(sumsq_diff));
   if (l2norm_diff > clip_gradients) {
@@ -606,7 +606,7 @@ template <typename Dtype, typename Mtype>
 void SGDSolver<Dtype,Mtype>::Normalize(int param_id) {
   if (this->param_.iter_size() == 1) { return; }
   // Scale gradient to counterbalance accumulation.
-  const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
+  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const Mtype accum_normalization = Mtype(1.) / this->param_.iter_size();
   switch (Caffe::mode()) {
   case Caffe::CPU: {
@@ -630,7 +630,7 @@ void SGDSolver<Dtype,Mtype>::Normalize(int param_id) {
 
 template <typename Dtype, typename Mtype>
 void SGDSolver<Dtype,Mtype>::Regularize(int param_id) {
-  const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
+  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_weight_decay =
       this->net_->params_weight_decay();
   Mtype weight_decay(this->param_.weight_decay());
@@ -692,7 +692,7 @@ void SGDSolver<Dtype,Mtype>::Regularize(int param_id) {
 
 template <typename Dtype, typename Mtype>
 void SGDSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
-  const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
+  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_lr = this->net_->params_lr();
   Mtype momentum(this->param_.momentum());
   Mtype local_rate = rate * net_params_lr[param_id];
@@ -832,7 +832,7 @@ void SGDSolver<Dtype,Mtype>::RestoreSolverStateFromHDF5(const string& state_file
 template <typename Dtype, typename Mtype>
 void NesterovSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
   CHECK(Caffe::root_solver());
-  const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
+  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_lr = this->net_->params_lr();
   Mtype momentum(this->param_.momentum());
   Mtype local_rate = rate * net_params_lr[param_id];
@@ -893,7 +893,7 @@ void NesterovSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
 template <typename Dtype, typename Mtype>
 void AdaGradSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
   CHECK(Caffe::root_solver());
-  const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
+  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_lr = this->net_->params_lr();
   Dtype delta(this->param_.delta());
   if (sizeof(Dtype) == 2 && delta < epsilonDtype<Dtype>()) {
@@ -974,7 +974,7 @@ void AdaGradSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
 
 template <typename Dtype, typename Mtype>
 void RMSPropSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
-  const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
+  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_lr = this->net_->params_lr();
 
   // get the learning rate
@@ -1054,17 +1054,17 @@ template <typename Dtype, typename Mtype>
 void AdaDeltaSolver<Dtype,Mtype>::AdaDeltaPreSolve() {
   // Add the extra history entries for AdaDelta after those from
   // SGDSolver::PreSolve
-  const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
+  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   for (int i = 0; i < net_params.size(); ++i) {
         const vector<int>& shape = net_params[i]->shape();
         this->history_.push_back(
-                shared_ptr<Blob<Dtype,Mtype> >(new Blob<Dtype,Mtype>(shape)));
+                shared_ptr<Blob<Dtype> >(new Blob<Dtype>(shape)));
   }
 }
 
 template <typename Dtype, typename Mtype>
 void AdaDeltaSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
-  const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
+  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_lr = this->net_->params_lr();
   Dtype delta(this->param_.delta());
   if (sizeof(Dtype) == 2 && delta < epsilonDtype<Dtype>()) {
@@ -1203,17 +1203,17 @@ template <typename Dtype, typename Mtype>
 void AdamSolver<Dtype,Mtype>::AdamPreSolve() {
   // Add the extra history entries for Adam after those from
   // SGDSolver::PreSolve
-  const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
+  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   for (int i = 0; i < net_params.size(); ++i) {
     const vector<int>& shape = net_params[i]->shape();
     this->history_.push_back(
-            shared_ptr<Blob<Dtype,Mtype> >(new Blob<Dtype,Mtype>(shape)));
+            shared_ptr<Blob<Dtype> >(new Blob<Dtype>(shape)));
   }
 }
 
 template <typename Dtype, typename Mtype>
 void AdamSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
-  const vector<Blob<Dtype,Mtype>*>& net_params = this->net_->learnable_params();
+  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_lr = this->net_->params_lr();
   Mtype local_rate = rate * net_params_lr[param_id];
   const Mtype beta1(this->param_.momentum());
@@ -1221,9 +1221,9 @@ void AdamSolver<Dtype,Mtype>::ComputeUpdateValue(int param_id, Dtype rate) {
 
   // we create aliases for convenience
   size_t update_history_offset = net_params.size();
-  Blob<Dtype,Mtype>* val_m = this->history_[param_id].get();
-  Blob<Dtype,Mtype>* val_v = this->history_[param_id + update_history_offset].get();
-  Blob<Dtype,Mtype>* val_t = this->temp_[param_id].get();
+  Blob<Dtype>* val_m = this->history_[param_id].get();
+  Blob<Dtype>* val_v = this->history_[param_id + update_history_offset].get();
+  Blob<Dtype>* val_t = this->temp_[param_id].get();
 
   const int t = this->iter_  + 1;
   const Mtype correction(std::sqrt(1. - pow(beta2, Mtype(t))) / (1. - pow(beta1, Mtype(t))));

@@ -21,7 +21,7 @@ class Filler {
  public:
   explicit Filler(const FillerParameter& param) : filler_param_(param) {}
   virtual ~Filler() {}
-  virtual void Fill(Blob<Dtype,Mtype>* blob) = 0;
+  virtual void Fill(Blob<Dtype>* blob) = 0;
  protected:
   FillerParameter filler_param_;
 };  // class Filler
@@ -33,7 +33,7 @@ class ConstantFiller : public Filler<Dtype,Mtype> {
  public:
   explicit ConstantFiller(const FillerParameter& param)
       : Filler<Dtype,Mtype>(param) {}
-  virtual void Fill(Blob<Dtype,Mtype>* blob) {
+  virtual void Fill(Blob<Dtype>* blob) {
     Dtype* data = blob->mutable_cpu_data();
     const int count = blob->count();
     const Mtype value(this->filler_param_.value());
@@ -52,7 +52,7 @@ class UniformFiller : public Filler<Dtype,Mtype> {
  public:
   explicit UniformFiller(const FillerParameter& param)
       : Filler<Dtype,Mtype>(param) {}
-  virtual void Fill(Blob<Dtype,Mtype>* blob) {
+  virtual void Fill(Blob<Dtype>* blob) {
     CHECK(blob->count());
     caffe_rng_uniform<Dtype,Mtype>(blob->count(), Mtype(this->filler_param_.min()),
         Mtype(this->filler_param_.max()), blob->mutable_cpu_data());
@@ -67,7 +67,7 @@ class GaussianFiller : public Filler<Dtype,Mtype> {
  public:
   explicit GaussianFiller(const FillerParameter& param)
       : Filler<Dtype,Mtype>(param) {}
-  virtual void Fill(Blob<Dtype,Mtype>* blob) {
+  virtual void Fill(Blob<Dtype>* blob) {
     Dtype* data = blob->mutable_cpu_data();
     CHECK(blob->count());
     caffe_rng_gaussian(blob->count(), Mtype(this->filler_param_.mean()),
@@ -103,7 +103,7 @@ class PositiveUnitballFiller : public Filler<Dtype,Mtype> {
  public:
   explicit PositiveUnitballFiller(const FillerParameter& param)
       : Filler<Dtype,Mtype>(param) {}
-  virtual void Fill(Blob<Dtype,Mtype>* blob) {
+  virtual void Fill(Blob<Dtype>* blob) {
     Dtype* data = blob->mutable_cpu_data();
     DCHECK(blob->count());
     caffe_rng_uniform<Dtype,Mtype>(blob->count(), Mtype(0.f), Mtype(1.f), blob->mutable_cpu_data());
@@ -146,7 +146,7 @@ class XavierFiller : public Filler<Dtype,Mtype> {
  public:
   explicit XavierFiller(const FillerParameter& param)
       : Filler<Dtype,Mtype>(param) {}
-  virtual void Fill(Blob<Dtype,Mtype>* blob) {
+  virtual void Fill(Blob<Dtype>* blob) {
     CHECK(blob->count());
     int fan_in = blob->count() / blob->num();
     int fan_out = blob->count() / blob->channels();
@@ -188,7 +188,7 @@ class MSRAFiller : public Filler<Dtype,Mtype> {
  public:
   explicit MSRAFiller(const FillerParameter& param)
       : Filler<Dtype,Mtype>(param) {}
-  virtual void Fill(Blob<Dtype,Mtype>* blob) {
+  virtual void Fill(Blob<Dtype>* blob) {
     CHECK(blob->count());
     int fan_in = blob->count() / blob->num();
     int fan_out = blob->count() / blob->channels();
@@ -246,7 +246,7 @@ class BilinearFiller : public Filler<Dtype,Mtype> {
  public:
   explicit BilinearFiller(const FillerParameter& param)
       : Filler<Dtype,Mtype>(param) {}
-  virtual void Fill(Blob<Dtype,Mtype>* blob) {
+  virtual void Fill(Blob<Dtype>* blob) {
     CHECK_EQ(blob->num_axes(), 4) << "Blob must be 4 dim.";
     CHECK_EQ(blob->width(), blob->height()) << "Filter must be square";
     Dtype* data = blob->mutable_cpu_data();

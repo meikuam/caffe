@@ -170,7 +170,7 @@ class SGDSolver : public Solver<Dtype,Mtype> {
   explicit SGDSolver(const string& param_file)
       : Solver<Dtype,Mtype>(param_file) { PreSolve(); }
 
-  const vector<shared_ptr<Blob<Dtype,Mtype> > >& history() { return history_; }
+  const vector<shared_ptr<Blob<Dtype> > >& history() { return history_; }
 
  protected:
   void PreSolve();
@@ -189,7 +189,7 @@ class SGDSolver : public Solver<Dtype,Mtype> {
   // update maintains update related data and is not needed in snapshots.
   // temp maintains other information that might be needed in computation
   //   of gradients/updates and is not needed in snapshots
-  vector<shared_ptr<Blob<Dtype,Mtype> > > history_, update_, temp_;
+  vector<shared_ptr<Blob<Dtype> > > history_, update_, temp_;
 
   using Solver<Dtype,Mtype>::iteration_timer_;
   using Solver<Dtype,Mtype>::iterations_last_;

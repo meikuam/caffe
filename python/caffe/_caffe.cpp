@@ -159,8 +159,8 @@ struct NdarrayCallPolicies : public bp::default_call_policies {
   typedef NdarrayConverterGenerator result_converter;
   PyObject* postcall(PyObject* pyargs, PyObject* result) {
     bp::object pyblob = bp::extract<bp::tuple>(pyargs)()[0];
-    shared_ptr<Blob<Dtype, Mtype> > blob =
-      bp::extract<shared_ptr<Blob<Dtype, Mtype> > >(pyblob);
+    shared_ptr<Blob<Dtype> > blob =
+      bp::extract<shared_ptr<Blob<Dtype> > >(pyblob);
     // Free the temporary pointer-holding array, and construct a new one with
     // the shape information from the blob.
     void* data = PyArray_DATA(reinterpret_cast<PyArrayObject*>(result));
@@ -181,7 +181,7 @@ bp::object Blob_Reshape(bp::tuple args, bp::dict kwargs) {
   if (bp::len(kwargs) > 0) {
     throw std::runtime_error("Blob.reshape takes no kwargs");
   }
-  Blob<Dtype, Mtype>* self = bp::extract<Blob<Dtype, Mtype>*>(args[0]);
+  Blob<Dtype>* self = bp::extract<Blob<Dtype>*>(args[0]);
   vector<int> shape(bp::len(args) - 1);
   for (int i = 1; i < bp::len(args); ++i) {
     shape[i - 1] = bp::extract<int>(args[i]);
@@ -195,13 +195,13 @@ bp::object BlobVec_add_blob(bp::tuple args, bp::dict kwargs) {
   if (bp::len(kwargs) > 0) {
     throw std::runtime_error("BlobVec.add_blob takes no kwargs");
   }
-  typedef vector<shared_ptr<Blob<Dtype,Mtype> > > BlobVec;
+  typedef vector<shared_ptr<Blob<Dtype> > > BlobVec;
   BlobVec* self = bp::extract<BlobVec*>(args[0]);
   vector<int> shape(bp::len(args) - 1);
   for (int i = 1; i < bp::len(args); ++i) {
     shape[i - 1] = bp::extract<int>(args[i]);
   }
-  self->push_back(shared_ptr<Blob<Dtype,Mtype> >(new Blob<Dtype,Mtype>(shape)));
+  self->push_back(shared_ptr<Blob<Dtype> >(new Blob<Dtype>(shape)));
   // We need to explicitly return None to use bp::raw_function.
   return bp::object();
 }
@@ -248,23 +248,23 @@ BOOST_PYTHON_MODULE(_caffe) {
         bp::with_custodian_and_ward<1, 2, bp::with_custodian_and_ward<1, 3> >())
     .def("save", &Net_Save);
 
-  bp::class_<Blob<Dtype, Mtype>, shared_ptr<Blob<Dtype, Mtype> >, boost::noncopyable>(
+  bp::class_<Blob<Dtype>, shared_ptr<Blob<Dtype> >, boost::noncopyable>(
     "Blob", bp::no_init)
     .add_property("shape",
         bp::make_function(
-            static_cast<const vector<int>& (Blob<Dtype, Mtype>::*)() const>(
-                &Blob<Dtype, Mtype>::shape),
+            static_cast<const vector<int>& (Blob<Dtype>::*)() const>(
+                &Blob<Dtype>::shape),
             bp::return_value_policy<bp::copy_const_reference>()))
-    .add_property("num",      &Blob<Dtype, Mtype>::num)
-    .add_property("channels", &Blob<Dtype, Mtype>::channels)
-    .add_property("height",   &Blob<Dtype, Mtype>::height)
-    .add_property("width",    &Blob<Dtype, Mtype>::width)
-    .add_property("count",    static_cast<int (Blob<Dtype, Mtype>::*)() const>(
-        &Blob<Dtype, Mtype>::count))
+    .add_property("num",      &Blob<Dtype>::num)
+    .add_property("channels", &Blob<Dtype>::channels)
+    .add_property("height",   &Blob<Dtype>::height)
+    .add_property("width",    &Blob<Dtype>::width)
+    .add_property("count",    static_cast<int (Blob<Dtype>::*)() const>(
+        &Blob<Dtype>::count))
     .def("reshape",           bp::raw_function(&Blob_Reshape))
-    .add_property("data",     bp::make_function(&Blob<Dtype, Mtype>::mutable_cpu_data,
+    .add_property("data",     bp::make_function(&Blob<Dtype>::mutable_cpu_data,
           NdarrayCallPolicies()))
-    .add_property("diff",     bp::make_function(&Blob<Dtype, Mtype>::mutable_cpu_diff,
+    .add_property("diff",     bp::make_function(&Blob<Dtype>::mutable_cpu_diff,
           NdarrayCallPolicies()));
 
   bp::class_<Layer<Dtype, Mtype>, shared_ptr<PythonLayer<Dtype, Mtype> >,
@@ -312,11 +312,11 @@ BOOST_PYTHON_MODULE(_caffe) {
       bp::return_value_policy<bp::manage_new_object>());
 
   // vector wrappers for all the vector types we use
-  bp::class_<vector<shared_ptr<Blob<Dtype, Mtype> > > >("BlobVec")
-    .def(bp::vector_indexing_suite<vector<shared_ptr<Blob<Dtype, Mtype> > >, true>())
+  bp::class_<vector<shared_ptr<Blob<Dtype> > > >("BlobVec")
+    .def(bp::vector_indexing_suite<vector<shared_ptr<Blob<Dtype> > >, true>())
     .def("add_blob", bp::raw_function(&BlobVec_add_blob));
-  bp::class_<vector<Blob<Dtype, Mtype>*> >("RawBlobVec")
-    .def(bp::vector_indexing_suite<vector<Blob<Dtype, Mtype>*>, true>());
+  bp::class_<vector<Blob<Dtype>*> >("RawBlobVec")
+    .def(bp::vector_indexing_suite<vector<Blob<Dtype>*>, true>());
   bp::class_<vector<shared_ptr<Layer<Dtype, Mtype> > > >("LayerVec")
     .def(bp::vector_indexing_suite<vector<shared_ptr<Layer<Dtype, Mtype> > >, true>());
   bp::class_<vector<string> >("StringVec")

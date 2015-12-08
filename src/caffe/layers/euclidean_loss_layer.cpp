@@ -9,7 +9,7 @@ namespace caffe {
 
 template <typename Dtype, typename Mtype>
 void EuclideanLossLayer<Dtype,Mtype>::Reshape(
-  const vector<Blob<Dtype,Mtype>*>& bottom, const vector<Blob<Dtype,Mtype>*>& top) {
+  const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype,Mtype>::Reshape(bottom, top);
   CHECK_EQ(bottom[0]->count(1), bottom[1]->count(1))
       << "Inputs must have the same dimension.";
@@ -17,8 +17,8 @@ void EuclideanLossLayer<Dtype,Mtype>::Reshape(
 }
 
 template <typename Dtype, typename Mtype>
-void EuclideanLossLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom,
-    const vector<Blob<Dtype,Mtype>*>& top) {
+void EuclideanLossLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
   int count = bottom[0]->count();
   caffe_sub(
       count,
@@ -31,8 +31,8 @@ void EuclideanLossLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>
 }
 
 template <typename Dtype, typename Mtype>
-void EuclideanLossLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype,Mtype>*>& bottom) {
+void EuclideanLossLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   for (int i = 0; i < 2; ++i) {
     if (propagate_down[i]) {
       const Mtype sign(i == 0 ? 1.f : -1.f);

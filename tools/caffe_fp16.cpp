@@ -243,13 +243,13 @@ int test() {
   caffe_net.CopyTrainedLayersFrom(FLAGS_weights);
   LOG(INFO) << "Running for " << FLAGS_iterations << " iterations.";
 
-  vector<Blob<float16,CAFFE_FP16_MTYPE>* > bottom_vec;
+  vector<Blob<float16>* > bottom_vec;
   vector<int> test_score_output_id;
   vector<float> test_score;
   float loss = 0;
   for (int i = 0; i < FLAGS_iterations; ++i) {
     CAFFE_FP16_MTYPE iter_loss;
-    const vector<Blob<float16,CAFFE_FP16_MTYPE>*>& result =
+    const vector<Blob<float16>*>& result =
         caffe_net.Forward(bottom_vec, &iter_loss);
     loss += (float) iter_loss;
     int idx = 0;
@@ -314,12 +314,12 @@ int time() {
   // Note that for the speed benchmark, we will assume that the network does
   // not take any input blobs.
   CAFFE_FP16_MTYPE initial_loss;
-  caffe_net.Forward(vector<Blob<float16,CAFFE_FP16_MTYPE>*>(), &initial_loss);
+  caffe_net.Forward(vector<Blob<float16>*>(), &initial_loss);
   LOG(INFO) << "Initial loss: " << initial_loss;
 
   const vector<shared_ptr<Layer<float16,CAFFE_FP16_MTYPE> > >& layers = caffe_net.layers();
-  const vector<vector<Blob<float16,CAFFE_FP16_MTYPE>*> >& bottom_vecs = caffe_net.bottom_vecs();
-  const vector<vector<Blob<float16,CAFFE_FP16_MTYPE>*> >& top_vecs = caffe_net.top_vecs();
+  const vector<vector<Blob<float16>*> >& bottom_vecs = caffe_net.bottom_vecs();
+  const vector<vector<Blob<float16>*> >& top_vecs = caffe_net.top_vecs();
   LOG(INFO) << "*** Benchmark begins ***";
   LOG(INFO) << "Testing for " << FLAGS_iterations << " iterations.";
   Timer total_timer;
@@ -377,7 +377,13 @@ RegisterBrewFunction(time);
 
 int main(int argc, char** argv) {
   // Print output to stderr (while still logging).
+#ifdef DEBUG
+  FLAGS_colorlogtostderr = 0;
+  FLAGS_stderrthreshold = 0;
+  FLAGS_alsologtostderr = 0;
+#else
   FLAGS_alsologtostderr = 1;
+#endif
   // Usage message.
   gflags::SetUsageMessage("command line brew\n"
       "usage: caffe <command> <args>\n\n"

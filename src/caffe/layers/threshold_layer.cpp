@@ -7,15 +7,15 @@
 namespace caffe {
 
 template <typename Dtype, typename Mtype>
-void ThresholdLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top) {
+void ThresholdLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype,Mtype>::LayerSetUp(bottom, top);
   threshold_ = this->layer_param_.threshold_param().threshold();
 }
 
 template <typename Dtype, typename Mtype>
-void ThresholdLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom,
-    const vector<Blob<Dtype,Mtype>*>& top) {
+void ThresholdLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   const int count = bottom[0]->count();

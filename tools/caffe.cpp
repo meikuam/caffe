@@ -244,13 +244,13 @@ int test() {
   caffe_net.CopyTrainedLayersFrom(FLAGS_weights);
   LOG(INFO) << "Running for " << FLAGS_iterations << " iterations.";
 
-  vector<Blob<float,float>* > bottom_vec;
+  vector<Blob<float>* > bottom_vec;
   vector<int> test_score_output_id;
   vector<float> test_score;
   float loss = 0;
   for (int i = 0; i < FLAGS_iterations; ++i) {
     float iter_loss;
-    const vector<Blob<float,float>*>& result =
+    const vector<Blob<float>*>& result =
         caffe_net.Forward(bottom_vec, &iter_loss);
     loss += iter_loss;
     int idx = 0;
@@ -315,14 +315,14 @@ int time() {
   // Note that for the speed benchmark, we will assume that the network does
   // not take any input blobs.
   float initial_loss;
-  caffe_net.Forward(vector<Blob<float,float>*>(), &initial_loss);
+  caffe_net.Forward(vector<Blob<float>*>(), &initial_loss);
   LOG(INFO) << "Initial loss: " << initial_loss;
   LOG(INFO) << "Performing Backward";
   caffe_net.Backward();
 
   const vector<shared_ptr<Layer<float,float> > >& layers = caffe_net.layers();
-  const vector<vector<Blob<float,float>*> >& bottom_vecs = caffe_net.bottom_vecs();
-  const vector<vector<Blob<float,float>*> >& top_vecs = caffe_net.top_vecs();
+  const vector<vector<Blob<float>*> >& bottom_vecs = caffe_net.bottom_vecs();
+  const vector<vector<Blob<float>*> >& top_vecs = caffe_net.top_vecs();
   const vector<vector<bool> >& bottom_need_backward =  caffe_net.bottom_need_backward();
 
   LOG(INFO) << "*** Benchmark begins ***";
@@ -407,7 +407,13 @@ RegisterBrewFunction(time);
 
 int main(int argc, char** argv) {
   // Print output to stderr (while still logging).
+#ifdef DEBUG
+  FLAGS_colorlogtostderr = 0;
+  FLAGS_stderrthreshold = 0;
+  FLAGS_alsologtostderr = 0;
+#else
   FLAGS_alsologtostderr = 1;
+#endif
   // Usage message.
   gflags::SetUsageMessage("command line brew\n"
       "usage: caffe <command> <args>\n\n"

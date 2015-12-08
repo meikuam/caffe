@@ -8,8 +8,8 @@
 namespace caffe {
 
 template <typename Dtype, typename Mtype>
-void PReLULayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>& bottom,
-    const vector<Blob<Dtype,Mtype>*>& top) {
+void PReLULayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
   CHECK_GE(bottom[0]->num_axes(), 2)
       << "Number of axes of bottom blob must be >=2.";
   PReLUParameter prelu_param = this->layer_param().prelu_param();
@@ -20,9 +20,9 @@ void PReLULayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>& botto
   } else {
     this->blobs_.resize(1);
     if (channel_shared_) {
-      this->blobs_[0].reset(new Blob<Dtype,Mtype>(vector<int>(0)));
+      this->blobs_[0].reset(new Blob<Dtype>(vector<int>(0)));
     } else {
-      this->blobs_[0].reset(new Blob<Dtype,Mtype>(vector<int>(1, channels)));
+      this->blobs_[0].reset(new Blob<Dtype>(vector<int>(1, channels)));
     }
     shared_ptr<Filler<Dtype,Mtype> > filler;
     if (prelu_param.has_filler()) {
@@ -51,8 +51,8 @@ void PReLULayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>& botto
 }
 
 template <typename Dtype, typename Mtype>
-void PReLULayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype,Mtype>*>& bottom,
-    const vector<Blob<Dtype,Mtype>*>& top) {
+void PReLULayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
   CHECK_GE(bottom[0]->num_axes(), 2)
       << "Number of axes of bottom blob must be >=2.";
   top[0]->ReshapeLike(*bottom[0]);
@@ -63,8 +63,8 @@ void PReLULayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype,Mtype>*>& bottom,
 }
 
 template <typename Dtype, typename Mtype>
-void PReLULayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom,
-    const vector<Blob<Dtype,Mtype>*>& top) {
+void PReLULayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   const int count = bottom[0]->count();
@@ -88,9 +88,9 @@ void PReLULayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bott
 }
 
 template <typename Dtype, typename Mtype>
-void PReLULayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top,
+void PReLULayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down,
-    const vector<Blob<Dtype,Mtype>*>& bottom) {
+    const vector<Blob<Dtype>*>& bottom) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   const Dtype* slope_data = this->blobs_[0]->cpu_data();
   const Dtype* top_diff = top[0]->cpu_diff();

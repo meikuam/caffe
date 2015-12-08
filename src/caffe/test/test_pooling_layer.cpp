@@ -20,9 +20,9 @@ class PoolingLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   PoolingLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>()),
-        blob_top_(new Blob<Dtype,Mtype>()),
-        blob_top_mask_(new Blob<Dtype,Mtype>()) {}
+      : blob_bottom_(new Blob<Dtype>()),
+        blob_top_(new Blob<Dtype>()),
+        blob_top_mask_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     Caffe::set_random_seed(1701);
     blob_bottom_->Reshape(2, 3, 6, 5);
@@ -38,11 +38,11 @@ class PoolingLayerTest : public MultiDeviceTest<TypeParam> {
     delete blob_top_;
     delete blob_top_mask_;
   }
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  Blob<Dtype,Mtype>* const blob_top_mask_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  Blob<Dtype>* const blob_top_mask_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
   // Test for 2x 2 square pooling layer
   void TestForwardSquare() {
     LayerParameter layer_param;
@@ -624,9 +624,9 @@ class CuDNNPoolingLayerTest : public GPUDeviceTest<TypeParam> {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   CuDNNPoolingLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>()),
-        blob_top_(new Blob<Dtype,Mtype>()),
-        blob_top_mask_(new Blob<Dtype,Mtype>()) {}
+      : blob_bottom_(new Blob<Dtype>()),
+        blob_top_(new Blob<Dtype>()),
+        blob_top_mask_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     Caffe::set_random_seed(1701);
     blob_bottom_->Reshape(2, 3, 6, 5);
@@ -642,11 +642,11 @@ class CuDNNPoolingLayerTest : public GPUDeviceTest<TypeParam> {
     delete blob_top_;
     delete blob_top_mask_;
   }
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  Blob<Dtype,Mtype>* const blob_top_mask_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  Blob<Dtype>* const blob_top_mask_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
   // Test for 2x 2 square pooling layer
   void TestForwardSquare() {
     LayerParameter layer_param;

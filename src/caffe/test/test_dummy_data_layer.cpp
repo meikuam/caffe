@@ -18,9 +18,9 @@ class DummyDataLayerTest : public CPUDeviceTest<TypeParam> {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   DummyDataLayerTest()
-      : blob_top_a_(new Blob<Dtype,Mtype>()),
-        blob_top_b_(new Blob<Dtype,Mtype>()),
-        blob_top_c_(new Blob<Dtype,Mtype>()) {}
+      : blob_top_a_(new Blob<Dtype>()),
+        blob_top_b_(new Blob<Dtype>()),
+        blob_top_c_(new Blob<Dtype>()) {}
 
   virtual void SetUp() {
     blob_bottom_vec_.clear();
@@ -36,11 +36,11 @@ class DummyDataLayerTest : public CPUDeviceTest<TypeParam> {
     delete blob_top_c_;
   }
 
-  Blob<Dtype,Mtype>* const blob_top_a_;
-  Blob<Dtype,Mtype>* const blob_top_b_;
-  Blob<Dtype,Mtype>* const blob_top_c_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_top_a_;
+  Blob<Dtype>* const blob_top_b_;
+  Blob<Dtype>* const blob_top_c_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(DummyDataLayerTest, TestDtypes);

@@ -48,8 +48,8 @@ class DataTransformTest : public ::testing::Test {
     const int crop_size = transform_param.crop_size();
     Caffe::set_random_seed(seed_);
     transformer->InitRand();
-    Blob<Dtype,Mtype>* blob =
-        new Blob<Dtype,Mtype>(1, datum.channels(), datum.height(), datum.width());
+    Blob<Dtype>* blob =
+        new Blob<Dtype>(1, datum.channels(), datum.height(), datum.width());
     if (transform_param.crop_size() > 0) {
       blob->Reshape(1, datum.channels(), crop_size, crop_size);
     }
@@ -96,7 +96,7 @@ TYPED_TEST(DataTransformTest, TestEmptyTransform) {
 
   Datum datum;
   FillDatum(label, channels, height, width, unique_pixels, &datum);
-  Blob<Dtype,Mtype>* blob = new Blob<Dtype,Mtype>(1, channels, height, width);
+  Blob<Dtype>* blob = new Blob<Dtype>(1, channels, height, width);
   DataTransformer<Dtype,Mtype>* transformer =
       new DataTransformer<Dtype,Mtype>(transform_param, TEST);
   transformer->InitRand();
@@ -122,7 +122,7 @@ TYPED_TEST(DataTransformTest, TestEmptyTransformUniquePixels) {
 
   Datum datum;
   FillDatum(label, channels, height, width, unique_pixels, &datum);
-  Blob<Dtype,Mtype>* blob = new Blob<Dtype,Mtype>(1, 3, 4, 5);
+  Blob<Dtype>* blob = new Blob<Dtype>(1, 3, 4, 5);
   DataTransformer<Dtype,Mtype>* transformer =
       new DataTransformer<Dtype,Mtype>(transform_param, TEST);
   transformer->InitRand();
@@ -153,8 +153,8 @@ TYPED_TEST(DataTransformTest, TestCropSize) {
   DataTransformer<Dtype,Mtype>* transformer =
       new DataTransformer<Dtype,Mtype>(transform_param, TEST);
   transformer->InitRand();
-  Blob<Dtype,Mtype>* blob =
-      new Blob<Dtype,Mtype>(1, channels, crop_size, crop_size);
+  Blob<Dtype>* blob =
+      new Blob<Dtype>(1, channels, crop_size, crop_size);
   for (int iter = 0; iter < this->num_iter_; ++iter) {
     transformer->Transform(datum, blob);
     EXPECT_EQ(blob->num(), 1);
@@ -291,7 +291,7 @@ TYPED_TEST(DataTransformTest, TestMeanValue) {
   transform_param.add_mean_value(mean_value);
   Datum datum;
   FillDatum(label, channels, height, width, unique_pixels, &datum);
-  Blob<Dtype,Mtype>* blob = new Blob<Dtype,Mtype>(1, channels, height, width);
+  Blob<Dtype>* blob = new Blob<Dtype>(1, channels, height, width);
   DataTransformer<Dtype,Mtype>* transformer =
       new DataTransformer<Dtype,Mtype>(transform_param, TEST);
   transformer->InitRand();
@@ -316,7 +316,7 @@ TYPED_TEST(DataTransformTest, TestMeanValues) {
   transform_param.add_mean_value(2);
   Datum datum;
   FillDatum(label, channels, height, width, unique_pixels, &datum);
-  Blob<Dtype,Mtype>* blob = new Blob<Dtype,Mtype>(1, channels, height, width);
+  Blob<Dtype>* blob = new Blob<Dtype>(1, channels, height, width);
   DataTransformer<Dtype,Mtype>* transformer =
       new DataTransformer<Dtype,Mtype>(transform_param, TEST);
   transformer->InitRand();
@@ -358,7 +358,7 @@ TYPED_TEST(DataTransformTest, TestMeanFile) {
   transform_param.set_mean_file(*mean_file);
   Datum datum;
   FillDatum(label, channels, height, width, unique_pixels, &datum);
-  Blob<Dtype,Mtype>* blob = new Blob<Dtype,Mtype>(1, channels, height, width);
+  Blob<Dtype>* blob = new Blob<Dtype>(1, channels, height, width);
   DataTransformer<Dtype,Mtype>* transformer =
       new DataTransformer<Dtype,Mtype>(transform_param, TEST);
   transformer->InitRand();

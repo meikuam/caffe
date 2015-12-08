@@ -22,9 +22,9 @@ TYPED_TEST_CASE(GemmTest, TestDtypes);
 TYPED_TEST(GemmTest, TestGemmCPUGPU) {
   typedef typename TypeParam::Dtype Dtype;
   typedef typename TypeParam::Mtype Mtype;
-  Blob<Dtype,Mtype> A(1, 1, 2, 3);
-  Blob<Dtype,Mtype> B(1, 1, 3, 4);
-  Blob<Dtype,Mtype> C(1, 1, 2, 4);
+  Blob<Dtype> A(1, 1, 2, 3);
+  Blob<Dtype> B(1, 1, 3, 4);
+  Blob<Dtype> C(1, 1, 2, 4);
   Dtype data[12] = {1, 2, 3, 4,
                     5, 6, 7, 8,
                     9, 10, 11, 12};
@@ -100,9 +100,9 @@ TYPED_TEST(GemmTest, TestGemmCPUGPU) {
 TYPED_TEST(GemmTest, TestGemmCPUGPUbeta1) {
   typedef typename TypeParam::Dtype Dtype;
   typedef typename TypeParam::Mtype Mtype;
-  Blob<Dtype,Mtype> A(1, 1, 3, 2);
-  Blob<Dtype,Mtype> B(1, 1, 2, 1);
-  Blob<Dtype,Mtype> C(1, 1, 3, 1);
+  Blob<Dtype> A(1, 1, 3, 2);
+  Blob<Dtype> B(1, 1, 2, 1);
+  Blob<Dtype> C(1, 1, 3, 1);
   Dtype data[6] = {1, 2,
                    3, 4,
                    5, 6};
@@ -131,9 +131,9 @@ TYPED_TEST(GemmTest, TestGemmCPUGPUbeta1) {
 TYPED_TEST(GemmTest, TestGemvCPUGPU) {
   typedef typename TypeParam::Dtype Dtype;
   typedef typename TypeParam::Mtype Mtype;
-  Blob<Dtype,Mtype> A(1, 1, 2, 3);
-  Blob<Dtype,Mtype> x(1, 1, 1, 3);
-  Blob<Dtype,Mtype> y(1, 1, 1, 2);
+  Blob<Dtype> A(1, 1, 2, 3);
+  Blob<Dtype> x(1, 1, 1, 3);
+  Blob<Dtype> y(1, 1, 1, 2);
   Dtype data[6] = {1, 2, 3,
                    4, 5, 6};
   Dtype result_2[2] = {14, 32};
@@ -173,9 +173,9 @@ TYPED_TEST(GemmTest, TestGemvCPUGPU) {
 TYPED_TEST(GemmTest, TestGemvCPUGPU2) {
   typedef typename TypeParam::Dtype Dtype;
   typedef typename TypeParam::Mtype Mtype;
-  Blob<Dtype,Mtype> A(1, 1, 3, 2);
-  Blob<Dtype,Mtype> x(1, 1, 1, 2);
-  Blob<Dtype,Mtype> y(1, 1, 1, 3);
+  Blob<Dtype> A(1, 1, 3, 2);
+  Blob<Dtype> x(1, 1, 1, 2);
+  Blob<Dtype> y(1, 1, 1, 3);
   Dtype data[6] = {1, 2,
                    3, 4,
                    5, 6};

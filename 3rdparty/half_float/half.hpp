@@ -36,9 +36,9 @@ inline CAFFE_UTIL_HD void checkFLoat (float f) {
   if (f > HLF_MAX || f < -HLF_MAX) {
     CUPRINTF("*************** OVERFLOW: %g\n", f);
   }
-  if (f != 0.f && f < HLF_MIN && f > -HLF_MIN) {
-    CUPRINTF("--------------- UNDERFLOW: %g\n", f);
-  }
+//  if (f != 0.f && f < HLF_MIN && f > -HLF_MIN) {
+//    CUPRINTF("--------------- UNDERFLOW: %g\n", f);
+//  }
   if (isnan(f)) {
     CUPRINTF("############### NAN: %g\n", f);
   }

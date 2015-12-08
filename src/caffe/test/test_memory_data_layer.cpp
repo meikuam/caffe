@@ -19,10 +19,10 @@ class MemoryDataLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   MemoryDataLayerTest()
-    : data_(new Blob<Dtype,Mtype>()),
-      labels_(new Blob<Dtype,Mtype>()),
-      data_blob_(new Blob<Dtype,Mtype>()),
-      label_blob_(new Blob<Dtype,Mtype>()) {}
+    : data_(new Blob<Dtype>()),
+      labels_(new Blob<Dtype>()),
+      data_blob_(new Blob<Dtype>()),
+      label_blob_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     batch_size_ = 8;
     batches_ = 12;
@@ -53,13 +53,13 @@ class MemoryDataLayerTest : public MultiDeviceTest<TypeParam> {
   int width_;
   // we don't really need blobs for the input data, but it makes it
   //  easier to call Filler
-  Blob<Dtype,Mtype>* const data_;
-  Blob<Dtype,Mtype>* const labels_;
+  Blob<Dtype>* const data_;
+  Blob<Dtype>* const labels_;
   // blobs for the top of MemoryDataLayer
-  Blob<Dtype,Mtype>* const data_blob_;
-  Blob<Dtype,Mtype>* const label_blob_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const data_blob_;
+  Blob<Dtype>* const label_blob_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(MemoryDataLayerTest, TestDtypesAndDevices);

@@ -53,8 +53,13 @@ private:\
 
 #define INSTANTIATE_CLASS_CPU(classname) \
   char gInstantiationGuard##classname; \
-  template class classname<float, float>; \
-  template class classname<double, double>
+  template class classname<float,float>; \
+  template class classname<double,double>
+
+#define INSTANTIATE_CLASS_CPU1(classname) \
+  char gInstantiationGuard1##classname; \
+  template class classname<float>; \
+  template class classname<double>
 
 // Instantiate a class with float and double specifications.
 #ifdef CPU_ONLY
@@ -65,37 +70,66 @@ private:\
 
 # define INSTANTIATE_LAYER_GPU_FORWARD_FF(classname) \
   template void classname<float16,CAFFE_FP16_MTYPE>::Forward_gpu( \
-      const std::vector<Blob<float16,CAFFE_FP16_MTYPE>*>& bottom, \
-      const std::vector<Blob<float16,CAFFE_FP16_MTYPE>*>& top) 
+      const std::vector<Blob<float16>*>& bottom, \
+      const std::vector<Blob<float16>*>& top)
 
 # define INSTANTIATE_LAYER_GPU_BACKWARD_FF(classname) \
   template void classname<float16,CAFFE_FP16_MTYPE>::Backward_gpu( \
-      const std::vector<Blob<float16,CAFFE_FP16_MTYPE>*>& top, \
+      const std::vector<Blob<float16>*>& top, \
       const std::vector<bool>& propagate_down, \
-      const std::vector<Blob<float16,CAFFE_FP16_MTYPE>*>& bottom)
+      const std::vector<Blob<float16>*>& bottom)
 
 # define INSTANTIATE_LAYER_GPU_FORWARD(classname) \
   template void classname<float, float>::Forward_gpu( \
-      const std::vector<Blob<float, float>*>& bottom, \
-      const std::vector<Blob<float, float>*>& top); \
+      const std::vector<Blob<float>*>& bottom, \
+      const std::vector<Blob<float>*>& top); \
   template void classname<double, double>::Forward_gpu( \
-      const std::vector<Blob<double, double>*>& bottom, \
-      const std::vector<Blob<double, double>*>& top); 
+      const std::vector<Blob<double>*>& bottom, \
+      const std::vector<Blob<double>*>& top);
 
 # define INSTANTIATE_LAYER_GPU_BACKWARD(classname) \
   template void classname<float, float>::Backward_gpu( \
-      const std::vector<Blob<float, float>*>& top, \
+      const std::vector<Blob<float>*>& top, \
       const std::vector<bool>& propagate_down, \
-      const std::vector<Blob<float, float>*>& bottom); \
+      const std::vector<Blob<float>*>& bottom); \
   template void classname<double, double>::Backward_gpu( \
-      const std::vector<Blob<double, double>*>& top, \
+      const std::vector<Blob<double>*>& top, \
       const std::vector<bool>& propagate_down, \
-      const std::vector<Blob<double, double>*>& bottom)
+      const std::vector<Blob<double>*>& bottom)
 
 
 #  define INSTANTIATE_CLASS(classname) \
   INSTANTIATE_CLASS_CPU(classname); \
    template class classname<float16,CAFFE_FP16_MTYPE>
+
+#  define INSTANTIATE_CLASS1(classname) \
+  INSTANTIATE_CLASS_CPU1(classname); \
+   template class classname<float16>
+
+#  define INSTANTIATE_MEMBER_VOID_TEMPLATE(classname,membername) \
+   template void classname<float>::membername<float>(); \
+   template void classname<double>::membername<double>(); \
+   template void classname<float16>::membername<CAFFE_FP16_MTYPE>()
+
+#  define INSTANTIATE_MEMBER_VOID_TEMPLATE_1(classname,membername) \
+   template void classname<float>::membername<float>(float); \
+   template void classname<double>::membername<double>(double); \
+   template void classname<float16>::membername<CAFFE_FP16_MTYPE>(CAFFE_FP16_MTYPE)
+
+#  define INSTANTIATE_MEMBER_TEMPLATE(classname,membername) \
+   template float classname<float>::membername<float>(); \
+   template double classname<double>::membername<double>(); \
+   template CAFFE_FP16_MTYPE classname<float16>::membername<CAFFE_FP16_MTYPE>()
+
+#  define INSTANTIATE_MEMBER_TEMPLATE_1(classname,membername) \
+   template float classname<float>::membername<float>(float); \
+   template double classname<double>::membername<double>(double); \
+   template CAFFE_FP16_MTYPE classname<float16>::membername<CAFFE_FP16_MTYPE>(CAFFE_FP16_MTYPE)
+
+#  define INSTANTIATE_MEMBER_TEMPLATE_CONST(classname,membername) \
+   template float classname<float>::membername<float>() const; \
+   template double classname<double>::membername<double>() const; \
+   template CAFFE_FP16_MTYPE classname<float16>::membername<CAFFE_FP16_MTYPE>() const
 
 #  define INSTANTIATE_LAYER_GPU_FUNCS(classname) \
    INSTANTIATE_LAYER_GPU_FORWARD(classname); \

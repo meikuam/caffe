@@ -24,9 +24,9 @@ class SplitLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   SplitLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>(2, 3, 6, 5)),
-        blob_top_a_(new Blob<Dtype,Mtype>()),
-        blob_top_b_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_(new Blob<Dtype>(2, 3, 6, 5)),
+        blob_top_a_(new Blob<Dtype>()),
+        blob_top_b_(new Blob<Dtype>()) {
     // fill the values
     FillerParameter filler_param;
     GaussianFiller<Dtype,Mtype> filler(filler_param);
@@ -40,11 +40,11 @@ class SplitLayerTest : public MultiDeviceTest<TypeParam> {
     delete blob_top_a_;
     delete blob_top_b_;
   }
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_a_;
-  Blob<Dtype,Mtype>* const blob_top_b_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_a_;
+  Blob<Dtype>* const blob_top_b_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(SplitLayerTest, TestDtypesAndDevices);

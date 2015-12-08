@@ -19,8 +19,8 @@ class Im2colLayerTest : public MultiDeviceTest<TypeParam> {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   Im2colLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>(2, 3, 6, 5)),
-        blob_top_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_(new Blob<Dtype>(2, 3, 6, 5)),
+        blob_top_(new Blob<Dtype>()) {
     // fill the values
     Caffe::set_random_seed(1701);
     FillerParameter filler_param;
@@ -30,10 +30,10 @@ class Im2colLayerTest : public MultiDeviceTest<TypeParam> {
     blob_top_vec_.push_back(blob_top_);
   }
   virtual ~Im2colLayerTest() { delete blob_bottom_; delete blob_top_; }
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(Im2colLayerTest, TestDtypesAndDevices);

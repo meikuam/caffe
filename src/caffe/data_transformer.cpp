@@ -129,7 +129,7 @@ void DataTransformer<Dtype,Mtype>::Transform(const Datum& datum,
 
 template<typename Dtype, typename Mtype>
 void DataTransformer<Dtype,Mtype>::Transform(const Datum& datum,
-                                       Blob<Dtype,Mtype>* transformed_blob) {
+                                       Blob<Dtype>* transformed_blob) {
   // If datum is encoded, decoded and transform the cv::image.
   if (datum.encoded()) {
 #ifdef USE_OPENCV
@@ -183,7 +183,7 @@ void DataTransformer<Dtype,Mtype>::Transform(const Datum& datum,
 
 template<typename Dtype, typename Mtype>
 void DataTransformer<Dtype,Mtype>::Transform(const vector<Datum> & datum_vector,
-                                       Blob<Dtype,Mtype>* transformed_blob) {
+                                       Blob<Dtype>* transformed_blob) {
   const int datum_num = datum_vector.size();
   const int num = transformed_blob->num();
   const int channels = transformed_blob->channels();
@@ -193,7 +193,7 @@ void DataTransformer<Dtype,Mtype>::Transform(const vector<Datum> & datum_vector,
   CHECK_GT(datum_num, 0) << "There is no datum to add";
   CHECK_LE(datum_num, num) <<
     "The size of datum_vector must be no greater than transformed_blob->num()";
-  Blob<Dtype,Mtype> uni_blob(1, channels, height, width);
+  Blob<Dtype> uni_blob(1, channels, height, width);
   for (int item_id = 0; item_id < datum_num; ++item_id) {
     int offset = transformed_blob->offset(item_id);
     uni_blob.set_cpu_data(transformed_blob->mutable_cpu_data() + offset);
@@ -204,7 +204,7 @@ void DataTransformer<Dtype,Mtype>::Transform(const vector<Datum> & datum_vector,
 #ifdef USE_OPENCV
 template<typename Dtype, typename Mtype>
 void DataTransformer<Dtype,Mtype>::Transform(const vector<cv::Mat> & mat_vector,
-                                       Blob<Dtype,Mtype>* transformed_blob) {
+                                       Blob<Dtype>* transformed_blob) {
   const int mat_num = mat_vector.size();
   const int num = transformed_blob->num();
   const int channels = transformed_blob->channels();
@@ -214,7 +214,7 @@ void DataTransformer<Dtype,Mtype>::Transform(const vector<cv::Mat> & mat_vector,
   CHECK_GT(mat_num, 0) << "There is no MAT to add";
   CHECK_EQ(mat_num, num) <<
     "The size of mat_vector must be equals to transformed_blob->num()";
-  Blob<Dtype,Mtype> uni_blob(1, channels, height, width);
+  Blob<Dtype> uni_blob(1, channels, height, width);
   for (int item_id = 0; item_id < mat_num; ++item_id) {
     int offset = transformed_blob->offset(item_id);
     uni_blob.set_cpu_data(transformed_blob->mutable_cpu_data() + offset);
@@ -224,7 +224,7 @@ void DataTransformer<Dtype,Mtype>::Transform(const vector<cv::Mat> & mat_vector,
 
 template<typename Dtype, typename Mtype>
 void DataTransformer<Dtype,Mtype>::Transform(const cv::Mat& cv_img,
-                                       Blob<Dtype,Mtype>* transformed_blob) {
+                                       Blob<Dtype>* transformed_blob) {
   const int crop_size = param_.crop_size();
   const int img_channels = cv_img.channels();
   const int img_height = cv_img.rows;
@@ -326,8 +326,8 @@ void DataTransformer<Dtype,Mtype>::Transform(const cv::Mat& cv_img,
 #endif  // USE_OPENCV
 
 template<typename Dtype, typename Mtype>
-void DataTransformer<Dtype,Mtype>::Transform(Blob<Dtype,Mtype>* input_blob,
-                                       Blob<Dtype,Mtype>* transformed_blob) {
+void DataTransformer<Dtype,Mtype>::Transform(Blob<Dtype>* input_blob,
+                                       Blob<Dtype>* transformed_blob) {
   const int crop_size = param_.crop_size();
   const int input_num = input_blob->num();
   const int input_channels = input_blob->channels();

@@ -20,8 +20,8 @@ class SoftmaxLayerTest : public MultiDeviceTest<TypeParam> {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   SoftmaxLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>(2, 10, 2, 3)),
-        blob_top_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_(new Blob<Dtype>(2, 10, 2, 3)),
+        blob_top_(new Blob<Dtype>()) {
     // fill the values
     FillerParameter filler_param;
     GaussianFiller<Dtype,Mtype> filler(filler_param);
@@ -30,10 +30,10 @@ class SoftmaxLayerTest : public MultiDeviceTest<TypeParam> {
     blob_top_vec_.push_back(blob_top_);
   }
   virtual ~SoftmaxLayerTest() { delete blob_bottom_; delete blob_top_; }
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(SoftmaxLayerTest, TestDtypesAndDevices);
@@ -91,8 +91,8 @@ class CuDNNSoftmaxLayerTest : public GPUDeviceTest<TypeParam> {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   CuDNNSoftmaxLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>(2, 10, 2, 3)),
-        blob_top_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_(new Blob<Dtype>(2, 10, 2, 3)),
+        blob_top_(new Blob<Dtype>()) {
     // fill the values
     FillerParameter filler_param;
     GaussianFiller<Dtype,Mtype> filler(filler_param);
@@ -101,10 +101,10 @@ class CuDNNSoftmaxLayerTest : public GPUDeviceTest<TypeParam> {
     blob_top_vec_.push_back(blob_top_);
   }
   virtual ~CuDNNSoftmaxLayerTest() { delete blob_bottom_; delete blob_top_; }
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(CuDNNSoftmaxLayerTest, TestDtypes);

@@ -18,8 +18,8 @@ class ArgMaxLayerTest : public CPUDeviceTest<TypeParam> {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   ArgMaxLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>(10, 10, 20, 20)),
-        blob_top_(new Blob<Dtype,Mtype>()),
+      : blob_bottom_(new Blob<Dtype>(10, 10, 20, 20)),
+        blob_top_(new Blob<Dtype>()),
         top_k_(5) {
     Caffe::set_random_seed(1701);
     // fill the values
@@ -30,10 +30,10 @@ class ArgMaxLayerTest : public CPUDeviceTest<TypeParam> {
     blob_top_vec_.push_back(blob_top_);
   }
   virtual ~ArgMaxLayerTest() { delete blob_bottom_; delete blob_top_; }
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
   size_t top_k_;
 };
 

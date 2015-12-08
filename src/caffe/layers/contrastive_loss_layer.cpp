@@ -10,7 +10,7 @@ namespace caffe {
 
 template <typename Dtype, typename Mtype>
 void ContrastiveLossLayer<Dtype,Mtype>::LayerSetUp(
-  const vector<Blob<Dtype,Mtype>*>& bottom, const vector<Blob<Dtype,Mtype>*>& top) {
+  const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype,Mtype>::LayerSetUp(bottom, top);
   CHECK_EQ(bottom[0]->channels(), bottom[1]->channels());
   CHECK_EQ(bottom[0]->height(), 1);
@@ -31,8 +31,8 @@ void ContrastiveLossLayer<Dtype,Mtype>::LayerSetUp(
 
 template <typename Dtype, typename Mtype>
 void ContrastiveLossLayer<Dtype,Mtype>::Forward_cpu(
-    const vector<Blob<Dtype,Mtype>*>& bottom,
-    const vector<Blob<Dtype,Mtype>*>& top) {
+    const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
   int count = bottom[0]->count();
   caffe_sub(
       count,
@@ -63,8 +63,8 @@ void ContrastiveLossLayer<Dtype,Mtype>::Forward_cpu(
 }
 
 template <typename Dtype, typename Mtype>
-void ContrastiveLossLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype,Mtype>*>& bottom) {
+void ContrastiveLossLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   Mtype margin(this->layer_param_.contrastive_loss_param().margin());
   bool legacy_version =
       this->layer_param_.contrastive_loss_param().legacy_version();

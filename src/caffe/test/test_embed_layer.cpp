@@ -23,8 +23,8 @@ class EmbedLayerTest : public MultiDeviceTest<TypeParam> {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   EmbedLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>(4, 1, 1, 1)),
-        blob_top_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_(new Blob<Dtype>(4, 1, 1, 1)),
+        blob_top_(new Blob<Dtype>()) {
     // fill the values
     FillerParameter filler_param;
     UniformFiller<Dtype,Mtype> filler(filler_param);
@@ -33,10 +33,10 @@ class EmbedLayerTest : public MultiDeviceTest<TypeParam> {
     blob_top_vec_.push_back(blob_top_);
   }
   virtual ~EmbedLayerTest() { delete blob_bottom_; delete blob_top_; }
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(EmbedLayerTest, TestDtypesAndDevices);

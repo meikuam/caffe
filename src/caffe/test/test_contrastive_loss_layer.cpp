@@ -23,10 +23,10 @@ class ContrastiveLossLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   ContrastiveLossLayerTest()
-      : blob_bottom_data_i_(new Blob<Dtype,Mtype>(512, 2, 1, 1)),
-        blob_bottom_data_j_(new Blob<Dtype,Mtype>(512, 2, 1, 1)),
-        blob_bottom_y_(new Blob<Dtype,Mtype>(512, 1, 1, 1)),
-        blob_top_loss_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_data_i_(new Blob<Dtype>(512, 2, 1, 1)),
+        blob_bottom_data_j_(new Blob<Dtype>(512, 2, 1, 1)),
+        blob_bottom_y_(new Blob<Dtype>(512, 1, 1, 1)),
+        blob_top_loss_(new Blob<Dtype>()) {
     // fill the values
     FillerParameter filler_param;
     filler_param.set_min(-1.0);
@@ -49,12 +49,12 @@ class ContrastiveLossLayerTest : public MultiDeviceTest<TypeParam> {
     delete blob_top_loss_;
   }
 
-  Blob<Dtype,Mtype>* const blob_bottom_data_i_;
-  Blob<Dtype,Mtype>* const blob_bottom_data_j_;
-  Blob<Dtype,Mtype>* const blob_bottom_y_;
-  Blob<Dtype,Mtype>* const blob_top_loss_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_data_i_;
+  Blob<Dtype>* const blob_bottom_data_j_;
+  Blob<Dtype>* const blob_bottom_y_;
+  Blob<Dtype>* const blob_top_loss_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(ContrastiveLossLayerTest, TestDtypesAndDevices);

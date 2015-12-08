@@ -6,7 +6,7 @@ namespace caffe {
 
 template <typename Dtype, typename Mtype>
 void BasePrefetchingDataLayer<Dtype,Mtype>::Forward_gpu(
-    const vector<Blob<Dtype,Mtype>*>& bottom, const vector<Blob<Dtype,Mtype>*>& top) {
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   Batch<Dtype,Mtype>* batch = prefetch_full_.pop("Data layer prefetch queue empty");
   // Reshape to loaded data.
   top[0]->ReshapeLike(batch->data_);

@@ -22,10 +22,10 @@ class InfogainLossLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   InfogainLossLayerTest()
-      : blob_bottom_data_(new Blob<Dtype,Mtype>(10, 5, 1, 1)),
-        blob_bottom_label_(new Blob<Dtype,Mtype>(10, 1, 1, 1)),
-        blob_bottom_infogain_(new Blob<Dtype,Mtype>(1, 1, 5, 5)),
-        blob_top_loss_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_data_(new Blob<Dtype>(10, 5, 1, 1)),
+        blob_bottom_label_(new Blob<Dtype>(10, 1, 1, 1)),
+        blob_bottom_infogain_(new Blob<Dtype>(1, 1, 5, 5)),
+        blob_top_loss_(new Blob<Dtype>()) {
     Caffe::set_random_seed(1701);
     FillerParameter filler_param;
     PositiveUnitballFiller<Dtype,Mtype> filler(filler_param);
@@ -48,12 +48,12 @@ class InfogainLossLayerTest : public MultiDeviceTest<TypeParam> {
     delete blob_bottom_infogain_;
     delete blob_top_loss_;
   }
-  Blob<Dtype,Mtype>* const blob_bottom_data_;
-  Blob<Dtype,Mtype>* const blob_bottom_label_;
-  Blob<Dtype,Mtype>* const blob_bottom_infogain_;
-  Blob<Dtype,Mtype>* const blob_top_loss_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_data_;
+  Blob<Dtype>* const blob_bottom_label_;
+  Blob<Dtype>* const blob_bottom_infogain_;
+  Blob<Dtype>* const blob_top_loss_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(InfogainLossLayerTest, TestDtypesAndDevices);

@@ -188,7 +188,7 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
     this->InitSolverFromProtoString(proto.str());
     if (from_snapshot != NULL) {
       this->solver_->Restore(from_snapshot);
-      vector<Blob<Dtype,Mtype>*> empty_bottom_vec;
+      vector<Blob<Dtype>*> empty_bottom_vec;
       for (int i = 0; i < this->solver_->iter(); ++i) {
         this->solver_->net()->Forward(empty_bottom_vec);
       }
@@ -227,26 +227,26 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
   // using the blobs' diffs to hold the update values themselves.
   void ComputeLeastSquaresUpdate(const Mtype learning_rate,
       const Mtype weight_decay, const Mtype momentum, const int num_iters,
-      vector<shared_ptr<Blob<Dtype,Mtype> > >* updated_params) {
+      vector<shared_ptr<Blob<Dtype> > >* updated_params) {
     const int N = num_;
     const int D = channels_ * height_ * width_;
 
     // Run a forward pass, and manually compute the update values from the
     // result.
     Net<Dtype,Mtype>& net = *this->solver_->net();
-    vector<Blob<Dtype,Mtype>*> empty_bottom_vec;
+    vector<Blob<Dtype>*> empty_bottom_vec;
     net.Forward(empty_bottom_vec);
     ASSERT_TRUE(net.has_blob("data"));
-    const Blob<Dtype,Mtype>& data = *net.blob_by_name("data");
+    const Blob<Dtype>& data = *net.blob_by_name("data");
     ASSERT_TRUE(net.has_blob("targets"));
-    const Blob<Dtype,Mtype>& targets = *net.blob_by_name("targets");
+    const Blob<Dtype>& targets = *net.blob_by_name("targets");
     ASSERT_TRUE(net.has_layer("innerprod"));
-    const vector<shared_ptr<Blob<Dtype,Mtype> > >& param_blobs =
+    const vector<shared_ptr<Blob<Dtype> > >& param_blobs =
         net.layer_by_name("innerprod")->blobs();
     const int num_param_blobs = 2;
     ASSERT_EQ(num_param_blobs, param_blobs.size());
-    const Blob<Dtype,Mtype>& weights = *param_blobs[0];
-    const Blob<Dtype,Mtype>& bias = *param_blobs[1];
+    const Blob<Dtype>& weights = *param_blobs[0];
+    const Blob<Dtype>& bias = *param_blobs[1];
     ASSERT_EQ(D * N, data.count());
     ASSERT_EQ(N, targets.count());
     ASSERT_EQ(D, weights.count());
@@ -255,11 +255,11 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
     updated_params->clear();
     updated_params->resize(num_param_blobs);
     for (int i = 0; i < num_param_blobs; ++i) {
-      (*updated_params)[i].reset(new Blob<Dtype,Mtype>());
+      (*updated_params)[i].reset(new Blob<Dtype>());
     }
-    Blob<Dtype,Mtype>& updated_weights = *(*updated_params)[0];
+    Blob<Dtype>& updated_weights = *(*updated_params)[0];
     updated_weights.ReshapeLike(weights);
-    Blob<Dtype,Mtype>& updated_bias = *(*updated_params)[1];
+    Blob<Dtype>& updated_bias = *(*updated_params)[1];
     updated_bias.ReshapeLike(bias);
 
     for (int i = 0; i <= D; ++i) {
@@ -291,7 +291,7 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
       grad += weight_decay *
           ((i == D) ? bias.cpu_data()[0] : weights.cpu_data()[i]);
       // Finally, compute update.
-      const vector<shared_ptr<Blob<Dtype,Mtype> > >& history = solver_->history();
+      const vector<shared_ptr<Blob<Dtype> > >& history = solver_->history();
       if (solver_type() != SolverParameter_SolverType_ADADELTA
           && solver_type() != SolverParameter_SolverType_ADAM) {
         ASSERT_EQ(2, history.size());  // 1 blob for weights, 1 for bias
@@ -362,18 +362,18 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
   }
 
   void CheckLeastSquaresUpdate(
-      const vector<shared_ptr<Blob<Dtype,Mtype> > >& updated_params) {
+      const vector<shared_ptr<Blob<Dtype> > >& updated_params) {
     const int D = channels_ * height_ * width_;
 
-    const Blob<Dtype,Mtype>& updated_weights = *updated_params[0];
-    const Blob<Dtype,Mtype>& updated_bias = *updated_params[1];
+    const Blob<Dtype>& updated_weights = *updated_params[0];
+    const Blob<Dtype>& updated_bias = *updated_params[1];
 
     Net<Dtype,Mtype>& net = *this->solver_->net();
     ASSERT_TRUE(net.has_layer("innerprod"));
-    const vector<shared_ptr<Blob<Dtype,Mtype> > >& param_blobs =
+    const vector<shared_ptr<Blob<Dtype> > >& param_blobs =
         net.layer_by_name("innerprod")->blobs();
     ASSERT_EQ(2, param_blobs.size());
-    const Blob<Dtype,Mtype>& solver_updated_weights = *param_blobs[0];
+    const Blob<Dtype>& solver_updated_weights = *param_blobs[0];
     ASSERT_EQ(D, solver_updated_weights.count());
     const double kPrecision = 5.e-1;
     const double kMinPrecision = 1e-7;
@@ -384,7 +384,7 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
           std::min(fabs(expected_updated_weight), fabs(solver_updated_weight)));
       EXPECT_NEAR(expected_updated_weight, solver_updated_weight, tol<Dtype>(error_margin));
     }
-    const Blob<Dtype,Mtype>& solver_updated_bias_blob = *param_blobs[1];
+    const Blob<Dtype>& solver_updated_bias_blob = *param_blobs[1];
     ASSERT_EQ(1, solver_updated_bias_blob.count());
     const Mtype expected_updated_bias = updated_bias.cpu_data()[0];
     const Mtype solver_updated_bias = solver_updated_bias_blob.cpu_data()[0];
@@ -394,7 +394,7 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
 
     // Check the solver's history -- should contain the previous update value.
     if (solver_type() == SolverParameter_SolverType_SGD) {
-      const vector<shared_ptr<Blob<Dtype,Mtype> > >& history = solver_->history();
+      const vector<shared_ptr<Blob<Dtype> > >& history = solver_->history();
       ASSERT_EQ(2, history.size());
       for (int i = 0; i < D; ++i) {
         const Mtype expected_history = updated_weights.cpu_diff()[i];
@@ -420,18 +420,18 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
         kNumIters);
     // Save parameters for comparison.
     Net<Dtype,Mtype>& net = *this->solver_->net();
-    const vector<shared_ptr<Blob<Dtype,Mtype> > >& param_blobs =
+    const vector<shared_ptr<Blob<Dtype> > >& param_blobs =
         net.layer_by_name("innerprod")->blobs();
-    vector<shared_ptr<Blob<Dtype,Mtype> > > noaccum_params(param_blobs.size());
+    vector<shared_ptr<Blob<Dtype> > > noaccum_params(param_blobs.size());
     for (int i = 0; i < param_blobs.size(); ++i) {
-      noaccum_params[i].reset(new Blob<Dtype,Mtype>());
+      noaccum_params[i].reset(new Blob<Dtype>());
       noaccum_params[i]->CopyFrom(*param_blobs[i], false, true);
     }
     // Solve by equivalent accumulation of gradients over divided batches.
     this->RunLeastSquaresSolver(kLearningRate, kWeightDecay, kMomentum,
         kNumIters, kIterSize);
     Net<Dtype,Mtype>& net_accum = *this->solver_->net();
-    const vector<shared_ptr<Blob<Dtype,Mtype> > >& accum_params =
+    const vector<shared_ptr<Blob<Dtype> > >& accum_params =
         net_accum.layer_by_name("innerprod")->blobs();
     // Compare accumulated parameters against no accumulation standard.
     const int D = this->channels_ * this->height_ * this->width_;
@@ -488,7 +488,7 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
                             iter_to_check, kIterSize, 1);
 
       // Compute the (K+1)th update using the analytic least squares gradient.
-    vector<shared_ptr<Blob<Dtype,Mtype> > > updated_params;
+    vector<shared_ptr<Blob<Dtype> > > updated_params;
       ComputeLeastSquaresUpdate(learning_rate, weight_decay, momentum,
           iter_to_check + 1, &updated_params);
 
@@ -514,12 +514,12 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
         total_num_iters, kIterSize, kDevices, snapshot);
 
     // Save the resulting param values.
-    vector<shared_ptr<Blob<Dtype,Mtype> > > param_copies;
-    const vector<Blob<Dtype,Mtype>*>& orig_params =
+    vector<shared_ptr<Blob<Dtype> > > param_copies;
+    const vector<Blob<Dtype>*>& orig_params =
         solver_->net()->learnable_params();
     param_copies.resize(orig_params.size());
     for (int i = 0; i < orig_params.size(); ++i) {
-      param_copies[i].reset(new Blob<Dtype,Mtype>());
+      param_copies[i].reset(new Blob<Dtype>());
       const bool kReshape = true;
       for (int copy_diff = false; copy_diff <= true; ++copy_diff) {
         param_copies[i]->CopyFrom(*orig_params[i], copy_diff, kReshape);
@@ -527,11 +527,11 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
     }
 
     // Save the solver history
-    vector<shared_ptr<Blob<Dtype,Mtype> > > history_copies;
-    const vector<shared_ptr<Blob<Dtype,Mtype> > >& orig_history = solver_->history();
+    vector<shared_ptr<Blob<Dtype> > > history_copies;
+    const vector<shared_ptr<Blob<Dtype> > >& orig_history = solver_->history();
     history_copies.resize(orig_history.size());
     for (int i = 0; i < orig_history.size(); ++i) {
-      history_copies[i].reset(new Blob<Dtype,Mtype>());
+      history_copies[i].reset(new Blob<Dtype>());
       const bool kReshape = true;
       for (int copy_diff = false; copy_diff <= true; ++copy_diff) {
         history_copies[i]->CopyFrom(*orig_history[i], copy_diff, kReshape);
@@ -550,7 +550,7 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
         snapshot, snapshot_name.c_str());
 
     // Check that params now match.
-    const vector<Blob<Dtype,Mtype>*>& params = solver_->net()->learnable_params();
+    const vector<Blob<Dtype>*>& params = solver_->net()->learnable_params();
     for (int i = 0; i < params.size(); ++i) {
       for (int j = 0; j < params[i]->count(); ++j) {
         EXPECT_EQ(param_copies[i]->cpu_data()[j], params[i]->cpu_data()[j])
@@ -561,7 +561,7 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
     }
 
     // Check that history now matches.
-    const vector<shared_ptr<Blob<Dtype,Mtype> > >& history = solver_->history();
+    const vector<shared_ptr<Blob<Dtype> > >& history = solver_->history();
     for (int i = 0; i < history.size(); ++i) {
       for (int j = 0; j < history[i]->count(); ++j) {
         EXPECT_EQ(history_copies[i]->cpu_data()[j], history[i]->cpu_data()[j])

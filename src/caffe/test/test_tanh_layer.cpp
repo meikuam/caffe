@@ -34,8 +34,8 @@ class TanHLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   TanHLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>(2, 3, 4, 5)),
-        blob_top_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_(new Blob<Dtype>(2, 3, 4, 5)),
+        blob_top_(new Blob<Dtype>()) {
     Caffe::set_random_seed(1701);
     FillerParameter filler_param;
     blob_bottom_vec_.push_back(blob_bottom_);
@@ -78,10 +78,10 @@ class TanHLayerTest : public MultiDeviceTest<TypeParam> {
         this->blob_top_vec_);
   }
 
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(TanHLayerTest, TestDtypesAndDevices);

@@ -14,14 +14,14 @@ class ConstantFillerTest : public ::testing::Test {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   ConstantFillerTest()
-      : blob_(new Blob<Dtype,Mtype>(2, 3, 4, 5)),
+      : blob_(new Blob<Dtype>(2, 3, 4, 5)),
         filler_param_() {
     filler_param_.set_value(10.);
     filler_.reset(new ConstantFiller<Dtype,Mtype>(filler_param_));
     filler_->Fill(blob_);
   }
   virtual ~ConstantFillerTest() { delete blob_; }
-  Blob<Dtype,Mtype>* const blob_;
+  Blob<Dtype>* const blob_;
   FillerParameter filler_param_;
   shared_ptr<ConstantFiller<Dtype,Mtype> > filler_;
 };
@@ -45,7 +45,7 @@ class UniformFillerTest : public ::testing::Test {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   UniformFillerTest()
-      : blob_(new Blob<Dtype,Mtype>(2, 3, 4, 5)),
+      : blob_(new Blob<Dtype>(2, 3, 4, 5)),
         filler_param_() {
     filler_param_.set_min(1.);
     filler_param_.set_max(2.);
@@ -53,7 +53,7 @@ class UniformFillerTest : public ::testing::Test {
     filler_->Fill(blob_);
   }
   virtual ~UniformFillerTest() { delete blob_; }
-  Blob<Dtype,Mtype>* const blob_;
+  Blob<Dtype>* const blob_;
   FillerParameter filler_param_;
   shared_ptr<UniformFiller<Dtype,Mtype> > filler_;
 };
@@ -77,13 +77,13 @@ class PositiveUnitballFillerTest : public ::testing::Test {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   PositiveUnitballFillerTest()
-      : blob_(new Blob<Dtype,Mtype>(2, 3, 4, 5)),
+      : blob_(new Blob<Dtype>(2, 3, 4, 5)),
         filler_param_() {
     filler_.reset(new PositiveUnitballFiller<Dtype,Mtype>(filler_param_));
     filler_->Fill(blob_);
   }
   virtual ~PositiveUnitballFillerTest() { delete blob_; }
-  Blob<Dtype,Mtype>* const blob_;
+  Blob<Dtype>* const blob_;
   FillerParameter filler_param_;
   shared_ptr<PositiveUnitballFiller<Dtype,Mtype> > filler_;
 };
@@ -117,7 +117,7 @@ class GaussianFillerTest : public ::testing::Test {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   GaussianFillerTest()
-      : blob_(new Blob<Dtype,Mtype>(2, 3, 4, 5)),
+      : blob_(new Blob<Dtype>(2, 3, 4, 5)),
         filler_param_() {
     filler_param_.set_mean(10.);
     filler_param_.set_std(0.1);
@@ -125,7 +125,7 @@ class GaussianFillerTest : public ::testing::Test {
     filler_->Fill(blob_);
   }
   virtual ~GaussianFillerTest() { delete blob_; }
-  Blob<Dtype,Mtype>* const blob_;
+  Blob<Dtype>* const blob_;
   FillerParameter filler_param_;
   shared_ptr<GaussianFiller<Dtype,Mtype> > filler_;
 };
@@ -161,7 +161,7 @@ class XavierFillerTest : public ::testing::Test {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   XavierFillerTest()
-      : blob_(new Blob<Dtype,Mtype>(1000, 2, 4, 5)),
+      : blob_(new Blob<Dtype>(1000, 2, 4, 5)),
         filler_param_() {
   }
   virtual void test_params(FillerParameter_VarianceNorm variance_norm,
@@ -186,7 +186,7 @@ class XavierFillerTest : public ::testing::Test {
     EXPECT_NEAR(std, target_std, choose<Dtype>(0.1, 0.15));
   }
   virtual ~XavierFillerTest() { delete blob_; }
-  Blob<Dtype,Mtype>* const blob_;
+  Blob<Dtype>* const blob_;
   FillerParameter filler_param_;
   shared_ptr<XavierFiller<Dtype,Mtype> > filler_;
 };
@@ -215,7 +215,7 @@ class MSRAFillerTest : public ::testing::Test {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   MSRAFillerTest()
-      : blob_(new Blob<Dtype,Mtype>(1000, 2, 4, 5)),
+      : blob_(new Blob<Dtype>(1000, 2, 4, 5)),
         filler_param_() {
   }
   virtual void test_params(FillerParameter_VarianceNorm variance_norm,
@@ -240,7 +240,7 @@ class MSRAFillerTest : public ::testing::Test {
     EXPECT_NEAR(std, target_std, 0.1);
   }
   virtual ~MSRAFillerTest() { delete blob_; }
-  Blob<Dtype,Mtype>* const blob_;
+  Blob<Dtype>* const blob_;
   FillerParameter filler_param_;
   shared_ptr<MSRAFiller<Dtype,Mtype> > filler_;
 };

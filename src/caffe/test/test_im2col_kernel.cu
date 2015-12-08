@@ -37,12 +37,12 @@ class Im2colKernelTest : public GPUDeviceTest<TypeParam> {
  protected:
   Im2colKernelTest()
         // big so launches > 1024 threads
-      : blob_bottom_(new Blob<Dtype,Mtype>(5, 500, 10, 10)),
-        blob_kernel_shape_(new Blob<int,int>()),
-        blob_stride_(new Blob<int,int>()),
-        blob_pad_(new Blob<int,int>()),
-        blob_top_(new Blob<Dtype,Mtype>()),
-        blob_top_cpu_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_(new Blob<Dtype>(5, 500, 10, 10)),
+        blob_kernel_shape_(new Blob<int>()),
+        blob_stride_(new Blob<int>()),
+        blob_pad_(new Blob<int>()),
+        blob_top_(new Blob<Dtype>()),
+        blob_top_cpu_(new Blob<Dtype>()) {
     FillerParameter filler_param;
     GaussianFiller<Dtype,Mtype> filler(filler_param);
     filler.Fill(this->blob_bottom_);
@@ -76,12 +76,12 @@ class Im2colKernelTest : public GPUDeviceTest<TypeParam> {
     delete blob_pad_;
   }
 
-  Blob<int,int>* const blob_kernel_shape_;
-  Blob<int,int>* const blob_stride_;
-  Blob<int,int>* const blob_pad_;
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  Blob<Dtype,Mtype>* const blob_top_cpu_;
+  Blob<int>* const blob_kernel_shape_;
+  Blob<int>* const blob_stride_;
+  Blob<int>* const blob_pad_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  Blob<Dtype>* const blob_top_cpu_;
   int height_;
   int width_;
   int channels_;

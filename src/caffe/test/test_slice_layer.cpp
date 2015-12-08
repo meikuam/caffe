@@ -20,10 +20,10 @@ class SliceLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   SliceLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>(6, 12, 2, 3)),
-        blob_top_0_(new Blob<Dtype,Mtype>()),
-        blob_top_1_(new Blob<Dtype,Mtype>()),
-        blob_top_2_(new Blob<Dtype,Mtype>()) {}
+      : blob_bottom_(new Blob<Dtype>(6, 12, 2, 3)),
+        blob_top_0_(new Blob<Dtype>()),
+        blob_top_1_(new Blob<Dtype>()),
+        blob_top_2_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     // fill the values
     Caffe::set_random_seed(1701);
@@ -50,12 +50,12 @@ class SliceLayerTest : public MultiDeviceTest<TypeParam> {
     delete blob_top_2_; delete blob_bottom_;
   }
 
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_0_;
-  Blob<Dtype,Mtype>* const blob_top_1_;
-  Blob<Dtype,Mtype>* const blob_top_2_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_0_, blob_top_vec_1_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_0_;
+  Blob<Dtype>* const blob_top_1_;
+  Blob<Dtype>* const blob_top_2_;
+  vector<Blob<Dtype>*> blob_top_vec_0_, blob_top_vec_1_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
 };
 
 TYPED_TEST_CASE(SliceLayerTest, TestDtypesAndDevices);

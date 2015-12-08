@@ -11,8 +11,8 @@
 namespace caffe {
 
 template <typename Dtype, typename Mtype>
-void MemoryDataLayer<Dtype,Mtype>::DataLayerSetUp(const vector<Blob<Dtype,Mtype>*>& bottom,
-     const vector<Blob<Dtype,Mtype>*>& top) {
+void MemoryDataLayer<Dtype,Mtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
+     const vector<Blob<Dtype>*>& top) {
   batch_size_ = this->layer_param_.memory_data_param().batch_size();
   channels_ = this->layer_param_.memory_data_param().channels();
   height_ = this->layer_param_.memory_data_param().height();
@@ -107,8 +107,8 @@ void MemoryDataLayer<Dtype,Mtype>::set_batch_size(int new_size) {
 }
 
 template <typename Dtype, typename Mtype>
-void MemoryDataLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top) {
+void MemoryDataLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
   CHECK(data_) << "MemoryDataLayer needs to be initalized by calling Reset";
   top[0]->Reshape(batch_size_, channels_, height_, width_);
   top[1]->Reshape(batch_size_, 1, 1, 1);

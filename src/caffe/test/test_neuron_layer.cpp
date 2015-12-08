@@ -22,8 +22,8 @@ class NeuronLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   NeuronLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>(2, 3, 4, 5)),
-        blob_top_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_(new Blob<Dtype>(2, 3, 4, 5)),
+        blob_top_(new Blob<Dtype>()) {
     Caffe::set_random_seed(1701);
     // fill the values
     FillerParameter filler_param;
@@ -33,10 +33,10 @@ class NeuronLayerTest : public MultiDeviceTest<TypeParam> {
     blob_top_vec_.push_back(blob_top_);
   }
   virtual ~NeuronLayerTest() { delete blob_bottom_; delete blob_top_; }
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 
   void TestDropoutForward(const float dropout_ratio) {
     LayerParameter layer_param;
@@ -616,10 +616,10 @@ TYPED_TEST(NeuronLayerTest, TestPReLUConsistencyReLU) {
   PReLULayer<Dtype,Mtype> prelu(prelu_layer_param);
   ReLULayer<Dtype,Mtype> relu(relu_layer_param);
   // Set up blobs
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_2;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_2;
-  shared_ptr<Blob<Dtype,Mtype> > blob_bottom_2(new Blob<Dtype,Mtype>());
-  shared_ptr<Blob<Dtype,Mtype> > blob_top_2(new Blob<Dtype,Mtype>());
+  vector<Blob<Dtype>*> blob_bottom_vec_2;
+  vector<Blob<Dtype>*> blob_top_vec_2;
+  shared_ptr<Blob<Dtype> > blob_bottom_2(new Blob<Dtype>());
+  shared_ptr<Blob<Dtype> > blob_top_2(new Blob<Dtype>());
   blob_bottom_vec_2.push_back(blob_bottom_2.get());
   blob_top_vec_2.push_back(blob_top_2.get());
   blob_bottom_2->CopyFrom(*this->blob_bottom_, false, true);
@@ -633,7 +633,7 @@ TYPED_TEST(NeuronLayerTest, TestPReLUConsistencyReLU) {
     EXPECT_EQ(this->blob_top_->cpu_data()[s], blob_top_2->cpu_data()[s]);
   }
   // Check backward
-  shared_ptr<Blob<Dtype,Mtype> > tmp_blob(new Blob<Dtype,Mtype>());
+  shared_ptr<Blob<Dtype> > tmp_blob(new Blob<Dtype>());
   tmp_blob->ReshapeLike(*blob_top_2.get());
   FillerParameter filler_param;
   GaussianFiller<Dtype,Mtype> filler(filler_param);
@@ -666,12 +666,12 @@ TYPED_TEST(NeuronLayerTest, TestPReLUInPlace) {
   InnerProductLayer<Dtype,Mtype> ip2(ip_layer_param);
   PReLULayer<Dtype,Mtype> prelu2(prelu_layer_param);
   // Set up blobs
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_2;
-  vector<Blob<Dtype,Mtype>*> blob_middle_vec_2;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_2;
-  shared_ptr<Blob<Dtype,Mtype> > blob_bottom_2(new Blob<Dtype,Mtype>());
-  shared_ptr<Blob<Dtype,Mtype> > blob_middle_2(new Blob<Dtype,Mtype>());
-  shared_ptr<Blob<Dtype,Mtype> > blob_top_2(new Blob<Dtype,Mtype>());
+  vector<Blob<Dtype>*> blob_bottom_vec_2;
+  vector<Blob<Dtype>*> blob_middle_vec_2;
+  vector<Blob<Dtype>*> blob_top_vec_2;
+  shared_ptr<Blob<Dtype> > blob_bottom_2(new Blob<Dtype>());
+  shared_ptr<Blob<Dtype> > blob_middle_2(new Blob<Dtype>());
+  shared_ptr<Blob<Dtype> > blob_top_2(new Blob<Dtype>());
   blob_bottom_vec_2.push_back(blob_bottom_2.get());
   blob_middle_vec_2.push_back(blob_middle_2.get());
   blob_top_vec_2.push_back(blob_top_2.get());
@@ -694,7 +694,7 @@ TYPED_TEST(NeuronLayerTest, TestPReLUInPlace) {
     EXPECT_EQ(this->blob_top_->cpu_data()[s], blob_top_2->cpu_data()[s]);
   }
   // Fill top diff with random numbers
-  shared_ptr<Blob<Dtype,Mtype> > tmp_blob(new Blob<Dtype,Mtype>());
+  shared_ptr<Blob<Dtype> > tmp_blob(new Blob<Dtype>());
   tmp_blob->ReshapeLike(*blob_top_2.get());
   FillerParameter filler_param;
   GaussianFiller<Dtype,Mtype> filler(filler_param);
@@ -734,8 +734,8 @@ class CuDNNNeuronLayerTest : public GPUDeviceTest<TypeParam> {
   typedef typename TypeParam::Mtype Mtype;
  protected:
   CuDNNNeuronLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>(2, 3, 4, 5)),
-        blob_top_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_(new Blob<Dtype>(2, 3, 4, 5)),
+        blob_top_(new Blob<Dtype>()) {
     Caffe::set_random_seed(1701);
     // fill the values
     FillerParameter filler_param;
@@ -745,10 +745,10 @@ class CuDNNNeuronLayerTest : public GPUDeviceTest<TypeParam> {
     blob_top_vec_.push_back(blob_top_);
   }
   virtual ~CuDNNNeuronLayerTest() { delete blob_bottom_; delete blob_top_; }
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(CuDNNNeuronLayerTest, TestDtypes);

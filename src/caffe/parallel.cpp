@@ -27,8 +27,8 @@ enum Op {
   replace_gpu_diff
 };
 
-template<typename Dtype, typename Mtype>
-static void apply_buffers(const vector<Blob<Dtype,Mtype>*>& blobs,
+template<typename Dtype>
+static void apply_buffers(const vector<Blob<Dtype>*>& blobs,
                           Dtype* buffer, size_t total_size, Op op) {
   Dtype* ptr = buffer;
   for (int i = 0; i < blobs.size(); ++i) {
@@ -62,7 +62,7 @@ static void apply_buffers(const vector<Blob<Dtype,Mtype>*>& blobs,
 
 // Buffer size necessary to store given blobs
 template<typename Dtype, typename Mtype>
-static size_t total_size(const vector<shared_ptr<Blob<Dtype,Mtype> > >& params) {
+static size_t total_size(const vector<shared_ptr<Blob<Dtype> > >& params) {
   size_t size = 0;
   for (int i = 0; i < params.size(); ++i)
     size += params[i]->count();
@@ -73,7 +73,7 @@ static size_t total_size(const vector<shared_ptr<Blob<Dtype,Mtype> > >& params) 
 
 // Buffer size necessary to store given blobs
 template<typename Dtype, typename Mtype>
-static size_t total_size(const vector<Blob<Dtype,Mtype>*>& params) {
+static size_t total_size(const vector<Blob<Dtype>*>& params) {
   size_t size = 0;
   for (int i = 0; i < params.size(); ++i)
     size += params[i]->count();
@@ -104,9 +104,9 @@ GPUParams<Dtype,Mtype>::GPUParams(shared_ptr<Solver<Dtype,Mtype> > root_solver, 
                            size_ * sizeof(Dtype));
 
   // Copy blob values
-  const vector<Blob<Dtype,Mtype>*>& net =
+  const vector<Blob<Dtype>*>& net =
       root_solver->net()->learnable_params();
-  apply_buffers<Dtype,Mtype>(net, data_, size_, copy);
+  apply_buffers(net, data_, size_, copy);
 
   // CUDA_CHECK(cudaMalloc(&diff_, size_ * sizeof(Dtype)));
   gpu_memory::allocate(reinterpret_cast<void **>(&diff_),
@@ -135,7 +135,7 @@ GPUParams<Dtype,Mtype>::~GPUParams() {
 
 template<typename Dtype, typename Mtype>
 void GPUParams<Dtype,Mtype>::configure(Solver<Dtype,Mtype>* solver) const {
-  const vector<Blob<Dtype,Mtype>*>& net =
+  const vector<Blob<Dtype>*>& net =
       solver->net()->learnable_params();
   apply_buffers(net, data_, size_, replace_gpu);
   apply_buffers(net, diff_, size_, replace_gpu_diff);

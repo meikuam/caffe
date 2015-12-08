@@ -22,8 +22,8 @@ class MathFunctionsTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   MathFunctionsTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>()),
-        blob_top_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_(new Blob<Dtype>()),
+        blob_top_(new Blob<Dtype>()) {
   }
 
   virtual void SetUp() {
@@ -65,8 +65,8 @@ class MathFunctionsTest : public MultiDeviceTest<TypeParam> {
     return dist;
   }
 
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
 };
 
 template <typename TypeParam>

@@ -10,8 +10,8 @@
 namespace caffe {
 
 template <typename Dtype, typename Mtype>
-void InnerProductLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top) {
+void InnerProductLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
   const int num_output = this->layer_param_.inner_product_param().num_output();
   bias_term_ = this->layer_param_.inner_product_param().bias_term();
   N_ = num_output;
@@ -34,7 +34,7 @@ void InnerProductLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>
     vector<int> weight_shape(2);
     weight_shape[0] = N_;
     weight_shape[1] = K_;
-    this->blobs_[0].reset(new Blob<Dtype,Mtype>(weight_shape));
+    this->blobs_[0].reset(new Blob<Dtype>(weight_shape));
     // fill the weights
     shared_ptr<Filler<Dtype,Mtype> > weight_filler(GetFiller<Dtype,Mtype>(
         this->layer_param_.inner_product_param().weight_filler()));
@@ -42,7 +42,7 @@ void InnerProductLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>
     // If necessary, intiialize and fill the bias term
     if (bias_term_) {
       vector<int> bias_shape(1, N_);
-      this->blobs_[1].reset(new Blob<Dtype,Mtype>(bias_shape));
+      this->blobs_[1].reset(new Blob<Dtype>(bias_shape));
       shared_ptr<Filler<Dtype,Mtype> > bias_filler(GetFiller<Dtype,Mtype>(
           this->layer_param_.inner_product_param().bias_filler()));
       bias_filler->Fill(this->blobs_[1].get());
@@ -52,8 +52,8 @@ void InnerProductLayer<Dtype,Mtype>::LayerSetUp(const vector<Blob<Dtype,Mtype>*>
 }
 
 template <typename Dtype, typename Mtype>
-void InnerProductLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top) {
+void InnerProductLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
   // Figure out the dimensions
   const int axis = bottom[0]->CanonicalAxisIndex(
       this->layer_param_.inner_product_param().axis());
@@ -78,8 +78,8 @@ void InnerProductLayer<Dtype,Mtype>::Reshape(const vector<Blob<Dtype,Mtype>*>& b
 }
 
 template <typename Dtype, typename Mtype>
-void InnerProductLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*>& bottom,
-    const vector<Blob<Dtype,Mtype>*>& top) {
+void InnerProductLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   const Dtype* weight = this->blobs_[0]->cpu_data();
@@ -93,9 +93,9 @@ void InnerProductLayer<Dtype,Mtype>::Forward_cpu(const vector<Blob<Dtype,Mtype>*
 }
 
 template <typename Dtype, typename Mtype>
-void InnerProductLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype,Mtype>*>& top,
+void InnerProductLayer<Dtype,Mtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down,
-    const vector<Blob<Dtype,Mtype>*>& bottom) {
+    const vector<Blob<Dtype>*>& bottom) {
   if (this->param_propagate_down_[0]) {
     const Dtype* top_diff = top[0]->cpu_diff();
     const Dtype* bottom_data = bottom[0]->cpu_data();

@@ -25,8 +25,8 @@ class LRNLayerTest : public MultiDeviceTest<TypeParam> {
  protected:
   LRNLayerTest()
       : epsilon_(choose<Dtype>(1.e-5,1.e-3)),
-        blob_bottom_(new Blob<Dtype,Mtype>()),
-        blob_top_(new Blob<Dtype,Mtype>()) {}
+        blob_bottom_(new Blob<Dtype>()),
+        blob_top_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     Caffe::set_random_seed(1701);
     blob_bottom_->Reshape(2, 7, 3, 3);
@@ -38,20 +38,20 @@ class LRNLayerTest : public MultiDeviceTest<TypeParam> {
     blob_top_vec_.push_back(blob_top_);
   }
   virtual ~LRNLayerTest() { delete blob_bottom_; delete blob_top_; }
-  void ReferenceLRNForward(const Blob<Dtype,Mtype>& blob_bottom,
-      const LayerParameter& layer_param, Blob<Dtype,Mtype>* blob_top);
+  void ReferenceLRNForward(const Blob<Dtype>& blob_bottom,
+      const LayerParameter& layer_param, Blob<Dtype>* blob_top);
 
   Dtype epsilon_;
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 template <typename TypeParam>
 void LRNLayerTest<TypeParam>::ReferenceLRNForward(
-    const Blob<Dtype,Mtype>& blob_bottom, const LayerParameter& layer_param,
-    Blob<Dtype,Mtype>* blob_top) {
+    const Blob<Dtype>& blob_bottom, const LayerParameter& layer_param,
+    Blob<Dtype>* blob_top) {
   typedef typename TypeParam::Dtype Dtype;
   typedef typename TypeParam::Mtype Mtype;
   blob_top->Reshape(blob_bottom.num(), blob_bottom.channels(),
@@ -133,7 +133,7 @@ TYPED_TEST(LRNLayerTest, TestForwardAcrossChannels) {
   LRNLayer<Dtype,Mtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
-  Blob<Dtype,Mtype> top_reference;
+  Blob<Dtype> top_reference;
   this->ReferenceLRNForward(*(this->blob_bottom_), layer_param,
       &top_reference);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
@@ -150,7 +150,7 @@ TYPED_TEST(LRNLayerTest, TestForwardAcrossChannelsLargeRegion) {
   LRNLayer<Dtype,Mtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
-  Blob<Dtype,Mtype> top_reference;
+  Blob<Dtype> top_reference;
   this->ReferenceLRNForward(*(this->blob_bottom_), layer_param,
       &top_reference);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
@@ -229,7 +229,7 @@ TYPED_TEST(LRNLayerTest, TestForwardWithinChannel) {
   LRNLayer<Dtype,Mtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
-  Blob<Dtype,Mtype> top_reference;
+  Blob<Dtype> top_reference;
   this->ReferenceLRNForward(*(this->blob_bottom_), layer_param,
       &top_reference);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
@@ -264,8 +264,8 @@ class CuDNNLRNLayerTest : public GPUDeviceTest<TypeParam> {
  protected:
   CuDNNLRNLayerTest()
       : epsilon_(choose<Dtype>(1.e-5,1.e-3)),
-        blob_bottom_(new Blob<Dtype,Mtype>()),
-        blob_top_(new Blob<Dtype,Mtype>()) {}
+        blob_bottom_(new Blob<Dtype>()),
+        blob_top_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     Caffe::set_random_seed(1701);
     blob_bottom_->Reshape(2, 7, 3, 3);
@@ -277,20 +277,20 @@ class CuDNNLRNLayerTest : public GPUDeviceTest<TypeParam> {
     blob_top_vec_.push_back(blob_top_);
   }
   virtual ~CuDNNLRNLayerTest() { delete blob_bottom_; delete blob_top_; }
-  void ReferenceLRNForward(const Blob<Dtype,Mtype>& blob_bottom,
-      const LayerParameter& layer_param, Blob<Dtype,Mtype>* blob_top);
+  void ReferenceLRNForward(const Blob<Dtype>& blob_bottom,
+      const LayerParameter& layer_param, Blob<Dtype>* blob_top);
 
   Dtype epsilon_;
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 template <typename TypeParam>
 void CuDNNLRNLayerTest<TypeParam>::ReferenceLRNForward(
-    const Blob<Dtype,Mtype>& blob_bottom, const LayerParameter& layer_param,
-    Blob<Dtype,Mtype>* blob_top) {
+    const Blob<Dtype>& blob_bottom, const LayerParameter& layer_param,
+    Blob<Dtype>* blob_top) {
   blob_top->Reshape(blob_bottom.num(), blob_bottom.channels(),
       blob_bottom.height(), blob_bottom.width());
   Dtype* top_data = blob_top->mutable_cpu_data();
@@ -358,7 +358,7 @@ TYPED_TEST(CuDNNLRNLayerTest, TestForwardAcrossChannelsCuDNN) {
   CuDNNLRNLayer<Dtype,Mtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
-  Blob<Dtype,Mtype> top_reference;
+  Blob<Dtype> top_reference;
   this->ReferenceLRNForward(*(this->blob_bottom_), layer_param,
       &top_reference);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
@@ -375,7 +375,7 @@ TYPED_TEST(CuDNNLRNLayerTest, TestForwardAcrossChannelsLargeRegionCuDNN) {
   CuDNNLRNLayer<Dtype,Mtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
-  Blob<Dtype,Mtype> top_reference;
+  Blob<Dtype> top_reference;
   this->ReferenceLRNForward(*(this->blob_bottom_), layer_param,
       &top_reference);
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {

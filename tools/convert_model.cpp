@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  map<std::string, shared_ptr<Blob<float16,CAFFE_FP16_MTYPE> > > blobs16map;
+  map<std::string, shared_ptr<Blob<float16> > > blobs16map;
   map<std::string, shared_ptr<LayerParameter> > layerpar16map;
   int diff_size = 0;
   {
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
         it != blob_names.end(); ++it) {
       const std::string& blob_name = *it;
 
-      shared_ptr<Blob<float,float> > blob = net->blob_by_name(blob_name);
+      shared_ptr<Blob<float> > blob = net->blob_by_name(blob_name);
       BlobProto blob_proto, blob_proto16;
       blob->ToProto(&blob_proto, true);
       blob_proto16.mutable_shape()->CopyFrom(blob_proto.shape());
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
         blob_proto16.mutable_half_diff()->Add(float16(blob_proto.diff(i)).getx());
       }
 
-      shared_ptr<Blob<float16,CAFFE_FP16_MTYPE> > blob16(new Blob<float16,CAFFE_FP16_MTYPE>);
+      shared_ptr<Blob<float16> > blob16(new Blob<float16>);
       blob16->FromProto(blob_proto16);
       blobs16map[blob_name] = blob16;
     }
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
       std::cout << "Layer: " << layer_name << std::endl;
 
       shared_ptr<Layer<float,float> > layer = net->layer_by_name(layer_name);
-      const vector<shared_ptr<Blob<float,float> > >& blobs = layer->blobs();
+      const vector<shared_ptr<Blob<float> > >& blobs = layer->blobs();
 
       const LayerParameter& layer_param = layer->layer_param();
       shared_ptr<LayerParameter> layer_param16(new LayerParameter);
@@ -175,7 +175,7 @@ int main(int argc, char** argv) {
 //  for (vector<string>::const_iterator it = blob_names.begin();
 //      it != blob_names.end(); ++it) {
 //    std::cout << *it << std::endl;
-//    shared_ptr<Blob<float,float> > blob = net->blob_by_name(*it);
+//    shared_ptr<Blob<float> > blob = net->blob_by_name(*it);
 //    BlobProto blob_proto, hblob_proto;
 //    blob->ToProto(&blob_proto, true);
 //

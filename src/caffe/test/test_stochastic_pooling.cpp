@@ -23,8 +23,8 @@ class StochasticPoolingLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   StochasticPoolingLayerTest()
-      : blob_bottom_(new Blob<Dtype,Mtype>()),
-        blob_top_(new Blob<Dtype,Mtype>()) {}
+      : blob_bottom_(new Blob<Dtype>()),
+        blob_top_(new Blob<Dtype>()) {}
   virtual void SetUp() {
     Caffe::set_random_seed(1701);
     blob_bottom_->Reshape(2, 3, 6, 5);
@@ -42,10 +42,10 @@ class StochasticPoolingLayerTest : public MultiDeviceTest<TypeParam> {
     delete blob_bottom_; delete blob_top_;
   }
 
-  Blob<Dtype,Mtype>* const blob_bottom_;
-  Blob<Dtype,Mtype>* const blob_top_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_;
+  Blob<Dtype>* const blob_top_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 template <typename TypeParam>

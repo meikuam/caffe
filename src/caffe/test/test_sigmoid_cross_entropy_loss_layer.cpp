@@ -22,9 +22,9 @@ class SigmoidCrossEntropyLossLayerTest : public MultiDeviceTest<TypeParam> {
 
  protected:
   SigmoidCrossEntropyLossLayerTest()
-      : blob_bottom_data_(new Blob<Dtype,Mtype>(10, 5, 1, 1)),
-        blob_bottom_targets_(new Blob<Dtype,Mtype>(10, 5, 1, 1)),
-        blob_top_loss_(new Blob<Dtype,Mtype>()) {
+      : blob_bottom_data_(new Blob<Dtype>(10, 5, 1, 1)),
+        blob_bottom_targets_(new Blob<Dtype>(10, 5, 1, 1)),
+        blob_top_loss_(new Blob<Dtype>()) {
     // Fill the data vector
     FillerParameter data_filler_param;
     data_filler_param.set_std(1);
@@ -94,11 +94,11 @@ class SigmoidCrossEntropyLossLayerTest : public MultiDeviceTest<TypeParam> {
     }
   }
 
-  Blob<Dtype,Mtype>* const blob_bottom_data_;
-  Blob<Dtype,Mtype>* const blob_bottom_targets_;
-  Blob<Dtype,Mtype>* const blob_top_loss_;
-  vector<Blob<Dtype,Mtype>*> blob_bottom_vec_;
-  vector<Blob<Dtype,Mtype>*> blob_top_vec_;
+  Blob<Dtype>* const blob_bottom_data_;
+  Blob<Dtype>* const blob_bottom_targets_;
+  Blob<Dtype>* const blob_top_loss_;
+  vector<Blob<Dtype>*> blob_bottom_vec_;
+  vector<Blob<Dtype>*> blob_top_vec_;
 };
 
 TYPED_TEST_CASE(SigmoidCrossEntropyLossLayerTest, TestDtypesAndDevices);

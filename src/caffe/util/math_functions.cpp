@@ -113,12 +113,14 @@ void caffe_axpy<double,double>(const int N, const double alpha, const double* X,
 template<>
 void caffe_axpy<float16,float>(const int N, const float alpha, const float16* X, float16* Y) {
   for (int i = 0; i < N; ++i) {
-    Y[i] = alpha * X[i] + Y[i];
+    Y[i] = alpha * static_cast<float>(X[i]) + static_cast<float>(Y[i]);
   }
 }
 template<>
 void caffe_axpy<float16,float16>(const int N, const float16 alpha, const float16* X, float16* Y) {
-  caffe_axpy(N, (float) alpha, X, Y);
+  for (int i = 0; i < N; ++i) {
+    Y[i] = alpha * X[i] + Y[i];
+  }
 }
 #endif
 

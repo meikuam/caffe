@@ -11,8 +11,8 @@
 namespace caffe {
 
 template <typename Dtype, typename Mtype>
-void HDF5OutputLayer<Dtype,Mtype>::Forward_gpu(const vector<Blob<Dtype,Mtype>*>& bottom,
-      const vector<Blob<Dtype,Mtype>*>& top) {
+void HDF5OutputLayer<Dtype,Mtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
   CHECK_GE(bottom.size(), 2);
   CHECK_EQ(bottom[0]->num(), bottom[1]->num());
   data_blob_.Reshape(bottom[0]->num(), bottom[0]->channels(),
@@ -32,8 +32,8 @@ void HDF5OutputLayer<Dtype,Mtype>::Forward_gpu(const vector<Blob<Dtype,Mtype>*>&
 }
 
 template <typename Dtype, typename Mtype>
-void HDF5OutputLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype,Mtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype,Mtype>*>& bottom) {
+void HDF5OutputLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   return;
 }
 

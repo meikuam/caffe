@@ -137,12 +137,12 @@ int feature_extraction_pipeline(int argc, char** argv) {
   Datum datum;
   const int kMaxKeyStrLength = 100;
   char key_str[kMaxKeyStrLength];
-  std::vector<Blob<float,float>*> input_vec;
+  std::vector<Blob<float>*> input_vec;
   std::vector<int> image_indices(num_features, 0);
   for (int batch_index = 0; batch_index < num_mini_batches; ++batch_index) {
     feature_extraction_net->Forward(input_vec);
     for (int i = 0; i < num_features; ++i) {
-      const shared_ptr<Blob<Dtype,Dtype> > feature_blob = feature_extraction_net
+      const shared_ptr<Blob<Dtype> > feature_blob = feature_extraction_net
           ->blob_by_name(blob_names[i]);
       int batch_size = feature_blob->num();
       int dim_features = feature_blob->count() / batch_size;
