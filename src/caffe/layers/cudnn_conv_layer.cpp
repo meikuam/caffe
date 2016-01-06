@@ -30,10 +30,6 @@ void CuDNNConvolutionLayer<Dtype,Mtype>::LayerSetUp(
   workspace_bwd_filter_sizes_ = new size_t[bottom.size()];
   workspace_bwd_data_sizes_ = new size_t[bottom.size()];
 
-  // workspace data
-  workspaceSizeInBytes = 0;
-  workspaceData = NULL;
-
   for (size_t i = 0; i < bottom.size(); ++i) {
     // initialize all to default algorithms
     fwd_algo_[i] = (cudnnConvolutionFwdAlgo_t)0;
@@ -206,9 +202,6 @@ CuDNNConvolutionLayer<Dtype,Mtype>::~CuDNNConvolutionLayer() {
   delete [] workspace_fwd_sizes_;
   delete [] workspace_bwd_data_sizes_;
   delete [] workspace_bwd_filter_sizes_;
-
-  gpu_memory::deallocate(this->workspaceData);
-  this->workspaceData = NULL;
 }
 
 INSTANTIATE_CLASS(CuDNNConvolutionLayer);
