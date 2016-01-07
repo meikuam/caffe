@@ -20,13 +20,14 @@ namespace caffe {
   template <typename TypeParam>
   class BatchNormLayerTest : public MultiDeviceTest<TypeParam> {
     typedef typename TypeParam::Dtype Dtype;
+    typedef typename TypeParam::Mtype Mtype;
    protected:
     BatchNormLayerTest()
         : blob_bottom_(new Blob<Dtype>(5, 2, 3, 4)),
           blob_top_(new Blob<Dtype>()) {
       // fill the values
       FillerParameter filler_param;
-      GaussianFiller<Dtype> filler(filler_param);
+      GaussianFiller<Dtype,Mtype> filler(filler_param);
       filler.Fill(this->blob_bottom_);
       blob_bottom_vec_.push_back(blob_bottom_);
       blob_top_vec_.push_back(blob_top_);
@@ -42,9 +43,10 @@ namespace caffe {
 
   TYPED_TEST(BatchNormLayerTest, TestForward) {
     typedef typename TypeParam::Dtype Dtype;
+    typedef typename TypeParam::Mtype Mtype;
     LayerParameter layer_param;
 
-    BatchNormLayer<Dtype> layer(layer_param);
+    BatchNormLayer<Dtype,Mtype> layer(layer_param);
     layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
     layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
 
@@ -68,7 +70,7 @@ namespace caffe {
       sum /= height * width * num;
       var /= height * width * num;
 
-      const Dtype kErrorBound = 0.001;
+      const Dtype kErrorBound = choose<Dtype>(0.001,0.0025);
       // expect zero mean
       EXPECT_NEAR(0, sum, kErrorBound);
       // expect unit variance
@@ -78,17 +80,18 @@ namespace caffe {
 
   TYPED_TEST(BatchNormLayerTest, TestForwardInplace) {
     typedef typename TypeParam::Dtype Dtype;
+    typedef typename TypeParam::Mtype Mtype;
     Blob<Dtype> blob_inplace(5, 2, 3, 4);
     vector<Blob<Dtype>*> blob_bottom_vec;
     vector<Blob<Dtype>*> blob_top_vec;
     LayerParameter layer_param;
     FillerParameter filler_param;
-    GaussianFiller<Dtype> filler(filler_param);
+    GaussianFiller<Dtype,Mtype> filler(filler_param);
     filler.Fill(&blob_inplace);
     blob_bottom_vec.push_back(&blob_inplace);
     blob_top_vec.push_back(&blob_inplace);
 
-    BatchNormLayer<Dtype> layer(layer_param);
+    BatchNormLayer<Dtype,Mtype> layer(layer_param);
     layer.SetUp(blob_bottom_vec, blob_top_vec);
     layer.Forward(blob_bottom_vec, blob_top_vec);
 
@@ -122,26 +125,29 @@ namespace caffe {
 
   TYPED_TEST(BatchNormLayerTest, TestGradient) {
     typedef typename TypeParam::Dtype Dtype;
+    typedef typename TypeParam::Mtype Mtype;
     LayerParameter layer_param;
 
-    BatchNormLayer<Dtype> layer(layer_param);
-    GradientChecker<Dtype> checker(1e-2, 1e-4);
+    BatchNormLayer<Dtype,Mtype> layer(layer_param);
+    GradientChecker<Dtype,Mtype> checker(1e-2, choose<Dtype>(1e-4,1e-2));
     checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
         this->blob_top_vec_);
   }
 
 #ifdef USE_CUDNN
-template <typename Dtype>
-class CuDNNBatchNormLayerTest : public GPUDeviceTest<Dtype> {
+template <typename TypeParam>
+class CuDNNBatchNormLayerTest : public GPUDeviceTest<TypeParam> {
+  typedef typename TypeParam::Dtype Dtype;
+  typedef typename TypeParam::Mtype Mtype;
  protected:
   CuDNNBatchNormLayerTest()
       : blob_bottom_(new Blob<Dtype>(2, 3, 4, 5)),
         blob_top_(new Blob<Dtype>()) {
     // fill the values
     FillerParameter filler_param;
-    filler_param.set_mean(-10);
-    filler_param.set_std(5);
-    GaussianFiller<Dtype> filler(filler_param);
+    filler_param.set_mean(choose<Dtype>(-10.,-0.5));
+    filler_param.set_std(choose<Dtype>(5.,0.3));
+    GaussianFiller<Dtype,Mtype> filler(filler_param);
     filler.Fill(this->blob_bottom_);
     blob_bottom_vec_.push_back(blob_bottom_);
     blob_top_vec_.push_back(blob_top_);
@@ -157,9 +163,9 @@ class CuDNNBatchNormLayerTest : public GPUDeviceTest<Dtype> {
 
 template <typename TypeParam>
 void CuDNNBatchNormLayerTest<TypeParam>::checkMeanVar(
-    const Blob<TypeParam> *top,
+    const Blob<Dtype> *top,
     int num, int channels, int height, int width) {
-  typedef TypeParam Dtype;
+  typedef typename TypeParam::Dtype Dtype;
 
   for (int j = 0; j < channels; ++j) {
     Dtype mean = 0, var = 0;
@@ -175,7 +181,7 @@ void CuDNNBatchNormLayerTest<TypeParam>::checkMeanVar(
     mean /= num * height * width;
     var /= num * height * width;
 
-    const Dtype kErrorBound = 0.001;
+    const Dtype kErrorBound = choose<Dtype>(0.001,0.0025);
     EXPECT_NEAR(0, mean, kErrorBound);
     EXPECT_NEAR(1, var, kErrorBound);
   }
@@ -185,13 +191,14 @@ TYPED_TEST_CASE(CuDNNBatchNormLayerTest, TestDtypes);
 
 TYPED_TEST(CuDNNBatchNormLayerTest, TestForward) {
   Caffe::set_random_seed(1701);
-  typedef TypeParam Dtype;
+  typedef typename TypeParam::Dtype Dtype;
+  typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   BatchNormParameter* bn_param = layer_param.mutable_batch_norm_param();
   FillerParameter *scale_param = bn_param->mutable_scale_filler();
   scale_param->set_value(1);
 
-  CuDNNBatchNormLayer<Dtype> layer(layer_param);
+  CuDNNBatchNormLayer<Dtype,Mtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Reshape(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
@@ -207,7 +214,8 @@ TYPED_TEST(CuDNNBatchNormLayerTest, TestForward) {
 }
 
 TYPED_TEST(CuDNNBatchNormLayerTest, TestGradient) {
-  typedef TypeParam Dtype;
+  typedef typename TypeParam::Dtype Dtype;
+  typedef typename TypeParam::Mtype Mtype;
   LayerParameter layer_param;
   BatchNormParameter* bn_param = layer_param.mutable_batch_norm_param();
   FillerParameter *scale_param = bn_param->mutable_scale_filler();
@@ -215,8 +223,8 @@ TYPED_TEST(CuDNNBatchNormLayerTest, TestGradient) {
   FillerParameter *bias_param = bn_param->mutable_bias_filler();
   bias_param->set_value(0);
 
-  CuDNNBatchNormLayer<Dtype> layer(layer_param);
-  GradientChecker<Dtype> checker(1e-2, 4e-4);
+  CuDNNBatchNormLayer<Dtype,Mtype> layer(layer_param);
+  GradientChecker<Dtype,Mtype> checker(1e-2, 4e-4);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }

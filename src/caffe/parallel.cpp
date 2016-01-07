@@ -458,8 +458,8 @@ void P2PSync<Dtype,Mtype>::run(const vector<int>& gpus) {
   }
 }
 
-template<typename Dtype>
-void P2PSync<Dtype>::divide_batch_size(NetParameter* net) {
+template<typename Dtype, typename Mtype>
+void P2PSync<Dtype,Mtype>::divide_batch_size(NetParameter* net) {
   int solver_count = Caffe::solver_count();
   for (int i = 0; i < net->layer_size(); ++i) {
     string m = "Batch size must be divisible by the number of solvers (GPUs)";

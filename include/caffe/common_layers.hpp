@@ -108,11 +108,11 @@ class ArgMaxLayer : public Layer<Dtype,Mtype> {
  *
  * TODO(dox): thorough documentation for Forward, Backward, and proto params.
  */
-template <typename Dtype>
-class BatchNormLayer : public Layer<Dtype> {
+template <typename Dtype, typename Mtype>
+class BatchNormLayer : public Layer<Dtype,Mtype> {
  public:
   explicit BatchNormLayer(const LayerParameter& param)
-      : Layer<Dtype>(param) {}
+      : Layer<Dtype,Mtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
@@ -146,11 +146,11 @@ class BatchNormLayer : public Layer<Dtype> {
 };
 
 #ifdef USE_CUDNN
-template <typename Dtype>
-class CuDNNBatchNormLayer : public BatchNormLayer<Dtype> {
+template <typename Dtype, typename Mtype>
+class CuDNNBatchNormLayer : public BatchNormLayer<Dtype,Mtype> {
  public:
   explicit CuDNNBatchNormLayer(const LayerParameter& param)
-      : BatchNormLayer<Dtype>(param), epsilon_(1e-4), handles_setup_(false) {}
+      : BatchNormLayer<Dtype,Mtype>(param), epsilon_(1e-4), handles_setup_(false) {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,

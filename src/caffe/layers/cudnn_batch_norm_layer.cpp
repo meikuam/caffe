@@ -10,11 +10,11 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void CuDNNBatchNormLayer<Dtype>::LayerSetUp(
+template <typename Dtype, typename Mtype>
+void CuDNNBatchNormLayer<Dtype,Mtype>::LayerSetUp(
     const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
-  BatchNormLayer<Dtype>::LayerSetUp(bottom, top);
+  BatchNormLayer<Dtype,Mtype>::LayerSetUp(bottom, top);
 
   cudnn::createTensor4dDesc<Dtype>(&bottom_desc_);
   cudnn::createTensor4dDesc<Dtype>(&top_desc_);
@@ -35,12 +35,12 @@ void CuDNNBatchNormLayer<Dtype>::LayerSetUp(
     this->blobs_[3].reset(new Blob<Dtype>(1, bottom[0]->channels(), 1, 1));
     this->blobs_[4].reset(new Blob<Dtype>(1, bottom[0]->channels(), 1, 1));
 
-    shared_ptr<Filler<Dtype> > scale_filler(
-      GetFiller<Dtype>(this->layer_param_.batch_norm_param().scale_filler()));
+    shared_ptr<Filler<Dtype,Mtype> > scale_filler(
+      GetFiller<Dtype,Mtype>(this->layer_param_.batch_norm_param().scale_filler()));
     scale_filler->Fill(this->blobs_[0].get());
 
-    shared_ptr<Filler<Dtype> > bias_filler(
-      GetFiller<Dtype>(this->layer_param_.batch_norm_param().bias_filler()));
+    shared_ptr<Filler<Dtype,Mtype> > bias_filler(
+      GetFiller<Dtype,Mtype>(this->layer_param_.batch_norm_param().bias_filler()));
     bias_filler->Fill(this->blobs_[1].get());
 
     for (int i = 2; i < 5; i++) {
@@ -52,11 +52,11 @@ void CuDNNBatchNormLayer<Dtype>::LayerSetUp(
   handles_setup_ = true;
 }
 
-template <typename Dtype>
-void CuDNNBatchNormLayer<Dtype>::Reshape(
+template <typename Dtype, typename Mtype>
+void CuDNNBatchNormLayer<Dtype,Mtype>::Reshape(
     const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
-  BatchNormLayer<Dtype>::Reshape(bottom, top);
+  BatchNormLayer<Dtype,Mtype>::Reshape(bottom, top);
 
   // set up main tensors
   cudnn::setTensor4dDesc<Dtype>(
@@ -83,8 +83,8 @@ void CuDNNBatchNormLayer<Dtype>::Reshape(
                                             bottom_desc_, mode_));
 }
 
-template <typename Dtype>
-CuDNNBatchNormLayer<Dtype>::~CuDNNBatchNormLayer() {
+template <typename Dtype, typename Mtype>
+CuDNNBatchNormLayer<Dtype,Mtype>::~CuDNNBatchNormLayer() {
   if (!handles_setup_) return;
 
   cudnnDestroyTensorDescriptor(bottom_desc_);

@@ -11,8 +11,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void CuDNNBatchNormLayer<Dtype>::Forward_gpu(
+template <typename Dtype, typename Mtype>
+void CuDNNBatchNormLayer<Dtype,Mtype>::Forward_gpu(
     const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->gpu_data();
@@ -64,8 +64,8 @@ void CuDNNBatchNormLayer<Dtype>::Forward_gpu(
   }
 }
 
-template <typename Dtype>
-void CuDNNBatchNormLayer<Dtype>::Backward_gpu(
+template <typename Dtype, typename Mtype>
+void CuDNNBatchNormLayer<Dtype,Mtype>::Backward_gpu(
     const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   const Dtype* top_data = top[0]->gpu_data();
