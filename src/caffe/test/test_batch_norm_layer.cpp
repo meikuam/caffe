@@ -224,7 +224,7 @@ TYPED_TEST(CuDNNBatchNormLayerTest, TestGradient) {
   bias_param->set_value(0);
 
   CuDNNBatchNormLayer<Dtype,Mtype> layer(layer_param);
-  GradientChecker<Dtype,Mtype> checker(1e-2, 4e-4);
+  GradientChecker<Dtype,Mtype> checker(1e-2, choose<Dtype>(4e-4,1e-2));
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }

@@ -53,11 +53,6 @@ void Blob<Dtype>::Reshape(const BlobShape& shape) {
 }
 
 template <typename Dtype>
-void Blob<Dtype>::ReshapeLike(const Blob<Dtype>& other) {
-  Reshape(other.shape());
-}
-
-template <typename Dtype>
 Blob<Dtype>::Blob(const int num, const int channels, const int height,
     const int width)
   // capacity_ must be initialized before calling Reshape
