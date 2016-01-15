@@ -22,7 +22,7 @@ void SplitLayer<Dtype,Mtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     caffe_copy(count_, top[0]->gpu_diff(), bottom[0]->mutable_gpu_diff());
     return;
   }
-  caffe_gpu_add<Dtype,Mtype>(count_, top[0]->gpu_diff(), top[1]->gpu_diff(),
+  caffe_gpu_add(count_, top[0]->gpu_diff(), top[1]->gpu_diff(),
                 bottom[0]->mutable_gpu_diff());
   // Add remaining top blob diffs.
   for (int i = 2; i < top.size(); ++i) {
