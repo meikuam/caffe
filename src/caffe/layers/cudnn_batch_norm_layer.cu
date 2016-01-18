@@ -113,6 +113,8 @@ void CuDNNBatchNormLayer<Dtype,Mtype>::Backward_gpu(
       mode_,
       cudnn::dataType<Dtype>::one,
       cudnn::dataType<Dtype>::zero,
+      cudnn::dataType<Dtype>::one,
+      cudnn::dataType<Dtype>::zero,
       bottom_desc_,
       bottom_data,
       bottom_desc_,
