@@ -84,7 +84,14 @@ shared_ptr<Layer<Dtype,Mtype> > GetPoolingLayer(const LayerParameter& param) {
                 << "Using Caffe's own pooling layer.";
       return shared_ptr<Layer<Dtype,Mtype> >(new PoolingLayer<Dtype,Mtype>(param));
     }
+
+// FIXME We assume that precision issue will be fixed in cuDNN v5.0
+#if CUDNN_VERSION >= 5000
     return shared_ptr<Layer<Dtype,Mtype> >(new CuDNNPoolingLayer<Dtype,Mtype>(param));
+#else
+    return shared_ptr<Layer<Dtype,Mtype> >(new PoolingLayer<Dtype,Mtype>(param));
+#endif
+
 #endif
   } else {
     LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
