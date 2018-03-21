@@ -33,6 +33,15 @@ float SGDSolver<Dtype>::GetLearningRate() {
     rate = rampup_lr + (this->param_.base_lr() - rampup_lr) * alpha * alpha;
   } else if (lr_policy == "fixed") {
     rate = this->param_.base_lr();
+  } else if (lr_policy == "multifixed") {
+    CHECK_EQ(this->param_.stageiter_size(), this->param_.stagelr_size());
+    int num_stages = this->param_.stagelr_size();
+    int stage = 0;
+    for (; stage < num_stages; ++stage) {
+      if (this->iter_ <= this->param_.stageiter(stage)) break;
+    }
+    stage = (stage == num_stages) ? stage - 1 : stage;
+    rate = this->param_.stagelr(stage);
   } else if (lr_policy == "step") {
     this->current_step_ = this->iter_ / this->param_.stepsize();
     rate = this->param_.base_lr() * pow(this->param_.gamma(), this->current_step_);
