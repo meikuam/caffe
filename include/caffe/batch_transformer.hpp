@@ -16,6 +16,7 @@ class Batch {
  public:
   shared_ptr<Blob> data_;
   shared_ptr<Blob> label_;
+  vector<shared_ptr<Blob>> multi_label_;
 
   Batch(Type data_type, Type diff_type)
       : data_(Blob::create(data_type, diff_type)), label_(Blob::create(data_type, diff_type)),
@@ -28,7 +29,11 @@ class Batch {
     id_ = id;
   }
   size_t bytes() const {
-    return data_->sizeof_data() + label_->sizeof_data();
+    int muilti_size = 0;
+    for(int i = 0; i < multi_label_.size(); i++) {
+        muilti_size += multi_label_[i]->sizeof_data();
+    }
+    return data_->sizeof_data() + label_->sizeof_data() + muilti_size;
   }
   Packing data_packing() const {
     return data_packing_;

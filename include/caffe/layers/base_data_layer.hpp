@@ -47,6 +47,7 @@ class BaseDataLayer : public Layer<Ftype, Btype> {
  protected:
   TransformationParameter transform_param_;
   bool output_labels_;
+  bool box_label_;
 };
 
 template<typename Ftype, typename Btype>

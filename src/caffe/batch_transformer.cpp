@@ -73,6 +73,9 @@ void BatchTransformer<Ftype, Btype>::InternalThreadEntry() {
         }
       }
       top->label_->Swap(*batch->label_);
+      for(int i = 0; i < top->multi_label_.size(); i++) {
+          top->multi_label_[i]->Swap(*batch->multi_label_[i]);
+      }
       processed_full_.push(top);
       batch->set_id((size_t) -1L);
       prefetches_free_[next_batch_queue_]->push(batch);
@@ -81,7 +84,7 @@ void BatchTransformer<Ftype, Btype>::InternalThreadEntry() {
   }catch (boost::thread_interrupted&) {
   }
 }
-
+//TODO: multi_label_
 template<typename Ftype, typename Btype>
 void BatchTransformer<Ftype, Btype>::reshape(const vector<int>& data_shape,
     const vector<int>& label_shape, bool preallocate) {

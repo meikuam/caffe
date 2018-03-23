@@ -52,6 +52,7 @@ template<typename Ftype, typename Btype>
 void BaseDataLayer<Ftype, Btype>::LayerSetUp(const vector<Blob*>& bottom,
     const vector<Blob*>& top) {
   output_labels_ = top.size() != 1;
+  box_label_ = false;
   // Subclasses should setup the size of bottom and top
   DataLayerSetUp(bottom, top);
 }
@@ -175,8 +176,15 @@ void BasePrefetchingDataLayer<Ftype, Btype>::Forward_cpu(const vector<Blob*>& bo
   // Note: this function runs in one thread per object and one object per one Solver thread
   shared_ptr<Batch> batch = this->batch_transformer_->processed_pop();
   top[0]->Swap(*batch->data_);
+
   if (this->output_labels_) {
-    top[1]->Swap(*batch->label_);
+      if (this->box_label_) {
+          for(int i = 0; i < batch->multi_label_.size(); i++) {
+            top[1]->Swap(*batch->multi_label_[i]);
+          }
+      } else {
+          top[1]->Swap(*batch->label_);
+      }
   }
   this->batch_transformer_->processed_push(batch);
 }

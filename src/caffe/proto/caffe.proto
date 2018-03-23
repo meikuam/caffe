@@ -1336,6 +1336,8 @@ message DataParameter {
   optional bool cache = 13 [default = false];
   // Shuffle observations while reading for better accuracy. Ignored if 'cache' is false.
   optional bool shuffle = 14 [default = false];
+
+  repeated uint32 side = 15;
 }
 
 // Message that store parameters used by DetectionEvaluateLayer
