@@ -34,13 +34,17 @@ class Net {
       size_t solver_rank = 0U,
       Flag* solver_init_flag = nullptr,
       const Net* root_net = nullptr,
-      bool inner_net = false);
+      bool inner_net = false,
+      int level = 0,
+      const vector<string>* stages = NULL);
   Net(const string& param_file,
       Phase phase,
       size_t solver_rank = 0U,
       Flag* solver_init_flag = nullptr,
       const Net* root_net = nullptr,
-      bool inner_net = false);
+      bool inner_net = false,
+      int level = 0,
+      const vector<string>* stages = NULL);
   ~Net();
 
   /// @brief Initialize a network with a NetParameter.
@@ -282,6 +286,10 @@ class Net {
 
   bool global_grad_scale_enabled() const {
     return has_global_grad_scale_param_ && global_grad_scale_param_ > 0.F;
+  }
+
+  bool inner_net() const {
+    return inner_net_;
   }
 
   void update_grad_scale();
